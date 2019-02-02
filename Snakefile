@@ -1,16 +1,6 @@
 ####################################################################################################################################################################
 ################################ File Targets ######################################################################################################################
 ####################################################################################################################################################################
-rule snu61_init:
-        input:
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L1_R1.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L1_R2.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L2_R1.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L2_R2.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L3_R1.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L3_R2.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L4_R1.fastq",
-            "snu61/wt01/preprocessing/2fastq/SNU61-WT-01-S3_S1_L4_R2.fastq"
 
 ## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
 rule snu61_bai:
@@ -22,6 +12,41 @@ rule snu61_downsample:
         input:
             "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.09.bam",
             "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.08.bam"
+
+
+## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
+## For specific TFs with larger memory requirements
+## This method will generate the footprint signals by chromosome and then merge the results
+## Can be safely run with 10 provided cores on server without exceeding 100 gb mem
+rule snu61_coad_footprints:
+        input:
+            "ls1034/wt01/graphs/LS1034-WT-01.ASCL2.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.ESRRA.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.TCF7.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.POU5F1B.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.HNF4A.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.OVOL1.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.GMEB2.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.CBFA2T2.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.HOXA3.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.MNX1.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.ZSWIM1.graphs.done.txt",
+            "ls1034/wt01/graphs/LS1034-WT-01.CDX2.graphs.done.txt"
+
+rule snu61_parsed_footprints:
+    input:
+        "ls1034/wt01/parsed/LS1034-WT-01.ASCL2.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.ESRRA.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.TCF7.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.POU5F1B.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.HNF4A.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.OVOL1.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.GMEB2.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.CBFA2T2.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.HOXA3.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.MNX1.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.ZSWIM1.parsed.done.txt",
+        "ls1034/wt01/parsed/LS1034-WT-01.CDX2.parsed.done.txt"
 
 
 
@@ -201,7 +226,7 @@ rule afterqc_qc:
             c="{path}3goodfastq/{sample}_R1.good.fq",
             d="{path}3goodfastq/{sample}_R2.good.fq"
         shell:
-            "after.py -1 {input.a} -2 {input.b} -g 3goodfastq -b 3goodfastq -s 15"
+            "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b 3goodfastq -s 15"
 
 # STEP 3 - ALIGN TO MYCO WITH BOWTIE2
 rule myco_align:
@@ -211,7 +236,7 @@ rule myco_align:
         output:
             "{path}4mycoalign/{sample}.myco.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} > {path}4mycoalign/{sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} > {wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 
 # STEP 4 - ALIGN TO HG38 WITH BOWTIE2
 ## params:
@@ -227,7 +252,7 @@ rule hg38_align:
         output:
             "{path}5hg38align/{sample}.hg38.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} > {path}5hg38align/{sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} > {wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 
 # STEP 5 - CONVERT SAM TO BAM
 ## params:
@@ -238,7 +263,7 @@ rule sam_to_bam:
         output:
             "{path}6rawbam/{sample}.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
 
@@ -257,7 +282,7 @@ rule add_rg_and_cs_bam:
         output:
             "{path}7rgsort/{sample}_L{lane}.rg.cs.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
             O={output} \
             SORT_ORDER=coordinate \
@@ -274,7 +299,7 @@ rule clean_bam:
         output:
             "{path}7rgsort/{sample}_L{lane}.clean.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
 
@@ -288,7 +313,7 @@ rule merge_lanes:
         output:
             "{path}8merged/{sample}.m.bam"
         shell:
-            "java -Xmx80g -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -307,7 +332,7 @@ rule purge_duplicates:
             a="{path}9dedup/{sample}.dp.bam",
             b="{path}9dedup/{sample}.metrics.txt"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
@@ -331,18 +356,48 @@ rule mapq_filter:
         shell:
             "samtools view -h -q 2 -b {input} > {output}"
 
-# STEP 11 - BUILD AN INDEX OF THE FINAL BAM FILE
+# STEP 11 - BUILD AN INDEX OF THE FINAL BAM FILES
 rule build_index:
         input:
             "{path}10unique/{sample}.u.bam"
         output:
             "{path}10unique/{sample}.u.bai"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 
-# STEP 12 - CALL PEAKS WITH MACS2
+# STEP 12 - MERGE REPLICATES
+rule merge_replicates:
+        input:
+            a="{path}10unique/{sample}-{rep1}.u.bam",
+            b="{path}10unique/{sample}-{rep2}.u.bam",
+            c="{path}10unique/{sample}-{rep3}.u.bam"
+        output:
+            "{path}12all/{sample}.all.bam"
+        shell:
+            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            I={input.a} \
+            I={input.b} \
+            I={input.c} \
+            O={output} \
+            SORT_ORDER=coordinate \
+            ASSUME_SORTED=true \
+            MERGE_SEQUENCE_DICTIONARIES=true \
+            USE_THREADING=true"
+
+# STEP 13 - INDEX BAM MERGED REPLICATES
+rule index_merged:
+        input:
+            "{path}12all/{sample}.all.bam"
+        output:
+            "{path}12all/{sample}.all.bai"
+        shell:
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            I={input} \
+            O={output}"
+
+# STEP 14 - CALL PEAKS WITH MACS2
 ## notes:
 # because we are going to use the TCGA data downstream likely as a reference point,
 # we will need to call the peaks in the exact same way as they did in this paper:
@@ -367,7 +422,7 @@ rule peaks_macs2:
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# STEP 13 - PLOT REPLICATE CORRELATION
+# STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
             a="{path}10unique/{sample}-{rep1}.u.bam",
@@ -378,7 +433,7 @@ rule plot_corr_spearman:
         shell:
             "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
 
-# STEP 14 - MAKE CORRELATION HEATMAP
+# STEP 16 - MAKE CORRELATION HEATMAP
 rule make_corr_heatmap:
         input:
             "{path}12qcplots/{sample}.spearman.corrTest"
@@ -387,240 +442,128 @@ rule make_corr_heatmap:
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
 
-# STEP 15 - DOWNSAMPLE FOR SATURATION ANALYSIS
+# STEP 17 - DOWNSAMPLE FOR SATURATION ANALYSIS
 rule downsample_bam:
         input:
             "{path}8merged/{sample}.m.bam"
         output:
             "{path}13downsample/{sample}.{prob}.bam"
         shell:
-            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
+            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output.a} \
              PROBABILITY={wildcards.prob}"
-##
-rule downsample_frags8:
-        input:
-            a="sat/{sample}.9.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.8.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.8"
-##
-rule downsample_frags7:
-        input:
-            a="sat/{sample}.8.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.7.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.7"
-##
-rule downsample_frags6:
-        input:
-            a="sat/{sample}.7.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.6.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.6"
-##
-rule downsample_frags5:
-        input:
-            a="sat/{sample}.6.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.5.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.5"
-##
-rule downsample_frags4:
-        input:
-            a="sat/{sample}.5.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.4.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.4"
-##
-rule downsample_frags3:
-        input:
-            a="sat/{sample}.4.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.3.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.3"
-##
-rule downsample_frags2:
-        input:
-            a="sat/{sample}.3.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.2.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.2"
-##
-rule downsample_frags1:
-        input:
-            a="sat/{sample}.2.bam",
-            b="8merged/{sample}.m.bam"
-        output:
-            "sat/{sample}.1.bam"
-        shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
-             I={input.b} \
-             O={output} \
-             PROBABILITY=0.1"
-#######################################################################################################
 
-#######################################################################################################
-#### STEP 16 - CORD SORT DOWNSAMPLED ####
-#########################################
-## notes:
+# STEP 18 - COORDINATE SORT DOWNSAMPLED
 rule sort_downsampled:
         input:
-            "sat/{sample}.{num}.bam"
+            "{path}13downsample/{sample}.{prob}.bam"
         output:
-            "sat/{sample}.{num}.cs.bam"
+            "{path}13downsample/{sample}.{prob}.cs.bam"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
-##
-#######################################################################################################
-#### STEP 17 - MARK DUPLICATES DOWNSAMPLED ####
-###############################################
-## notes:
+
+# STEP 19 - MARK DUPLICATES DOWNSAMPLED AND LIBRARY COMPLEXITY SATURATION ANALYSIS
 rule markdup_downsampled:
         input:
-            "sat/{sample}.{num}.cs.bam"
+            "{path}13downsample/{sample}.{prob}.cs.bam"
         output:
-            "sat/{sample}.{num}.md.bam"
+            "{path}13downsample/{sample}.{prob}.md.bam"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
-             M={wildcards.sample}.{wildcards.num}.dupmetrics.txt"
-##
-#######################################################################################################
-#### STEP 17 - PEAK SATURATION ANALYSIS ####
-############################################
+             M={wildcards.sample}.{wildcards.prob}.dupmetrics.txt"
+
+# STEP 20 - PEAK SATURATION ANALYSIS
 rule peak_sat_macs2:
         input:
-            "sat/{sample}.{num}.cs.bam"
+            "{path}13downsample/{sample}.{prob}.cs.bam"
         output:
-            "peaksat/{sample}.{num}_peaks.xls"
+            "{path}13downsample/{sample}.{prob}_peaks.xls"
         shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir peaksat --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}13downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-#######################################################################################################
-#### STEP 17 - MERGE REPLICATES ####
-####################################
-rule merge_replicates:
-        input:
-            a="10unique/{sample}-S1_S5.u.bam",
-            b="10unique/{sample}-S2_S3.u.bam",
-            c="10unique/{sample}-S3_S2.u.bam"
-        output:
-            "12all/{sample}.all.bam"
-        shell:
-            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
-            I={input.a} \
-            I={input.b} \
-            I={input.c} \
-            O={output} \
-            SORT_ORDER=coordinate \
-            ASSUME_SORTED=true \
-            MERGE_SEQUENCE_DICTIONARIES=true \
-            USE_THREADING=true"
+# STEP 21 - FOOTPRINT SATURATION analysis
+# must use a few, include CTCF, CDX2, etc
 
-#######################################################################################################
-#### STEP 18 - INDEX MERGED ####
-################################
-rule index_merged:
-        input:
-            "12all/{sample}.all.bam"
-        output:
-            "12all/{sample}.all.bai"
-        shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
-            I={input} \
-            O={output}"
 
-#######################################################################################################
-#### STEP 17 - FOOTPRINTS ####
-##############################
 
-rule generate_coad_mr_footprints:
+
+
+############################################################################################
+rule makefp_by_chr:
     input:
-        "12all/{sample}.all.bam",
-        "12all/{sample}.all.bai",
-        "/home/ubuntu1/atac/coad_sites/{gene}.sites.Rdata"
+        "ls1034/wt01/bam/{sample}.all.bam",
+        "ls1034/wt01/bam/{sample}.all.bai",
+        "sites/{gene}.sites.Rdata"
     output:
-        "coad_footprints/{sample}.{gene}.done.txt"
+        "ls1034/wt01/temp/{sample}.{gene}.{chr}.done.txt"
     script:
-        "scripts/snake_FP_COADMR_WG.R"
-#######################################################################################################
+        "ls1034/wt01/scripts/snakeMakeFPbyChr.R"
 
-## Generate footprints for different TFs
-rule group1:
-        input:
-            "fp/SNU61-WT-01-S3_S1.TFAP2A.Rdata",
-            "fp/SNU61-WT-01-S3_S1.NFIL3.Rdata",
-            "fp/SNU61-WT-01-S3_S1.HLF.Rdata",
-            "fp/SNU61-WT-01-S3_S1.NHLH1.Rdata",
-            "fp/SNU61-WT-01-S3_S1.MAX.Rdata",
-            "fp/SNU61-WT-01-S3_S1.USF1.Rdata",
-            "fp/SNU61-WT-01-S3_S1.CEBPA.Rdata",
-            "fp/SNU61-WT-01-S3_S1.EBF1.Rdata",
-            "fp/SNU61-WT-01-S3_S1.CEBPB.Rdata",
-            "fp/SNU61-WT-01-S3_S1.FOS.Rdata",
-            "fp/SNU61-WT-01-S3_S1.FOSL1.Rdata",
-            "fp/SNU61-WT-01-S3_S1.FOSL2.Rdata",
-            "fp/SNU61-WT-01-S3_S1.JUN.Rdata",
-            "fp/SNU61-WT-01-S3_S1.JUNB.Rdata",
-            "fp/SNU61-WT-01-S3_S1.JUND.Rdata",
-            "fp/SNU61-WT-01-S3_S1.MAFF.Rdata",
-            "fp/SNU61-WT-01-S3_S1.MAFK.Rdata",
-            "fp/SNU61-WT-01-S3_S1.TFAP2C.Rdata",
-            "fp/SNU61-WT-01-S3_S1.USF2.Rdata",
-            "fp/SNU61-WT-01-S3_S1.SREBF1.Rdata"
+rule merge_chr:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "ls1034/wt01/temp/{sample}.{gene}.chr1.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr2.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr3.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr4.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr5.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr6.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr7.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr8.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr9.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr10.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr11.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr12.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr13.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr14.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr15.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr16.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr17.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr18.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr19.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr20.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr21.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chr22.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chrX.done.txt",
+        "ls1034/wt01/temp/{sample}.{gene}.chrY.done.txt"
+    output:
+        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt"
+    script:
+        "ls1034/wt01/scripts/snakeMergeFPbyChr.R"
 
-####################################################################################
+rule make_graphs:
+    input:
+        "ls1034/wt01/bam/{sample}.all.bam",
+        "ls1034/wt01/bam/{sample}.all.bai",
+        "sites/{gene}.sites.Rdata",
+        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt"
+    output:
+        "ls1034/wt01/graphs/{sample}.{gene}.graphs.done.txt"
+    script:
+        "ls1034/wt01/scripts/snakeGenerateMergedFPGraph.R"
 
-###################################################################################################################
-#### STEP 1 - Get FOOTPRINT with R ####
-#####################################
-rule make_fp:
-        input:
-            "bam/{sample}.u.bam",
-            "bam/{sample}.u.bai"
-        output:
-            "fp/{sample}.{gene}.Rdata"
-        script:
-            "scripts/snake_FP.R"
-##################################################################################################################
+rule parse_footprints:
+    input:
+        "ls1034/wt01/bam/{sample}.all.bam",
+        "ls1034/wt01/bam/{sample}.all.bai",
+        "sites/{gene}.sites.Rdata",
+        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt",
+        "ls1034/wt01/peaks/{sample}_peaks.narrowPeak"
+    output:
+        "ls1034/wt01/parsed/{sample}.{gene}.parsed.done.txt"
+    script:
+        "ls1034/wt01/scripts/snakeParseFP.R"
+######################################################################
+rule callpeaks:
+    input:
+        "ls1034/wt01/bam/{sample}.all.bam"
+    output:
+        "ls1034/wt01/peaks/{sample}.peaks.xls"
+    shell:
+        "macs2 callpeak -t {input} -n {wildcards.sample} --outdir ls1034/wt01/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
