@@ -5,49 +5,55 @@
 ## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
 rule snu61_bai:
         input:
-            "snu61/wt01/preprocessing/10unique/test.u.bai"
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP1.u.bai",
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP2.u.bai",
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP3.u.bai"
 
-##
 rule snu61_downsample:
         input:
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.09.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.08.bam"
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.09.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.08.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.07.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.06.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.05.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.04.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.03.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.02.md.bam",
+            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.01.md.bam"
 
 
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
-## For specific TFs with larger memory requirements
 ## This method will generate the footprint signals by chromosome and then merge the results
 ## Can be safely run with 10 provided cores on server without exceeding 100 gb mem
 rule snu61_coad_footprints:
         input:
-            "ls1034/wt01/graphs/LS1034-WT-01.ASCL2.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.ESRRA.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.TCF7.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.POU5F1B.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.HNF4A.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.OVOL1.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.GMEB2.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.CBFA2T2.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.HOXA3.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.MNX1.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.ZSWIM1.graphs.done.txt",
-            "ls1034/wt01/graphs/LS1034-WT-01.CDX2.graphs.done.txt"
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt"
 
-rule snu61_parsed_footprints:
+rule snu61_parsed_coad_footprints:
     input:
-        "ls1034/wt01/parsed/LS1034-WT-01.ASCL2.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.ESRRA.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.TCF7.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.POU5F1B.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.HNF4A.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.OVOL1.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.GMEB2.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.CBFA2T2.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.HOXA3.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.MNX1.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.ZSWIM1.parsed.done.txt",
-        "ls1034/wt01/parsed/LS1034-WT-01.CDX2.parsed.done.txt"
-
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.TCF7.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.POU5F1B.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.HNF4A.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.OVOL1.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.GMEB2.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.CBFA2T2.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.HOXA3.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
+        "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
 
 
 ## Generate peak calling FILES
@@ -56,92 +62,17 @@ rule peaks:
             "11peaks/LS1034-WT-01-S1_S5_peaks.xls",
             "11peaks/LS1034-WT-01-S2_S3_peaks.xls",
             "11peaks/LS1034-WT-01-S3_S2_peaks.xls"
-## Run the mycoplasma alignment test
-rule myco:
-        input:
-            "4myco/LS1034-WT-01-S1_S5_L1.myco.sam",
-            "4myco/LS1034-WT-01-S1_S5_L2.myco.sam",
-            "4myco/LS1034-WT-01-S1_S5_L3.myco.sam",
-            "4myco/LS1034-WT-01-S1_S5_L4.myco.sam",
-            #
-            "4myco/LS1034-WT-01-S2_S3_L1.myco.sam",
-            "4myco/LS1034-WT-01-S2_S3_L2.myco.sam",
-            "4myco/LS1034-WT-01-S2_S3_L3.myco.sam",
-            "4myco/LS1034-WT-01-S2_S3_L4.myco.sam",
-            #
-            "4myco/LS1034-WT-01-S3_S2_L1.myco.sam",
-            "4myco/LS1034-WT-01-S3_S2_L2.myco.sam",
-            "4myco/LS1034-WT-01-S3_S2_L3.myco.sam",
-            "4myco/LS1034-WT-01-S3_S2_L4.myco.sam"
+
 ## Run pairwise correlation test spearman model
 rule corr_spearman:
         input:
             "QC/LS1034-WT-01_spearman_corrTest"
+
 ## Make heatmaps
 rule corr_heatmap:
         input:
             "QC/LS1034-WT-01_spearman_heatmap.svg"
-## Perform sequencing saturation analysis
-rule sat_frags:
-        input:
-            "sat/LS1034-WT-01-S1_S5.9.bam",
-            "sat/LS1034-WT-01-S2_S3.9.bam",
-            "sat/LS1034-WT-01-S3_S2.9.bam",
-            "sat/LS1034-WT-01-S1_S5.8.bam",
-            "sat/LS1034-WT-01-S2_S3.8.bam",
-            "sat/LS1034-WT-01-S3_S2.8.bam",
-            "sat/LS1034-WT-01-S1_S5.7.bam",
-            "sat/LS1034-WT-01-S2_S3.7.bam",
-            "sat/LS1034-WT-01-S3_S2.7.bam",
-            "sat/LS1034-WT-01-S1_S5.6.bam",
-            "sat/LS1034-WT-01-S2_S3.6.bam",
-            "sat/LS1034-WT-01-S3_S2.6.bam",
-            "sat/LS1034-WT-01-S1_S5.5.bam",
-            "sat/LS1034-WT-01-S2_S3.5.bam",
-            "sat/LS1034-WT-01-S3_S2.5.bam",
-            "sat/LS1034-WT-01-S1_S5.4.bam",
-            "sat/LS1034-WT-01-S2_S3.4.bam",
-            "sat/LS1034-WT-01-S3_S2.4.bam",
-            "sat/LS1034-WT-01-S1_S5.3.bam",
-            "sat/LS1034-WT-01-S2_S3.3.bam",
-            "sat/LS1034-WT-01-S3_S2.3.bam",
-            "sat/LS1034-WT-01-S1_S5.2.bam",
-            "sat/LS1034-WT-01-S2_S3.2.bam",
-            "sat/LS1034-WT-01-S3_S2.2.bam",
-            "sat/LS1034-WT-01-S1_S5.1.bam",
-            "sat/LS1034-WT-01-S2_S3.1.bam",
-            "sat/LS1034-WT-01-S3_S2.1.bam"
-##
-rule sat_frags_sort:
-        input:
-            "sat/LS1034-WT-01-S1_S5.9.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.9.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.9.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.8.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.8.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.8.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.7.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.7.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.7.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.6.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.6.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.6.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.5.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.5.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.5.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.4.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.4.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.4.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.3.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.3.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.3.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.2.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.2.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.2.cs.bam",
-            "sat/LS1034-WT-01-S1_S5.1.cs.bam",
-            "sat/LS1034-WT-01-S2_S3.1.cs.bam",
-            "sat/LS1034-WT-01-S3_S2.1.cs.bam"
-##
+
 rule sat_frags_duplicate:
         input:
             "sat/LS1034-WT-01-S1_S5.9.md.bam",
@@ -172,35 +103,7 @@ rule sat_frags_duplicate:
             "sat/LS1034-WT-01-S2_S3.1.md.bam",
             "sat/LS1034-WT-01-S3_S2.1.md.bam"
 ##
-rule sat_peaks:
-    input:
-        "peaksat/LS1034-WT-01-S1_S5.9_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.9_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.9_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.8_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.8_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.8_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.7_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.7_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.7_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.6_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.6_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.6_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.5_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.5_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.5_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.4_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.4_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.4_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.3_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.3_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.3_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.2_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.2_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.2_peaks.xls",
-        "peaksat/LS1034-WT-01-S1_S5.1_peaks.xls",
-        "peaksat/LS1034-WT-01-S2_S3.1_peaks.xls",
-        "peaksat/LS1034-WT-01-S3_S2.1_peaks.xls"
+
 
 ####################################################################################################################################################################
 ################################ Preprocessing Rules ###############################################################################################################
@@ -226,7 +129,7 @@ rule afterqc_qc:
             c="{path}3goodfastq/{sample}_R1.good.fq",
             d="{path}3goodfastq/{sample}_R2.good.fq"
         shell:
-            "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b 3goodfastq -s 15"
+            "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b {wildcards.path}3goodfastq -s 15"
 
 # STEP 3 - ALIGN TO MYCO WITH BOWTIE2
 rule myco_align:
@@ -333,7 +236,7 @@ rule purge_duplicates:
             a="{path}9dedup/{sample}.dp.bam",
             b="{path}9dedup/{sample}.metrics.txt"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
@@ -371,12 +274,12 @@ rule build_index:
 # STEP 12 - MERGE REPLICATES
 rule merge_replicates:
         input:
-            a="{path}10unique/{sample}-{rep1}.u.bam",
-            b="{path}10unique/{sample}-{rep2}.u.bam",
-            c="{path}10unique/{sample}-{rep3}.u.bam",
-            d="{path}10unique/{sample}-{rep1}.u.bai",
-            e="{path}10unique/{sample}-{rep2}.u.bai",
-            f="{path}10unique/{sample}-{rep3}.u.bai"
+            a="{path}10unique/{sample}-REP1.u.bam",
+            b="{path}10unique/{sample}-REP2.u.bam",
+            c="{path}10unique/{sample}-REP3.u.bam",
+            d="{path}10unique/{sample}-REP1.u.bai",
+            e="{path}10unique/{sample}-REP2.u.bai",
+            f="{path}10unique/{sample}-REP3.u.bai"
         output:
             "{path}12all/{sample}.all.bam"
         shell:
@@ -446,9 +349,9 @@ rule peaks_macs2_ind:
 rule peaks_macs2_merged:
         input:
             a="{path}12all/{sample}.all.bam",
-            b="{path}11peaks/{sample}-{rep1}.peaks.xls",
-            c="{path}11peaks/{sample}-{rep2}.peaks.xls",
-            d="{path}11peaks/{sample}-{rep3}.peaks.xls"
+            b="{path}11peaks/{sample}-REP1.peaks.xls",
+            c="{path}11peaks/{sample}-REP2.peaks.xls",
+            d="{path}11peaks/{sample}-REP3.peaks.xls"
         output:
             "{path}11peaks/{sample}.all.peaks.xls"
         shell:
@@ -457,9 +360,9 @@ rule peaks_macs2_merged:
 # STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
-            a="{path}10unique/{sample}-{rep1}.u.bam",
-            b="{path}10unique/{sample}-{rep2}.u.bam",
-            c="{path}10unique/{sample}-{rep3}.u.bam",
+            a="{path}10unique/{sample}-REP1.u.bam",
+            b="{path}10unique/{sample}-REP2.u.bam",
+            c="{path}10unique/{sample}-REP3.u.bam",
             d="{path}11peaks/{sample}.all.peaks.xls"
         output:
             "{path}13qcplots/{sample}.spearman.corrTest"
@@ -480,7 +383,7 @@ rule downsample_bam:
         input:
             "{path}8merged/{sample}.m.bam"
         output:
-            "{path}13downsample/{sample}.{prob}.bam"
+            "{path}14downsample/{sample}.{prob}.bam"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
              I={input} \
@@ -490,9 +393,9 @@ rule downsample_bam:
 # STEP 18 - COORDINATE SORT DOWNSAMPLED
 rule sort_downsampled:
         input:
-            "{path}13downsample/{sample}.{prob}.bam"
+            "{path}14downsample/{sample}.{prob}.bam"
         output:
-            "{path}13downsample/{sample}.{prob}.cs.bam"
+            "{path}14downsample/{sample}.{prob}.cs.bam"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
              I={input} \
@@ -502,9 +405,9 @@ rule sort_downsampled:
 # STEP 19 - MARK DUPLICATES DOWNSAMPLED AND LIBRARY COMPLEXITY SATURATION ANALYSIS
 rule markdup_downsampled:
         input:
-            "{path}13downsample/{sample}.{prob}.cs.bam"
+            "{path}14downsample/{sample}.{prob}.cs.bam"
         output:
-            "{path}13downsample/{sample}.{prob}.md.bam"
+            "{path}14downsample/complexity/{sample}.{prob}.md.bam"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
@@ -512,17 +415,23 @@ rule markdup_downsampled:
              M={wildcards.sample}.{wildcards.prob}.dupmetrics.txt"
 
 # STEP 20 - PEAK SATURATION ANALYSIS
-rule peak_sat_macs2:
+rule peak_saturation_macs2:
         input:
-            "{path}13downsample/{sample}.{prob}.cs.bam"
+            "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
         output:
-            "{path}13downsample/{sample}.{prob}_peaks.xls"
+            "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
         shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}13downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 # STEP 21 - FOOTPRINT SATURATION analysis
 # must use a few, include CTCF, CDX2, etc
-
+rule footprint_saturation:
+        input:
+            "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
+        output:
+            "{path}14downsample/footprints/{sample}.{prob}.peaks.xls"
+        shell:
+            "scripts/snakeFootprintSaturation.R"
 
 ####################################################################################################################################################################
 ################################ Footprint Analysis Rules ##########################################################################################################
