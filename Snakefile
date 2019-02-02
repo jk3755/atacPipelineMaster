@@ -31,8 +31,7 @@ rule snu61_downsample:
 
 rule snu61_footprint_ctcf_downsampled:
         input:
-            "snu61/wt01/preprocessing/14downsample/temp/SNU61-WT-01.CTCF.09.done.txt""
-
+            "snu61/wt01/preprocessing/14downsample/temp/SNU61-WT-01.CTCF.09.done.txt"
 
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
 ## This method will generate the footprint signals by chromosome and then merge the results
@@ -66,14 +65,6 @@ rule snu61_parsed_coad_footprints:
         "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
         "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
         "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
-
-
-## Generate peak calling FILES
-rule peaks:
-        input:
-            "11peaks/LS1034-WT-01-S1_S5_peaks.xls",
-            "11peaks/LS1034-WT-01-S2_S3_peaks.xls",
-            "11peaks/LS1034-WT-01-S3_S2_peaks.xls"
 
 ## Run pairwise correlation test spearman model
 rule corr_spearman:
@@ -268,7 +259,7 @@ rule build_index:
         output:
             "{path}10unique/{sample}.u.bai"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 12 - MERGE REPLICATES
@@ -325,7 +316,7 @@ rule peaks_macs2_ind:
         output:
             "{path}11peaks/{sample}-{REP}.peaks.xls"
         shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 # STEP 14 - MERGED CALL PEAKS WITH MACS2
 ## notes:
 # because we are going to use the TCGA data downstream likely as a reference point,
@@ -417,8 +408,8 @@ rule index_downsampled:
             "{path}14downsample/complexity/{sample}.{prob}.cs.bai"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
-             I={input} \
-             O={output}
+            I={input} \
+            O={output}"
 
 # STEP 21 - PEAK SATURATION ANALYSIS
 rule peak_saturation_macs2:
