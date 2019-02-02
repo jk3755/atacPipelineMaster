@@ -9,6 +9,14 @@ rule snu61_bai:
             "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP2.u.bai",
             "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP3.u.bai"
 
+rule snu61_bai_all:
+        input:
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01.all.bai"
+
+rule snu61_peaks_all:
+        input:
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01.all.peaks.xls"
+
 rule snu61_downsample:
         input:
             "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.09.md.bam",
@@ -112,7 +120,6 @@ rule sat_frags_duplicate:
 ####################################################################################################################################################################
 ################################ Preprocessing Rules ###############################################################################################################
 ####################################################################################################################################################################
-
 # STEP 1 - GUNZIP FASTQ FILES
 # params: -k keep original files, -c write to standard output
 rule gunzip_namechange:
@@ -122,7 +129,6 @@ rule gunzip_namechange:
             "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
         shell:
             "gunzip -k -c {input} > {output}"
-
 # STEP 2 - FASTQ QUALITY FILTERING WITH AFTERQC
 # param -s is the shortest trimmed read length allowed past QC filter
 rule afterqc_qc:
@@ -134,7 +140,6 @@ rule afterqc_qc:
             d="{path}3goodfastq/{sample}_R2.good.fq"
         shell:
             "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b {wildcards.path}3goodfastq -s 15"
-
 # STEP 3 - ALIGN TO MYCO WITH BOWTIE2
 rule myco_align:
         input:
@@ -144,7 +149,6 @@ rule myco_align:
             "{path}4mycoalign/{sample}.myco.sam"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
-
 # STEP 4 - ALIGN TO HG38 WITH BOWTIE2
 ## params:
 # -q fastq input
@@ -161,7 +165,6 @@ rule hg38_align:
             "{path}5hg38align/{sample}.hg38.sam"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
-
 # STEP 5 - CONVERT SAM TO BAM
 ## params:
 # -Xmx50g set java mem limit to 50 gb
@@ -174,7 +177,6 @@ rule sam_to_bam:
             "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
-
 # STEP 6
 # note - proper specification of RG tags is critical
 # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
@@ -199,7 +201,6 @@ rule add_rg_and_cs_bam:
             RGPL=ILLUMINA \
             RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
             RGSM={wildcards.sample}"
-
 # STEP 7 - CLEAN BAM FILES
 rule clean_bam:
         input:
@@ -210,7 +211,6 @@ rule clean_bam:
             "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
-
 # STEP 8 - MERGE LANES
 rule merge_lanes:
         input:
@@ -231,7 +231,6 @@ rule merge_lanes:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-
 # STEP 9 - PURGE PCR DUPLICATES
 rule purge_duplicates:
         input:
@@ -246,7 +245,6 @@ rule purge_duplicates:
             M={output.b} \
             REMOVE_DUPLICATES=true \
             ASSUME_SORTED=true"
-
 # STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
 ## Notes:
 # for an explanation of how bowtie2 calculates mapq scores:
@@ -263,7 +261,6 @@ rule mapq_filter:
             a="{path}10unique/{sample}.u.bam",
         shell:
             "samtools view -h -q 2 -b {input} > {output}"
-
 # STEP 11 - BUILD AN INDEX OF THE FINAL BAM FILES
 rule build_index:
         input:
@@ -274,7 +271,6 @@ rule build_index:
             "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-
 # STEP 12 - MERGE REPLICATES
 rule merge_replicates:
         input:
@@ -296,7 +292,6 @@ rule merge_replicates:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-
 # STEP 13 - INDEX BAM MERGED REPLICATES
 rule index_merged:
         input:
@@ -307,7 +302,6 @@ rule index_merged:
             "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-
 # STEP 14 - IND CALL PEAKS WITH MACS2
 ## notes:
 # because we are going to use the TCGA data downstream likely as a reference point,
@@ -327,12 +321,11 @@ rule index_merged:
 # -p set the p-value cutoff for peak calling
 rule peaks_macs2_ind:
         input:
-            "{path}10unique/{sample}.u.bam"
+            "{path}10unique/{sample}-{REP}.u.bam"
         output:
-            "{path}11peaks/{sample}.peaks.xls"
+            "{path}11peaks/{sample}-{REP}.peaks.xls"
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
 # STEP 14 - MERGED CALL PEAKS WITH MACS2
 ## notes:
 # because we are going to use the TCGA data downstream likely as a reference point,
@@ -360,7 +353,6 @@ rule peaks_macs2_merged:
             "{path}11peaks/{sample}.all.peaks.xls"
         shell:
             "macs2 callpeak -t {input.a} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
 # STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
@@ -372,7 +364,6 @@ rule plot_corr_spearman:
             "{path}13qcplots/{sample}.spearman.corrTest"
         shell:
             "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
-
 # STEP 16 - MAKE CORRELATION HEATMAP
 rule make_corr_heatmap:
         input:
@@ -508,7 +499,7 @@ rule footprint_saturation:
             "{path}14downsample/complexity/{sample}.01.cs.bam",
             "{path}14downsample/complexity/{sample}.01.cs.bai"
         output:
-            "{path}14downsample/footprints/{sample}.done.txt"
+            "{path}14downsample/footprints/{sample}.{gene}.done.txt"
         shell:
             "scripts/snakeFootprintSaturation.R"
 
