@@ -11,15 +11,19 @@ rule snu61_bai:
 
 rule snu61_downsample:
         input:
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.09.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.08.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.07.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.06.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.05.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.04.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.03.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.02.md.bam",
-            "snu61/wt01/preprocessing/13downsample/SNU61-WT-01.01.md.bam"
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.09.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.08.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.07.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.06.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.05.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.04.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.03.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.02.md.bam",
+            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.01.md.bam"
+
+rule snu61_footprint_ctcf_downsampled:
+        input:
+            "snu61/wt01/preprocessing/14downsample/temp/SNU61-WT-01.CTCF.09.done.txt""
 
 
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
@@ -414,7 +418,18 @@ rule markdup_downsampled:
              O={output} \
              M={wildcards.sample}.{wildcards.prob}.dupmetrics.txt"
 
-# STEP 20 - PEAK SATURATION ANALYSIS
+# STEP 20 - INDEX DUPLICATE PURGED DOWNSAMPLES BAM
+rule index_downsampled:
+        input:
+            "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
+        output:
+            "{path}14downsample/complexity/{sample}.{prob}.cs.bai"
+        shell:
+            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+             I={input} \
+             O={output}
+
+# STEP 21 - PEAK SATURATION ANALYSIS
 rule peak_saturation_macs2:
         input:
             "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
@@ -423,19 +438,80 @@ rule peak_saturation_macs2:
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# STEP 21 - FOOTPRINT SATURATION analysis
-# must use a few, include CTCF, CDX2, etc
-rule footprint_saturation:
-        input:
-            "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
-        output:
-            "{path}14downsample/footprints/{sample}.{prob}.peaks.xls"
-        shell:
-            "scripts/snakeFootprintSaturation.R"
+
 
 ####################################################################################################################################################################
 ################################ Footprint Analysis Rules ##########################################################################################################
 ####################################################################################################################################################################
+rule makefp_by_chr_downsampled:
+    input:
+        "{path}complexity/{sample}.{prob}.cs.bam",
+        "{path}complexity/{sample}.{prob}.cs.bai",
+        "sites/{gene}.sites.Rdata"
+    output:
+        "{path}footprints/temp/{sample}.{gene}.{prob}.{chr}.done.txt"
+    script:
+        "scripts/snakeMakeFPbyChrDownsampled.R"
+
+rule merge_chr_downsampled:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}temp/{sample}.{gene}.{prob}.chr1.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr2.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr3.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr4.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr5.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr6.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr7.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr8.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr9.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr10.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr11.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr12.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr13.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr14.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr15.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr16.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr17.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr18.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr19.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr20.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr21.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr22.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chrX.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chrY.done.txt"
+    output:
+        "{path}merged/{sample}.{gene}.{prob}.merged.done.txt"
+    script:
+        "scripts/snakeMergeFPbyChrDownsampled.R"
+
+# STEP 21 - FOOTPRINT SATURATION analysis
+# must use a few, include CTCF, CDX2, etc
+rule footprint_saturation:
+        input:
+            "{path}14downsample/complexity/{sample}.09.cs.bam",
+            "{path}14downsample/complexity/{sample}.09.cs.bai",
+            "{path}14downsample/complexity/{sample}.08.cs.bam",
+            "{path}14downsample/complexity/{sample}.08.cs.bai",
+            "{path}14downsample/complexity/{sample}.07.cs.bam",
+            "{path}14downsample/complexity/{sample}.07.cs.bai",
+            "{path}14downsample/complexity/{sample}.06.cs.bam",
+            "{path}14downsample/complexity/{sample}.06.cs.bai",
+            "{path}14downsample/complexity/{sample}.05.cs.bam",
+            "{path}14downsample/complexity/{sample}.05.cs.bai",
+            "{path}14downsample/complexity/{sample}.04.cs.bam",
+            "{path}14downsample/complexity/{sample}.04.cs.bai",
+            "{path}14downsample/complexity/{sample}.03.cs.bam",
+            "{path}14downsample/complexity/{sample}.03.cs.bai",
+            "{path}14downsample/complexity/{sample}.02.cs.bam",
+            "{path}14downsample/complexity/{sample}.02.cs.bai",
+            "{path}14downsample/complexity/{sample}.01.cs.bam",
+            "{path}14downsample/complexity/{sample}.01.cs.bai"
+        output:
+            "{path}14downsample/footprints/{sample}.done.txt"
+        shell:
+            "scripts/snakeFootprintSaturation.R"
+
 rule makefp_by_chr:
     input:
         "{path}bam/{sample}.all.bam",
