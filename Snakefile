@@ -15,7 +15,7 @@ rule snu61_bai_all:
 
 rule snu61_peaks_all:
         input:
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01.all.peaks.xls"
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01.all_peaks.xls"
 
 rule snu61_downsample:
         input:
@@ -337,20 +337,20 @@ rule peaks_macs2_ind:
 rule peaks_macs2_merged:
         input:
             a="{path}12all/{sample}.all.bam",
-            b="{path}11peaks/{sample}-REP1.peaks.xls",
-            c="{path}11peaks/{sample}-REP2.peaks.xls",
-            d="{path}11peaks/{sample}-REP3.peaks.xls"
+            b="{path}11peaks/{sample}-REP1_peaks.xls",
+            c="{path}11peaks/{sample}-REP2_peaks.xls",
+            d="{path}11peaks/{sample}-REP3_peaks.xls"
         output:
             "{path}11peaks/{sample}.all.peaks.xls"
         shell:
-            "macs2 callpeak -t {input.a} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 # STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
             c="{path}10unique/{sample}-REP3.u.bam",
-            d="{path}11peaks/{sample}.all.peaks.xls"
+            d="{path}11peaks/{sample}.all_peaks.xls"
         output:
             "{path}13qcplots/{sample}.spearman.corrTest"
         shell:
