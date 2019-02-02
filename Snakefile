@@ -5,7 +5,7 @@
 ## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
 rule snu61_bai:
         input:
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-S3_S1.u.bai"
+            "snu61/wt01/preprocessing/10unique/test.u.bai"
 
 ##
 rule snu61_downsample:
@@ -203,7 +203,7 @@ rule sat_peaks:
         "peaksat/LS1034-WT-01-S3_S2.1_peaks.xls"
 
 ####################################################################################################################################################################
-################################ Processing Rules ##################################################################################################################
+################################ Preprocessing Rules ###############################################################################################################
 ####################################################################################################################################################################
 
 # STEP 1 - GUNZIP FASTQ FILES
@@ -236,7 +236,7 @@ rule myco_align:
         output:
             "{path}4mycoalign/{sample}.myco.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} > {wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 
 # STEP 4 - ALIGN TO HG38 WITH BOWTIE2
 ## params:
@@ -248,11 +248,12 @@ rule myco_align:
 rule hg38_align:
         input:
             a="{path}3goodfastq/{sample}_R1.good.fq",
-            b="{path}3goodfastq/{sample}_R2.good.fq"
+            b="{path}3goodfastq/{sample}_R2.good.fq",
+            c="{path}4mycoalign/{sample}.myco.sam"
         output:
             "{path}5hg38align/{sample}.hg38.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} > {wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 
 # STEP 5 - CONVERT SAM TO BAM
 ## params:
@@ -372,7 +373,10 @@ rule merge_replicates:
         input:
             a="{path}10unique/{sample}-{rep1}.u.bam",
             b="{path}10unique/{sample}-{rep2}.u.bam",
-            c="{path}10unique/{sample}-{rep3}.u.bam"
+            c="{path}10unique/{sample}-{rep3}.u.bam",
+            d="{path}10unique/{sample}-{rep1}.u.bai",
+            e="{path}10unique/{sample}-{rep2}.u.bai",
+            f="{path}10unique/{sample}-{rep3}.u.bai"
         output:
             "{path}12all/{sample}.all.bam"
         shell:
@@ -397,7 +401,7 @@ rule index_merged:
             I={input} \
             O={output}"
 
-# STEP 14 - CALL PEAKS WITH MACS2
+# STEP 14 - IND CALL PEAKS WITH MACS2
 ## notes:
 # because we are going to use the TCGA data downstream likely as a reference point,
 # we will need to call the peaks in the exact same way as they did in this paper:
@@ -414,7 +418,7 @@ rule index_merged:
 # --nolambda do not use local bias correction, use background nolambda
 # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
 # -p set the p-value cutoff for peak calling
-rule peaks_macs2:
+rule peaks_macs2_ind:
         input:
             "{path}10unique/{sample}.u.bam"
         output:
@@ -422,23 +426,52 @@ rule peaks_macs2:
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
+# STEP 14 - MERGED CALL PEAKS WITH MACS2
+## notes:
+# because we are going to use the TCGA data downstream likely as a reference point,
+# we will need to call the peaks in the exact same way as they did in this paper:
+# http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+# which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+## params:
+# -t input bam file (treatment)
+# -n base name for output files
+# --outdir output directory
+# --shift find all tags in the bam, and shift them by 75 bp
+# --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+# --nomodel do not use the macs2 function to determine shifting model
+# --call-summits call the peak summits, detect subpeaks within a peaks
+# --nolambda do not use local bias correction, use background nolambda
+# --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+# -p set the p-value cutoff for peak calling
+rule peaks_macs2_merged:
+        input:
+            a="{path}12all/{sample}.all.bam",
+            b="{path}11peaks/{sample}-{rep1}.peaks.xls",
+            c="{path}11peaks/{sample}-{rep2}.peaks.xls",
+            d="{path}11peaks/{sample}-{rep3}.peaks.xls"
+        output:
+            "{path}11peaks/{sample}.all.peaks.xls"
+        shell:
+            "macs2 callpeak -t {input.a} -n {wildcards.sample} --outdir 11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
 # STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
             a="{path}10unique/{sample}-{rep1}.u.bam",
             b="{path}10unique/{sample}-{rep2}.u.bam",
             c="{path}10unique/{sample}-{rep3}.u.bam",
+            d="{path}11peaks/{sample}.all.peaks.xls"
         output:
-            "{path}12qcplots/{sample}.spearman.corrTest"
+            "{path}13qcplots/{sample}.spearman.corrTest"
         shell:
             "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
 
 # STEP 16 - MAKE CORRELATION HEATMAP
 rule make_corr_heatmap:
         input:
-            "{path}12qcplots/{sample}.spearman.corrTest"
+            "{path}13qcplots/{sample}.spearman.corrTest"
         output:
-            "{path}12qcplots/{sample}.spearman.heatmap.svg"
+            "{path}13qcplots/{sample}.spearman.heatmap.svg"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
 
@@ -491,62 +524,61 @@ rule peak_sat_macs2:
 # must use a few, include CTCF, CDX2, etc
 
 
-
-
-
-############################################################################################
+####################################################################################################################################################################
+################################ Footprint Analysis Rules ##########################################################################################################
+####################################################################################################################################################################
 rule makefp_by_chr:
     input:
-        "ls1034/wt01/bam/{sample}.all.bam",
-        "ls1034/wt01/bam/{sample}.all.bai",
+        "{path}bam/{sample}.all.bam",
+        "{path}bam/{sample}.all.bai",
         "sites/{gene}.sites.Rdata"
     output:
-        "ls1034/wt01/temp/{sample}.{gene}.{chr}.done.txt"
+        "{path}footprints/{sample}.{gene}.{chr}.done.txt"
     script:
-        "ls1034/wt01/scripts/snakeMakeFPbyChr.R"
+        "scripts/snakeMakeFPbyChr.R"
 
 rule merge_chr:
     input:
         "sites/{gene}.sites.Rdata",
-        "ls1034/wt01/temp/{sample}.{gene}.chr1.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr2.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr3.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr4.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr5.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr6.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr7.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr8.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr9.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr10.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr11.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr12.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr13.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr14.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr15.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr16.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr17.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr18.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr19.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr20.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr21.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chr22.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chrX.done.txt",
-        "ls1034/wt01/temp/{sample}.{gene}.chrY.done.txt"
+        "{path}footprints/temp/{sample}.{gene}.chr1.done.txt",
+        "{path}footprints/temp/{sample}.{gene}.chr2.done.txt",
+        "{path}footprints/temp/{sample}.{gene}.chr3.done.txt",
+        "{path}footprints/temp/{sample}.{gene}.chr4.done.txt",
+        "{path}footprints/temp/{sample}.{gene}.chr5.done.txt",
+        "{path}footprints/temp/{sample}.{gene}.chr6.done.txt",
+        "{path}footprints/temp/{sample}.{gene}.chr7.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr8.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr9.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr10.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr11.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr12.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr13.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr14.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr15.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr16.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr17.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr18.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr19.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr20.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr21.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chr22.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chrX.done.txt",
+        "{path}footprints/temp{sample}.{gene}.chrY.done.txt"
     output:
-        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt"
+        "{path}footprints/merged/{sample}.{gene}.merged.done.txt"
     script:
-        "ls1034/wt01/scripts/snakeMergeFPbyChr.R"
+        "scripts/snakeMergeFPbyChr.R"
 
 rule make_graphs:
     input:
-        "ls1034/wt01/bam/{sample}.all.bam",
-        "ls1034/wt01/bam/{sample}.all.bai",
+        "{path}preprocessing/12all/{sample}.all.bam",
+        "{path}preprocessing/12all/{sample}.all.bai",
         "sites/{gene}.sites.Rdata",
-        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt"
+        "{path}footprints/merged/{sample}.{gene}.merged.done.txt"
     output:
-        "ls1034/wt01/graphs/{sample}.{gene}.graphs.done.txt"
+        "{path}footprints/graphs/{sample}.{gene}.graphs.done.txt"
     script:
-        "ls1034/wt01/scripts/snakeGenerateMergedFPGraph.R"
+        "scripts/snakeGenerateMergedFPGraph.R"
 
 rule parse_footprints:
     input:
@@ -559,11 +591,3 @@ rule parse_footprints:
         "ls1034/wt01/parsed/{sample}.{gene}.parsed.done.txt"
     script:
         "ls1034/wt01/scripts/snakeParseFP.R"
-######################################################################
-rule callpeaks:
-    input:
-        "ls1034/wt01/bam/{sample}.all.bam"
-    output:
-        "ls1034/wt01/peaks/{sample}.peaks.xls"
-    shell:
-        "macs2 callpeak -t {input} -n {wildcards.sample} --outdir ls1034/wt01/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
