@@ -8,14 +8,21 @@ rule snu61_bai:
             "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP1.u.bai",
             "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP2.u.bai",
             "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP3.u.bai"
-
+rule snu61_peaks_ind:
+        input:
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP1_peaks.xls",
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP2_peaks.xls",
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP3_peaks.xls"
 rule snu61_bai_all:
         input:
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01.all.bai"
-
+            "snu61/wt01/preprocessing/12all/SNU61-WT-01.all.bai"
 rule snu61_peaks_all:
         input:
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01.all_peaks.xls"
+            "snu61/wt01/preprocessing/13allpeaks/SNU61-WT-01.all_peaks.xls"
+
+rule snu61_corr_heatmap:
+        input:
+            "snu61/wt01/preprocessing/14qcplots/SNU61-WT-01.spearman.heatmap.svg"
 
 rule snu61_downsample:
         input:
@@ -286,9 +293,9 @@ rule merge_replicates:
 # STEP 13 - INDEX BAM MERGED REPLICATES
 rule index_merged:
         input:
-            "{path}12all/{sample}.all.bam"
+            "{path}12all/{mergedsample}.all.bam"
         output:
-            "{path}12all/{sample}.all.bai"
+            "{path}12all/{mergedsample}.all.bai"
         shell:
             "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
@@ -314,9 +321,9 @@ rule peaks_macs2_ind:
         input:
             "{path}10unique/{sample}-{REP}.u.bam"
         output:
-            "{path}11peaks/{sample}-{REP}.peaks.xls"
+            "{path}11peaks/{sample}-{REP}_peaks.xls"
         shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 # STEP 14 - MERGED CALL PEAKS WITH MACS2
 ## notes:
 # because we are going to use the TCGA data downstream likely as a reference point,
@@ -337,30 +344,32 @@ rule peaks_macs2_ind:
 rule peaks_macs2_merged:
         input:
             a="{path}12all/{sample}.all.bam",
-            b="{path}11peaks/{sample}-REP1_peaks.xls",
-            c="{path}11peaks/{sample}-REP2_peaks.xls",
-            d="{path}11peaks/{sample}-REP3_peaks.xls"
+            b="{path}12all/{sample}.all.bai",
+            c="{path}11peaks/{sample}-REP1_peaks.xls",
+            d="{path}11peaks/{sample}-REP2_peaks.xls",
+            e="{path}11peaks/{sample}-REP3_peaks.xls"
         output:
-            "{path}11peaks/{sample}.all.peaks.xls"
+            "{path}13allpeaks/{sample}.all_peaks.xls"
         shell:
-            "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
 # STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
             c="{path}10unique/{sample}-REP3.u.bam",
-            d="{path}11peaks/{sample}.all_peaks.xls"
+            d="{path}13allpeaks/{sample}.all_peaks.xls"
         output:
-            "{path}13qcplots/{sample}.spearman.corrTest"
+            "{path}14qcplots/{sample}.spearman.corrTest"
         shell:
             "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
 # STEP 16 - MAKE CORRELATION HEATMAP
 rule make_corr_heatmap:
         input:
-            "{path}13qcplots/{sample}.spearman.corrTest"
+            "{path}14qcplots/{sample}.spearman.corrTest"
         output:
-            "{path}13qcplots/{sample}.spearman.heatmap.svg"
+            "{path}14qcplots/{sample}.spearman.heatmap.svg"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
 
