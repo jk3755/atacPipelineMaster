@@ -128,7 +128,7 @@ rule myco_align:
         output:
             "{path}4mycoalign/{sample}.myco.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 # STEP 4 - ALIGN TO HG38 WITH BOWTIE2
 ## params:
 # -q fastq input
@@ -144,7 +144,7 @@ rule hg38_align:
         output:
             "{path}5hg38align/{sample}.hg38.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 # STEP 5 - CONVERT SAM TO BAM
 ## params:
 # -Xmx50g set java mem limit to 50 gb
@@ -154,7 +154,7 @@ rule sam_to_bam:
         output:
             "{path}6rawbam/{sample}.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
 # STEP 6
@@ -172,7 +172,7 @@ rule add_rg_and_cs_bam:
         output:
             "{path}7rgsort/{sample}_L{lane}.rg.cs.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
             O={output} \
             SORT_ORDER=coordinate \
@@ -188,7 +188,7 @@ rule clean_bam:
         output:
             "{path}7rgsort/{sample}_L{lane}.clean.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
 # STEP 8 - MERGE LANES
@@ -201,7 +201,7 @@ rule merge_lanes:
         output:
             "{path}8merged/{sample}.m.bam"
         shell:
-            "java -Xmx80g -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -219,7 +219,7 @@ rule purge_duplicates:
             a="{path}9dedup/{sample}.dp.bam",
             b="{path}9dedup/{sample}.metrics.txt"
         shell:
-            "java -Xmx30g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
@@ -248,7 +248,7 @@ rule build_index:
         output:
             "{path}10unique/{sample}.u.bai"
         shell:
-            "java -Xmx30g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 12 - MERGE REPLICATES
@@ -263,7 +263,7 @@ rule merge_replicates:
         output:
             "{path}12all/{sample}.all.bam"
         shell:
-            "java -Xmx80g -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -279,7 +279,7 @@ rule index_merged:
         output:
             "{path}12all/{mergedsample}.all.bai"
         shell:
-            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 14 - IND CALL PEAKS WITH MACS2
@@ -360,7 +360,7 @@ rule downsample_bam:
         output:
             "{path}15downsample/{mergedsample}.{prob}.bam"
         shell:
-            "java -Xmx9g -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
+            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
@@ -371,7 +371,7 @@ rule sort_downsampled:
         output:
             "{path}15downsample/{mergedsample}.{prob}.cs.bam"
         shell:
-            "java -Xmx9g -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
+            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
@@ -382,7 +382,7 @@ rule markdup_downsampled:
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         shell:
-            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
@@ -395,7 +395,7 @@ rule index_downsampled:
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bai"
         shell:
-            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 21 - Generate bigwig files with deeptools/bamCoverage/bamCompate for genome browser viewing
@@ -426,7 +426,7 @@ rule saturation_makefp_by_chr:
         "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.{chr}.done.txt",
     script:
         "scripts/snakeMakeFPbyChrDownsampled.R"
-
+#
 rule saturation_merge_chr:
     input:
         "sites/{gene}.sites.Rdata",
@@ -458,7 +458,7 @@ rule saturation_merge_chr:
         "{path}preprocessing/15downsample/footprints/merged/{mergedsample}.{prob}.{gene}.merged.done.txt"
     script:
         "scripts/snakeMergeFPbyChrDownsampled.R"
-
+#
 rule saturation_make_graphs:
     input:
         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
@@ -469,7 +469,7 @@ rule saturation_make_graphs:
         "{path}preprocessing/15downsample/footprints/graphs/{mergedsample}.{prob}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraphDownsample.R"
-
+#
 rule saturation_parse_footprints:
     input:
         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
@@ -481,7 +481,75 @@ rule saturation_parse_footprints:
         "{path}preprocessing/15downsample/footprints/parsed/{mergedsample}.{prob}.{gene}.parsed.done.txt"
     script:
         "scripts/snakeParseFPDownsample.R"
-
+#
+rule makefp_by_chr_downsampled:
+    input:
+        "{path}complexity/{sample}.{prob}.cs.bam",
+        "{path}complexity/{sample}.{prob}.cs.bai",
+        "sites/{gene}.sites.Rdata"
+    output:
+        "{path}footprints/temp/{sample}.{gene}.{prob}.{chr}.done.txt"
+    script:
+        "scripts/snakeMakeFPbyChrDownsampled.R"
+#
+rule merge_chr_downsampled:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}temp/{sample}.{gene}.{prob}.chr1.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr2.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr3.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr4.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr5.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr6.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr7.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr8.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr9.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr10.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr11.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr12.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr13.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr14.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr15.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr16.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr17.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr18.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr19.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr20.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr21.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chr22.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chrX.done.txt",
+        "{path}temp/{sample}.{gene}.{prob}.chrY.done.txt"
+    output:
+        "{path}merged/{sample}.{gene}.{prob}.merged.done.txt"
+    script:
+        "scripts/snakeMergeFPbyChrDownsampled.R"
+#
+# STEP 21 - FOOTPRINT SATURATION analysis
+# must use a few, include CTCF, CDX2, etc
+rule footprint_saturation:
+        input:
+            "{path}14downsample/complexity/{sample}.09.cs.bam",
+            "{path}14downsample/complexity/{sample}.09.cs.bai",
+            "{path}14downsample/complexity/{sample}.08.cs.bam",
+            "{path}14downsample/complexity/{sample}.08.cs.bai",
+            "{path}14downsample/complexity/{sample}.07.cs.bam",
+            "{path}14downsample/complexity/{sample}.07.cs.bai",
+            "{path}14downsample/complexity/{sample}.06.cs.bam",
+            "{path}14downsample/complexity/{sample}.06.cs.bai",
+            "{path}14downsample/complexity/{sample}.05.cs.bam",
+            "{path}14downsample/complexity/{sample}.05.cs.bai",
+            "{path}14downsample/complexity/{sample}.04.cs.bam",
+            "{path}14downsample/complexity/{sample}.04.cs.bai",
+            "{path}14downsample/complexity/{sample}.03.cs.bam",
+            "{path}14downsample/complexity/{sample}.03.cs.bai",
+            "{path}14downsample/complexity/{sample}.02.cs.bam",
+            "{path}14downsample/complexity/{sample}.02.cs.bai",
+            "{path}14downsample/complexity/{sample}.01.cs.bam",
+            "{path}14downsample/complexity/{sample}.01.cs.bai"
+        output:
+            "{path}14downsample/footprints/{sample}.{gene}.done.txt"
+        shell:
+            "scripts/snakeFootprintSaturation.R"
 ####################################################################################################################################################################
 ################################ Footprint Analysis Rules ##########################################################################################################
 ####################################################################################################################################################################
@@ -526,7 +594,7 @@ rule merge_chr:
         "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
     script:
         "scripts/snakeMergeFPbyChr.R"
-
+#
 rule make_graphs:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -537,7 +605,7 @@ rule make_graphs:
         "{path}footprints/graphs/{mergedsample}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraph.R"
-
+#
 rule parse_footprints:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -549,75 +617,12 @@ rule parse_footprints:
         "{path}footprints/parsed/{mergedsample}.{gene}.parsed.done.txt"
     script:
         "scripts/snakeParseFP.R"
-
-
-
-
-rule makefp_by_chr_downsampled:
+#
+rule make_parsed_heatmaps:
     input:
-        "{path}complexity/{sample}.{prob}.cs.bam",
-        "{path}complexity/{sample}.{prob}.cs.bai",
-        "sites/{gene}.sites.Rdata"
+        "{path}footprints/parsed/{mergedsample}.{gene}.motif{motif}.info.Rdata",
     output:
-        "{path}footprints/temp/{sample}.{gene}.{prob}.{chr}.done.txt"
+        "{path}footprints/heatmaps/{mergedsample}.{gene}.motif{motif}.heatmap.svg"
     script:
-        "scripts/snakeMakeFPbyChrDownsampled.R"
-
-rule merge_chr_downsampled:
-    input:
-        "sites/{gene}.sites.Rdata",
-        "{path}temp/{sample}.{gene}.{prob}.chr1.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr2.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr3.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr4.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr5.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr6.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr7.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr8.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr9.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr10.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr11.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr12.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr13.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr14.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr15.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr16.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr17.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr18.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr19.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr20.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr21.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chr22.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chrX.done.txt",
-        "{path}temp/{sample}.{gene}.{prob}.chrY.done.txt"
-    output:
-        "{path}merged/{sample}.{gene}.{prob}.merged.done.txt"
-    script:
-        "scripts/snakeMergeFPbyChrDownsampled.R"
-
-# STEP 21 - FOOTPRINT SATURATION analysis
-# must use a few, include CTCF, CDX2, etc
-rule footprint_saturation:
-        input:
-            "{path}14downsample/complexity/{sample}.09.cs.bam",
-            "{path}14downsample/complexity/{sample}.09.cs.bai",
-            "{path}14downsample/complexity/{sample}.08.cs.bam",
-            "{path}14downsample/complexity/{sample}.08.cs.bai",
-            "{path}14downsample/complexity/{sample}.07.cs.bam",
-            "{path}14downsample/complexity/{sample}.07.cs.bai",
-            "{path}14downsample/complexity/{sample}.06.cs.bam",
-            "{path}14downsample/complexity/{sample}.06.cs.bai",
-            "{path}14downsample/complexity/{sample}.05.cs.bam",
-            "{path}14downsample/complexity/{sample}.05.cs.bai",
-            "{path}14downsample/complexity/{sample}.04.cs.bam",
-            "{path}14downsample/complexity/{sample}.04.cs.bai",
-            "{path}14downsample/complexity/{sample}.03.cs.bam",
-            "{path}14downsample/complexity/{sample}.03.cs.bai",
-            "{path}14downsample/complexity/{sample}.02.cs.bam",
-            "{path}14downsample/complexity/{sample}.02.cs.bai",
-            "{path}14downsample/complexity/{sample}.01.cs.bam",
-            "{path}14downsample/complexity/{sample}.01.cs.bai"
-        output:
-            "{path}14downsample/footprints/{sample}.{gene}.done.txt"
-        shell:
-            "scripts/snakeFootprintSaturation.R"
+        "scripts/snakeFootprintHeatmaps.R"
+########################################################################
