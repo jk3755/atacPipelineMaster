@@ -54,17 +54,17 @@ cat("Saving svg footprint image at path:", outputfile, "\n")
 ## Margin controls
 # margin(a,b,c,d)
 # a = size of graph from top to bottom, higher value = smaller. default = 0.1
-# b = size of graph from left to right, higher value = smaller. default = 0.01
+# b = size of graph from left to right, higher value = smaller. default = 0.005
 # c = flips x axis?
 # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
-# good settings for ATACseq = c(0.5,0.01,0.05,0.15)
+# good settings for ATACseq = c(0.1,0.005,0.05,0.2)
 ChIPpeakAnno::featureAlignedHeatmap(combined,
                                     feature.gr=reCenterPeaks(sites,width=numbp), 
                                     annoMcols="rowtotal",
                                     sortBy="rowtotal",
                                     n.tile=numbp,
                                     upper.extreme = maxsig, # set this to control the heatmap scale
-                                    margin = c(0.5, 0.01, 0.05, 0.15),
+                                    margin = c(0.1, 0.005, 0.05, 0.2),
                                     color=colorRampPalette(c("blue", "white", "red"))(100),
                                     gp = gpar(fontsize=10),
                                     newpage = TRUE)
