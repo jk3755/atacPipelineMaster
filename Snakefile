@@ -2,6 +2,9 @@
 ################################ File Targets ######################################################################################################################
 ####################################################################################################################################################################
 
+########################
+##### SNU61 WT 01 ######
+########################
 ## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
 rule snu61_bai:
         input:
@@ -37,10 +40,11 @@ rule snu61_bwcov:
         input:
             "snu61/wt01/preprocessing/16bigwig/SNU61-WT-01.all.bw"
 
-
 rule snu61_footprint_ctcf_downsampled:
         input:
             "snu61/wt01/preprocessing/14downsample/temp/SNU61-WT-01.CTCF.09.done.txt"
+
+
 
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
 ## This method will generate the footprint signals by chromosome and then merge the results
@@ -52,12 +56,13 @@ rule snu61_coad_footprints:
             "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt"
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt"
 
 rule snu61_parsed_coad_footprints:
     input:
@@ -74,47 +79,12 @@ rule snu61_parsed_coad_footprints:
         "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
         "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
 
-## Run pairwise correlation test spearman model
-rule corr_spearman:
+########################
+##### LS1034 WT 01 #####
+########################
+rule ls1034_bwcov:
         input:
-            "QC/LS1034-WT-01_spearman_corrTest"
-
-## Make heatmaps
-rule corr_heatmap:
-        input:
-            "QC/LS1034-WT-01_spearman_heatmap.svg"
-
-rule sat_frags_duplicate:
-        input:
-            "sat/LS1034-WT-01-S1_S5.9.md.bam",
-            "sat/LS1034-WT-01-S2_S3.9.md.bam",
-            "sat/LS1034-WT-01-S3_S2.9.md.bam",
-            "sat/LS1034-WT-01-S1_S5.8.md.bam",
-            "sat/LS1034-WT-01-S2_S3.8.md.bam",
-            "sat/LS1034-WT-01-S3_S2.8.md.bam",
-            "sat/LS1034-WT-01-S1_S5.7.md.bam",
-            "sat/LS1034-WT-01-S2_S3.7.md.bam",
-            "sat/LS1034-WT-01-S3_S2.7.md.bam",
-            "sat/LS1034-WT-01-S1_S5.6.md.bam",
-            "sat/LS1034-WT-01-S2_S3.6.md.bam",
-            "sat/LS1034-WT-01-S3_S2.6.md.bam",
-            "sat/LS1034-WT-01-S1_S5.5.md.bam",
-            "sat/LS1034-WT-01-S2_S3.5.md.bam",
-            "sat/LS1034-WT-01-S3_S2.5.md.bam",
-            "sat/LS1034-WT-01-S1_S5.4.md.bam",
-            "sat/LS1034-WT-01-S2_S3.4.md.bam",
-            "sat/LS1034-WT-01-S3_S2.4.md.bam",
-            "sat/LS1034-WT-01-S1_S5.3.md.bam",
-            "sat/LS1034-WT-01-S2_S3.3.md.bam",
-            "sat/LS1034-WT-01-S3_S2.3.md.bam",
-            "sat/LS1034-WT-01-S1_S5.2.md.bam",
-            "sat/LS1034-WT-01-S2_S3.2.md.bam",
-            "sat/LS1034-WT-01-S3_S2.2.md.bam",
-            "sat/LS1034-WT-01-S1_S5.1.md.bam",
-            "sat/LS1034-WT-01-S2_S3.1.md.bam",
-            "sat/LS1034-WT-01-S3_S2.1.md.bam"
-##
-
+            "ls1034/wt01/preprocessing/16bigwig/LS1034-WT-01.all.bw"
 
 ####################################################################################################################################################################
 ################################ Preprocessing Rules ###############################################################################################################
@@ -394,7 +364,6 @@ rule sort_downsampled:
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
-
 # STEP 19 - MARK DUPLICATES DOWNSAMPLED AND LIBRARY COMPLEXITY SATURATION ANALYSIS
 rule markdup_downsampled:
         input:
@@ -408,7 +377,6 @@ rule markdup_downsampled:
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
              REMOVE_DUPLICATES=true \
              ASSUME_SORTED=true"
-
 # STEP 20 - INDEX DUPLICATE PURGED DOWNSAMPLES BAM
 rule index_downsampled:
         input:
@@ -419,7 +387,6 @@ rule index_downsampled:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-
 # STEP 21 - Generate bigwig files with deeptools/bamCoverage/bamCompate for genome browser viewing
 # parameters: -b bam input, -o output file, -of output format, -bs bin size in bp, -p number of processors to use, -v verbose mode, --normalizeUsing RPKM (reads per kilobase per million mapped)
 rule make_bigwig_bamcov:
@@ -430,7 +397,6 @@ rule make_bigwig_bamcov:
             "{path}16bigwig/{mergedsample}.all.bw"
         shell:
             "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v --normalizeUsing RPKM"
-
 # STEP 21 - PEAK SATURATION ANALYSIS
 rule peak_saturation_macs2:
         input:
@@ -445,6 +411,74 @@ rule peak_saturation_macs2:
 ####################################################################################################################################################################
 ################################ Footprint Analysis Rules ##########################################################################################################
 ####################################################################################################################################################################
+rule makefp_by_chr:
+    input:
+        "{path}preprocessing/12all/{mergedsample}.all.bam",
+        "{path}preprocessing/12all/{mergedsample}.all.bai",
+        "sites/{gene}.sites.Rdata"
+    output:
+        "{path}footprints/temp/{mergedsample}.{gene}.{chr}.done.txt"
+    script:
+        "scripts/snakeMakeFPbyChr.R"
+
+rule merge_chr:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr1.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr2.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr3.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr4.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr5.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr6.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr7.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr8.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr9.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr10.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr11.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr12.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr13.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr14.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr15.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr16.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr17.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr18.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr19.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr20.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr21.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr22.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chrX.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chrY.done.txt"
+    output:
+        "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
+    script:
+        "scripts/snakeMergeFPbyChr.R"
+
+rule make_graphs:
+    input:
+        "{path}preprocessing/12all/{mergedsample}.all.bam",
+        "{path}preprocessing/12all/{mergedsample}.all.bai",
+        "sites/{gene}.sites.Rdata",
+        "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
+    output:
+        "{path}footprints/graphs/{mergedsample}.{gene}.graphs.done.txt"
+    script:
+        "scripts/snakeGenerateMergedFPGraph.R"
+
+rule parse_footprints:
+    input:
+        "ls1034/wt01/bam/{sample}.all.bam",
+        "ls1034/wt01/bam/{sample}.all.bai",
+        "sites/{gene}.sites.Rdata",
+        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt",
+        "ls1034/wt01/peaks/{sample}_peaks.narrowPeak"
+    output:
+        "ls1034/wt01/parsed/{sample}.{gene}.parsed.done.txt"
+    script:
+        "ls1034/wt01/scripts/snakeParseFP.R"
+
+
+
+
 rule makefp_by_chr_downsampled:
     input:
         "{path}complexity/{sample}.{prob}.cs.bam",
@@ -513,68 +547,3 @@ rule footprint_saturation:
             "{path}14downsample/footprints/{sample}.{gene}.done.txt"
         shell:
             "scripts/snakeFootprintSaturation.R"
-
-rule makefp_by_chr:
-    input:
-        "{path}bam/{sample}.all.bam",
-        "{path}bam/{sample}.all.bai",
-        "sites/{gene}.sites.Rdata"
-    output:
-        "{path}footprints/{sample}.{gene}.{chr}.done.txt"
-    script:
-        "scripts/snakeMakeFPbyChr.R"
-
-rule merge_chr:
-    input:
-        "sites/{gene}.sites.Rdata",
-        "{path}footprints/temp/{sample}.{gene}.chr1.done.txt",
-        "{path}footprints/temp/{sample}.{gene}.chr2.done.txt",
-        "{path}footprints/temp/{sample}.{gene}.chr3.done.txt",
-        "{path}footprints/temp/{sample}.{gene}.chr4.done.txt",
-        "{path}footprints/temp/{sample}.{gene}.chr5.done.txt",
-        "{path}footprints/temp/{sample}.{gene}.chr6.done.txt",
-        "{path}footprints/temp/{sample}.{gene}.chr7.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr8.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr9.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr10.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr11.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr12.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr13.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr14.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr15.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr16.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr17.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr18.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr19.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr20.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr21.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chr22.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chrX.done.txt",
-        "{path}footprints/temp{sample}.{gene}.chrY.done.txt"
-    output:
-        "{path}footprints/merged/{sample}.{gene}.merged.done.txt"
-    script:
-        "scripts/snakeMergeFPbyChr.R"
-
-rule make_graphs:
-    input:
-        "{path}preprocessing/12all/{sample}.all.bam",
-        "{path}preprocessing/12all/{sample}.all.bai",
-        "sites/{gene}.sites.Rdata",
-        "{path}footprints/merged/{sample}.{gene}.merged.done.txt"
-    output:
-        "{path}footprints/graphs/{sample}.{gene}.graphs.done.txt"
-    script:
-        "scripts/snakeGenerateMergedFPGraph.R"
-
-rule parse_footprints:
-    input:
-        "ls1034/wt01/bam/{sample}.all.bam",
-        "ls1034/wt01/bam/{sample}.all.bai",
-        "sites/{gene}.sites.Rdata",
-        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt",
-        "ls1034/wt01/peaks/{sample}_peaks.narrowPeak"
-    output:
-        "ls1034/wt01/parsed/{sample}.{gene}.parsed.done.txt"
-    script:
-        "ls1034/wt01/scripts/snakeParseFP.R"

@@ -30,6 +30,7 @@ chrY_input <- snakemake@input[[25]]
 output <- snakemake@output[[1]]
 sample <- snakemake@wildcards[["sample"]]
 gene <- snakemake@wildcards[["gene"]]
+dirpath <- snakemake@wildcards[["path"]]
 
 ##
 cat("Determining number of motifs...", "\n")
@@ -39,7 +40,7 @@ cat("Found ", num_motifs, " motifs", "\n")
 
 for (x in 1:num_motifs){
   
-  signalpath <- paste0("/home/ubuntu1/atac/ls1034/wt01/merged/", sample, ".", gene, ".", "motif", x, ".merged.Rdata")
+  signalpath <- paste0(dirpath, "footprints/merged/", sample, ".", gene, ".", "motif", x, ".merged.Rdata")
   cat("Output path for signal object: ", signalpath, "\n")
   
   if (file.exists(signalpath) == TRUE){
