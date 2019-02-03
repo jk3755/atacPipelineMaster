@@ -36,19 +36,28 @@ rule snu61_index_downsampled:
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
+## The below rule bw_cov can run the whole pipeline from start to finish
 rule snu61_bwcov:
         input:
             "snu61/wt01/preprocessing/16bigwig/SNU61-WT-01.all.bw"
 
-rule snu61_footprint_ctcf_downsampled:
+### Use these for footprinting saturation analysis
+rule snu61_footprint_saturation:
         input:
-            "snu61/wt01/preprocessing/14downsample/temp/SNU61-WT-01.CTCF.09.done.txt"
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.9.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.8.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.7.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.6.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.5.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.4.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.3.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.2.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.1.CTCF.done.txt"
 
 
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
 ## This method will generate the footprint signals by chromosome and then merge the results
 ## Can be safely run with 10 provided cores on server without exceeding 100 gb mem
-
 rule snu61_coad_footprints_parsed:
         input:
             "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
@@ -102,7 +111,7 @@ rule myco_align:
         output:
             "{path}4mycoalign/{sample}.myco.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 # STEP 4 - ALIGN TO HG38 WITH BOWTIE2
 ## params:
 # -q fastq input
@@ -118,7 +127,7 @@ rule hg38_align:
         output:
             "{path}5hg38align/{sample}.hg38.sam"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 # STEP 5 - CONVERT SAM TO BAM
 ## params:
 # -Xmx50g set java mem limit to 50 gb
@@ -128,7 +137,7 @@ rule sam_to_bam:
         output:
             "{path}6rawbam/{sample}.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
+            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
 # STEP 6
@@ -146,7 +155,7 @@ rule add_rg_and_cs_bam:
         output:
             "{path}7rgsort/{sample}_L{lane}.rg.cs.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
+            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
             O={output} \
             SORT_ORDER=coordinate \
@@ -162,7 +171,7 @@ rule clean_bam:
         output:
             "{path}7rgsort/{sample}_L{lane}.clean.bam"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
+            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
 # STEP 8 - MERGE LANES
@@ -175,7 +184,7 @@ rule merge_lanes:
         output:
             "{path}8merged/{sample}.m.bam"
         shell:
-            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -Xmx80g -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -193,7 +202,7 @@ rule purge_duplicates:
             a="{path}9dedup/{sample}.dp.bam",
             b="{path}9dedup/{sample}.metrics.txt"
         shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx30g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
@@ -222,7 +231,7 @@ rule build_index:
         output:
             "{path}10unique/{sample}.u.bai"
         shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx30g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 12 - MERGE REPLICATES
@@ -237,7 +246,7 @@ rule merge_replicates:
         output:
             "{path}12all/{sample}.all.bam"
         shell:
-            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -Xmx80g -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -253,7 +262,7 @@ rule index_merged:
         output:
             "{path}12all/{mergedsample}.all.bai"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx50g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 14 - IND CALL PEAKS WITH MACS2
@@ -334,7 +343,7 @@ rule downsample_bam:
         output:
             "{path}15downsample/{mergedsample}.{prob}.bam"
         shell:
-            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
+            "java -Xmx9g -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
@@ -345,7 +354,7 @@ rule sort_downsampled:
         output:
             "{path}15downsample/{mergedsample}.{prob}.cs.bam"
         shell:
-            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
+            "java -Xmx9g -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
@@ -356,7 +365,7 @@ rule markdup_downsampled:
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
@@ -369,7 +378,7 @@ rule index_downsampled:
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bai"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 # STEP 21 - Generate bigwig files with deeptools/bamCoverage/bamCompate for genome browser viewing
@@ -377,7 +386,7 @@ rule index_downsampled:
 rule make_bigwig_bamcov:
         input:
             a="{path}12all/{mergedsample}.all.bam",
-            b="{path}15downsample/complexity/{mergedsample}.9.md.bai"
+            b="{path}12all/{mergedsample}.all.bai",
         output:
             "{path}16bigwig/{mergedsample}.all.bw"
         shell:
@@ -390,8 +399,71 @@ rule peak_saturation_macs2:
             "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+# STEP 22 - FOOTPRINT SATURATION Analysis
+rule saturation_makefp_by_chr:
+    input:
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bai",
+        "sites/{gene}.sites.Rdata"
+    output:
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.{chr}.done.txt",
+    script:
+        "scripts/snakeMakeFPbyChrDownsampled.R"
 
+rule saturation_merge_chr:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr1.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr2.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr3.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr4.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr5.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr6.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr7.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr8.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr9.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr10.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr11.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr12.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr13.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr14.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr15.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr16.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr17.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr18.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr19.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr20.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr21.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chr22.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chrY.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.chrX.done.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/merged/{mergedsample}.{prob}.{gene}.merged.done.txt"
+    script:
+        "scripts/snakeMergeFPbyChrDownsampled.R"
 
+rule saturation_make_graphs:
+    input:
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bai",
+        "sites/{gene}.sites.Rdata",
+        "{path}preprocessing/15downsample/footprints/merged/{mergedsample}.{prob}.{gene}.merged.done.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/graphs/{mergedsample}.{prob}.{gene}.graphs.done.txt"
+    script:
+        "scripts/snakeGenerateMergedFPGraphDownsample.R"
+
+rule saturation_parse_footprints:
+    input:
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bai",
+        "sites/{gene}.sites.Rdata",
+        "{path}preprocessing/15downsample/footprints/merged/{mergedsample}.{prob}.{gene}.merged.done.txt",
+        "{path}preprocessing/13allpeaks/{mergedsample}.all_peaks.narrowPeak"
+    output:
+        "{path}preprocessing/15downsample/footprints/parsed/{mergedsample}.{prob}.{gene}.parsed.done.txt"
+    script:
+        "scripts/snakeParseFPDownsample.R"
 
 ####################################################################################################################################################################
 ################################ Footprint Analysis Rules ##########################################################################################################
@@ -405,7 +477,7 @@ rule makefp_by_chr:
         "{path}footprints/temp/{mergedsample}.{gene}.{chr}.done.txt"
     script:
         "scripts/snakeMakeFPbyChr.R"
-
+#
 rule merge_chr:
     input:
         "sites/{gene}.sites.Rdata",

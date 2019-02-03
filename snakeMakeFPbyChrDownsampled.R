@@ -20,24 +20,8 @@ sample_path <- snakemake@wildcards[["path"]]
 
 ## Set the input files
 cat("Setting input file paths...", "\n")
-bampath9 <- snakemake@input[[1]]
-baipath9 <- snakemake@input[[2]]
-bampath8 <- snakemake@input[[3]]
-baipath8 <- snakemake@input[[4]]
-bampath7 <- snakemake@input[[5]]
-baipath7 <- snakemake@input[[6]]
-bampath6 <- snakemake@input[[7]]
-baipath6 <- snakemake@input[[8]]
-bampath5 <- snakemake@input[[9]]
-baipath5 <- snakemake@input[[10]]
-bampath4 <- snakemake@input[[11]]
-baipath4 <- snakemake@input[[12]]
-bampath3 <- snakemake@input[[13]]
-baipath3 <- snakemake@input[[14]]
-bampath2 <- snakemake@input[[15]]
-baipath2 <- snakemake@input[[16]]
-bampath1 <- snakemake@input[[17]]
-baipath1 <- snakemake@input[[18]]
+bampath <- snakemake@input[[1]]
+baipath <- snakemake@input[[2]]
 
 ##
 cat("Setting parameters...", "\n")
@@ -52,9 +36,8 @@ cat("Loading binding sites and PWM...", "\n")
 load(sitespath)
 num_motif <- length(bindingSites)
 
-## Iterate over all downsample probabilities, use only first motif for gene
-for (a in 1:9){
-  
+## Only do motif 1
+
   #
   signalpath <- paste0(sample_path, "14downsample/footprints/", samplename, ".", genename, ".", "motif1.downsample.", a, ".Rdata")
   cat("Output path for signal object: ", signalpath, "\n")
@@ -105,7 +88,7 @@ for (a in 1:9){
       
     } # end if ((length(sites@ranges@start)) < 2)
   } # end if (file.exists(signalpath))
-} # end for (a in 1:num_motif)
+
 
 #
 cat("Finished...", "\n")
