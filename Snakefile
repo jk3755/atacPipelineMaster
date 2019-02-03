@@ -22,42 +22,17 @@ rule snu61_peaks_all:
 rule snu61_corr_heatmap:
         input:
             "snu61/wt01/preprocessing/14qcplots/SNU61-WT-01.spearman.heatmap.svg"
-rule snu61_downsample1:
+rule snu61_index_downsampled:
         input:
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.9.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.8.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.7.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.6.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.5.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.4.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.3.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.2.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.1.bam"
-
-rule snu61_downsample2:
-        input:
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.9.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.8.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.7.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.6.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.5.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.4.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.3.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.2.cs.bam",
-            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.1.cs.bam"
-
-rule snu61_downsample3:
-        input:
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.09.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.08.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.07.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.06.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.05.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.04.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.03.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.02.md.bam",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.01.md.bam"
-
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.9.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.8.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.7.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.6.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.5.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.4.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
 
 rule snu61_footprint_ctcf_downsampled:
         input:
@@ -427,14 +402,16 @@ rule markdup_downsampled:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
-             M={path}15downsample/complexity/{wildcards.sample}.{wildcards.prob}.dupmetrics.txt"
+             M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
+             REMOVE_DUPLICATES=true \
+             ASSUME_SORTED=true"
 
 # STEP 20 - INDEX DUPLICATE PURGED DOWNSAMPLES BAM
 rule index_downsampled:
         input:
-            "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
+            "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         output:
-            "{path}14downsample/complexity/{sample}.{prob}.cs.bai"
+            "{path}15downsample/complexity/{mergedsample}.{prob}.md.bai"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
