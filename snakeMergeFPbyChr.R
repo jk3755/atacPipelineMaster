@@ -28,7 +28,7 @@ chrX_input <- snakemake@input[[24]]
 chrY_input <- snakemake@input[[25]]
 #
 output <- snakemake@output[[1]]
-sample <- snakemake@wildcards[["sample"]]
+sample <- snakemake@wildcards[["mergedsample"]]
 gene <- snakemake@wildcards[["gene"]]
 dirpath <- snakemake@wildcards[["path"]]
 

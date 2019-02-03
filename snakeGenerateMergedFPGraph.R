@@ -13,7 +13,7 @@ baipath <- snakemake@input[[2]]
 sitespath <- snakemake@input[[3]]
 mergedpath <- snakemake@input[[4]]
 outpathdone <- snakemake@output[[1]]
-samplename <- snakemake@wildcards[["sample"]]
+samplename <- snakemake@wildcards[["mergedsample"]]
 genename <- snakemake@wildcards[["gene"]]
 dirpath <- snakemake@wildcards[["path"]]
 
