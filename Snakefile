@@ -57,8 +57,25 @@ rule snu61_footprint_saturation:
 
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
 ## This method will generate the footprint signals by chromosome and then merge the results
-## Can be safely run with 10 provided cores on server without exceeding 100 gb mem
-rule snu61_coad_footprints_parsed:
+## NOTE it makes more sense to run the first operations, calc by chr and merge separately, as these can handle 20 threads
+## To parse, use only 4 threads or it may crash from memory overload
+rule snu61_make_fp_bychr_10threads:
+        input:
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt"
+
+## Run me with 4 threads maximum
+rule snu61_coad_footprints_parsed_4threads:
         input:
             "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
             "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
