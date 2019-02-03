@@ -31,9 +31,10 @@ numbp <- length(sig_plus[["+"]][1,])
 
 
 ## Annotate the combined sublist name which will become the tital of the heatmap plot
-plot title <- paste0("motif", parsedSitesInfo[["motif"]], "_numsites-", )
+plottitle <- paste0("motif", parsedSitesInfo[["motif"]], "_numsites-", parsedSitesInfo[["numbfPassPeakSites"]])
 combined <- list()
-com <- paste0("combined$", motif, " <- matrix(data = NA, nrow = numsites")
+com <- paste0("combined$", plottitle, " <- matrix(data = NA, nrow = numsites")
+eval(parse(text = com))
 combined$motif <- matrix(data = NA, nrow = numsites, ncol = numbp)
 # combine the signals
 for (i in 1:numsites){combined$signal[i,] <- sigs[["+"]][i,] + sigs[["-"]][i,]}
