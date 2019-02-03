@@ -19,22 +19,45 @@ rule snu61_bai_all:
 rule snu61_peaks_all:
         input:
             "snu61/wt01/preprocessing/13allpeaks/SNU61-WT-01.all_peaks.xls"
-
 rule snu61_corr_heatmap:
         input:
             "snu61/wt01/preprocessing/14qcplots/SNU61-WT-01.spearman.heatmap.svg"
-
-rule snu61_downsample:
+rule snu61_downsample1:
         input:
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.09.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.08.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.07.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.06.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.05.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.04.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.03.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.02.md.bam",
-            "snu61/wt01/preprocessing/14downsample/SNU61-WT-01.01.md.bam"
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.9.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.8.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.7.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.6.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.5.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.4.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.3.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.2.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.1.bam"
+
+rule snu61_downsample2:
+        input:
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.9.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.8.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.7.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.6.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.5.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.4.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.3.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.2.cs.bam",
+            "snu61/wt01/preprocessing/15downsample/SNU61-WT-01.1.cs.bam"
+
+rule snu61_downsample3:
+        input:
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.09.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.08.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.07.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.06.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.05.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.04.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.03.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.02.md.bam",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.01.md.bam"
+
 
 rule snu61_footprint_ctcf_downsampled:
         input:
@@ -352,7 +375,6 @@ rule peaks_macs2_merged:
             "{path}13allpeaks/{sample}.all_peaks.xls"
         shell:
             "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
 # STEP 15 - PLOT REPLICATE CORRELATION
 rule plot_corr_spearman:
         input:
@@ -372,27 +394,25 @@ rule make_corr_heatmap:
             "{path}14qcplots/{sample}.spearman.heatmap.svg"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
-
 # STEP 17 - DOWNSAMPLE FOR SATURATION ANALYSIS
 rule downsample_bam:
         input:
-            "{path}8merged/{sample}.m.bam"
+            "{path}12all/{mergedsample}.all.bam"
         output:
-            "{path}14downsample/{sample}.{prob}.bam"
+            "{path}15downsample/{mergedsample}.{prob}.bam"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
+            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
              I={input} \
-             O={output.a} \
-             PROBABILITY={wildcards.prob}"
-
+             O={output} \
+             PROBABILITY=0.{wildcards.prob}"
 # STEP 18 - COORDINATE SORT DOWNSAMPLED
 rule sort_downsampled:
         input:
-            "{path}14downsample/{sample}.{prob}.bam"
+            "{path}15downsample/{mergedsample}.{prob}.bam"
         output:
-            "{path}14downsample/{sample}.{prob}.cs.bam"
+            "{path}15downsample/{mergedsample}.{prob}.cs.bam"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
+            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
@@ -400,14 +420,14 @@ rule sort_downsampled:
 # STEP 19 - MARK DUPLICATES DOWNSAMPLED AND LIBRARY COMPLEXITY SATURATION ANALYSIS
 rule markdup_downsampled:
         input:
-            "{path}14downsample/{sample}.{prob}.cs.bam"
+            "{path}15downsample/{mergedsample}.{prob}.cs.bam"
         output:
-            "{path}14downsample/complexity/{sample}.{prob}.md.bam"
+            "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         shell:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
-             M={wildcards.sample}.{wildcards.prob}.dupmetrics.txt"
+             M={path}15downsample/complexity/{wildcards.sample}.{wildcards.prob}.dupmetrics.txt"
 
 # STEP 20 - INDEX DUPLICATE PURGED DOWNSAMPLES BAM
 rule index_downsampled:
