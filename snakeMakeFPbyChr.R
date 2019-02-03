@@ -37,7 +37,7 @@ num_motif <- length(bindingSites)
 for (a in 1:num_motif){ # An iterator for each unique motif for this gene
   
   #
-  signalpath <- paste0(sample_path, "footprints/merged/", samplename, ".", genename, ".", "motif", a, ".", current_chr, ".Rdata")
+  signalpath <- paste0(sample_path, "footprints/temp/", samplename, ".", genename, ".", "motif", a, ".", current_chr, ".Rdata")
   cat("Output path for signal object: ", signalpath, "\n")
   
   #

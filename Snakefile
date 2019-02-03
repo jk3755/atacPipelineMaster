@@ -48,20 +48,6 @@ rule snu61_footprint_ctcf_downsampled:
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
 ## This method will generate the footprint signals by chromosome and then merge the results
 ## Can be safely run with 10 provided cores on server without exceeding 100 gb mem
-rule snu61_coad_footprints:
-        input:
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt"
 
 rule snu61_coad_footprints_parsed:
         input:
