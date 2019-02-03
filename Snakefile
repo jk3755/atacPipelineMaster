@@ -45,7 +45,6 @@ rule snu61_footprint_ctcf_downsampled:
             "snu61/wt01/preprocessing/14downsample/temp/SNU61-WT-01.CTCF.09.done.txt"
 
 
-
 ## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
 ## This method will generate the footprint signals by chromosome and then merge the results
 ## Can be safely run with 10 provided cores on server without exceeding 100 gb mem
@@ -64,20 +63,20 @@ rule snu61_coad_footprints:
             "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt"
 
-rule snu61_parsed_coad_footprints:
-    input:
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.TCF7.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.POU5F1B.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.HNF4A.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.OVOL1.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.GMEB2.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.CBFA2T2.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.HOXA3.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
-        "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
+rule snu61_coad_footprints_parsed:
+        input:
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.TCF7.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.POU5F1B.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.HNF4A.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.OVOL1.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.GMEB2.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.CBFA2T2.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.HOXA3.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
 
 ########################
 ##### LS1034 WT 01 #####
@@ -466,15 +465,15 @@ rule make_graphs:
 
 rule parse_footprints:
     input:
-        "ls1034/wt01/bam/{sample}.all.bam",
-        "ls1034/wt01/bam/{sample}.all.bai",
+        "{path}preprocessing/12all/{mergedsample}.all.bam",
+        "{path}preprocessing/12all/{mergedsample}.all.bai",
         "sites/{gene}.sites.Rdata",
-        "ls1034/wt01/merged/{sample}.{gene}.merged.done.txt",
-        "ls1034/wt01/peaks/{sample}_peaks.narrowPeak"
+        "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt",
+        "{path}preprocessing/13allpeaks/{mergedsample}.all_peaks.narrowPeak"
     output:
-        "ls1034/wt01/parsed/{sample}.{gene}.parsed.done.txt"
+        "{path}footprints/parsed/{mergedsample}.{gene}.parsed.done.txt"
     script:
-        "ls1034/wt01/scripts/snakeParseFP.R"
+        "scripts/snakeParseFP.R"
 
 
 
