@@ -17,7 +17,7 @@ genename <- snakemake@wildcards[["gene"]]
 motifnum <- snakemake@wildcards[["motif"]]
 
 ## Loading data
-cat("Loading data", "\n")
+cat("Loading data...", "\n")
 load(inputfile)
 
 ## USE THIS STRUCTURE FOR HEATMAPS
@@ -28,7 +28,7 @@ sig_minus <- sigs["-"]
 numsites <- length(sig_plus[["+"]][,1])
 numbp <- length(sig_plus[["+"]][1,])
 ## Annotate the combined sublist name which will become the tital of the heatmap plot
-plottitle <- paste0(samplename, "_", genename, "_motif", motifnum, "_numsites", parsedSitesInfo[["numbfPassPeakSites"]])
+plottitle <- paste0(genename, "_motif", motifnum, "_numsites", parsedSitesInfo[["numbfPassPeakSites"]])
 combined <- list()
 com <- paste0("combined$", plottitle, " <- matrix(data = NA, nrow = numsites, ncol = numbp)")
 eval(parse(text = com))
@@ -38,21 +38,28 @@ eval(parse(text = com))
 ## set the max value in plot = to max value of combined signals
 com <- paste0("maxsig <- max(combined[['", plottitle, "']])")
 eval(parse(text = com))
+## set the binding sites
+sites <- parsedSitesInfo[["bfPassPeakSites"]]
+## normalize all values to max signal
+com <- paste0("for (a in 1:numsites){for (b in 1:numbp){combined$", plottitle, "[a,b] <- (combined$", plottitle, "[a,b]/maxsig)}}")
+eval(parse(text = com))
+com <- paste0("maxsig <- max(combined[['", plottitle, "']])")
+eval(parse(text = com))
 ##
 svg(file = outputfile) # set the filepath for saving the svg figure
 cat("Saving svg footprint image at path:", outputfile, "\n")
 ChIPpeakAnno::featureAlignedHeatmap(combined, 
-                                    feature.gr=reCenterPeaks(sites,width=num_bp), 
+                                    feature.gr=reCenterPeaks(sites,width=numbp), 
                                     annoMcols="score",
                                     sortBy="score",
-                                    n.tile=num_bp,
+                                    n.tile=numbp,
                                     upper.extreme = maxsig, # set this to control the heatmap scale
                                     margin = c(0.1, 0.01, 0.05, 0.09),
                                     color=colorRampPalette(c("blue", "white", "red"))(100),
                                     gp = gpar(fontsize=10),
                                     newpage = TRUE)
 dev.off()
-cat("Finished.",)
+cat("Finished.", "\n")
 
 
 
