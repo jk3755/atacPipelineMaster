@@ -33,6 +33,10 @@ rule snu61_index_downsampled:
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
+rule snu61_bwcov:
+        input:
+            "snu61/wt01/preprocessing/16bigwig/SNU61-WT-01.all.bw"
+
 
 rule snu61_footprint_ctcf_downsampled:
         input:
@@ -44,7 +48,6 @@ rule snu61_footprint_ctcf_downsampled:
 rule snu61_coad_footprints:
         input:
             "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
             "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
@@ -416,6 +419,17 @@ rule index_downsampled:
             "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
+
+# STEP 21 - Generate bigwig files with deeptools/bamCoverage/bamCompate for genome browser viewing
+# parameters: -b bam input, -o output file, -of output format, -bs bin size in bp, -p number of processors to use, -v verbose mode, --normalizeUsing RPKM (reads per kilobase per million mapped)
+rule make_bigwig_bamcov:
+        input:
+            a="{path}12all/{mergedsample}.all.bam",
+            b="{path}15downsample/complexity/{mergedsample}.9.md.bai"
+        output:
+            "{path}16bigwig/{mergedsample}.all.bw"
+        shell:
+            "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v --normalizeUsing RPKM"
 
 # STEP 21 - PEAK SATURATION ANALYSIS
 rule peak_saturation_macs2:
