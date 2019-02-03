@@ -66,7 +66,7 @@ ChIPpeakAnno::featureAlignedHeatmap(combined,
                                     n.tile=numbp,
                                     upper.extreme = maxsig, # set this to control the heatmap scale
                                     margin = c(0.1, 0.005, 0.05, 0.2),
-                                    color=colorRampPalette(c("blue", "white", "yellow", "red"), bias=2)(100),
+                                    color=colorRampPalette(c("blue", "white", "yellow", "red"), bias=3)(100),
                                     gp = gpar(fontsize=10),
                                     newpage = TRUE)
 dev.off()
