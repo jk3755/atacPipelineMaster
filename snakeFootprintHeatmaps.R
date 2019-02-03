@@ -11,10 +11,14 @@ suppressMessages(library(MotifDb))
 ##
 cat("Setting snakemake vars...", "\n")
 inputfile <- snakemake@input[[1]]
-outputfile <- snakemake@output[[2]]
+outputfile <- snakemake@output[[1]]
 samplename <- snakemake@wildcards[["mergedsample"]]
 genename <- snakemake@wildcards[["gene"]]
 motifnum <- snakemake@wildcards[["motif"]]
+
+## Loading data
+cat("Loading data", "\n")
+load(inputfile)
 
 ## USE THIS STRUCTURE FOR HEATMAPS
 ## first, combine the signals from plus and minus strand

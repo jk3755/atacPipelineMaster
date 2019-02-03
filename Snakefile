@@ -90,6 +90,16 @@ rule snu61_coad_footprints_parsed_4threads:
             "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
             "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
 
+
+## heatmaps
+rule snu61_heatmaps:
+    input:
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif1.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif2.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif3.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif4.heatmap.svg"
+
+
 ########################
 ##### LS1034 WT 01 #####
 ########################
