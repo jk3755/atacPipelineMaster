@@ -37,7 +37,7 @@ for (a in 1:nummotif){
   com <- paste0("sites", a, " <- parsedSitesInfo[['bfPassPeakSites']]")
   eval(parse(text = com))
   # number of sites
-  com <- paste0("numsites", a, "length(signals", a, "[['+']][,1])")
+  com <- paste0("numsites", a, " <- length(signals", a, "[['+']][,1])")
   eval(parse(text = com))
   # motif width
   com <- paste0("motifwidth", a, " <- sites", a, "@ranges@width[1]")
@@ -45,14 +45,13 @@ for (a in 1:nummotif){
   # add
   com <- paste0("widths <- c(widths, motifwidth", a, ")")
   eval(parse(text = com))
-  com <- paste0("totalsites <- (totalsites + length(signals", a, "[['+']][,1])")
+  com <- paste0("totalsites <- (totalsites + length(signals", a, "[['+']][,1]))")
   eval(parse(text = com))
   
 }
 
-
 ## Must set the width to the length of the smallest vector and set totalbp
-minwidth <- min(width)
+minwidth <- min(widths)
 totalbp <- (minwidth+200)
 
 
@@ -72,7 +71,7 @@ for (c in 1:nummotif){
   com <- paste0("sigminus <- signals", c, "[['-']]")
   eval(parse(text = com))
   #
-  com <- paste0("sigs", c, "new <- matrix(data = NA, nrow = length(sigplus[,1]), ncol = totalbp")
+  com <- paste0("sigs", c, "new <- matrix(data = NA, nrow = length(sigplus[,1]), ncol = totalbp)")
   eval(parse(text = com))
   #
   com <- paste0("for (d in 1:length(sigplus[,1])){for (e in 1:totalbp){sigs", c, "new[c,d] <- (sigplus[c,d] + sigminus[c,d])")
@@ -120,6 +119,7 @@ cat("Saving merged info...", "\n")
 merged <- list()
 merged$sigs <- sigs
 merged$sites <- mergedsites
+save(merged, file = outputfile)
 
 
 
