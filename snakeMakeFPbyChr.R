@@ -1,5 +1,13 @@
 ##
 cat("Loading libraries...", "\n")
+#BiocManager::install("ATACseqQC")
+#BiocManager::install("MotifDb")
+#BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+#BiocManager::install("Rsamtools")
+#BiocManager::install("ChIPpeakAnno")
+#BiocManager::install("GenomicAlignments")
+#BiocManager::install("BiocGenerics")
+#BiocManager::install("parallel")
 suppressMessages(library(ATACseqQC))
 suppressMessages(library(MotifDb))
 suppressMessages(library(BSgenome.Hsapiens.UCSC.hg38))
