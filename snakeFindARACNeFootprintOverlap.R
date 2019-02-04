@@ -12,19 +12,23 @@ library(org.Hs.eg.db)
 library(annotate)
 library(rlist)
 library(viper)
+library(GenomicRanges)
 
 
 
 ## get the ARACNe interactome
 coad_interactome <- aracne.networks::reguloncoad
 
+
 ## get the mnx1 targets
 cdx2_targets <- names(coad_interactome[["1045"]][["tfmode"]])
+
 
 ## Retrieve info for the network targets
 target_list <- list()
 for (a in 1:length(cdx2_targets)){
   target_list[a] <- mygene::getGene(geneid = cdx2_targets[a], fields = "all")}
+
 
 ## count the number of gene locations we have
 loc_count <- 0
@@ -35,8 +39,9 @@ for (a in 1:length(cdx2_targets)){
     } else {
       loc_count <- (loc_count + 1)}}}
 
-# Retrieve the genomic coordinates of all network targets
-# retrieve all genomic coords here, can later trim non standard ones more easily with GRanges functions
+
+## Retrieve the genomic coordinates of all network targets
+## retrieve all genomic coords here, can later trim non standard ones more easily with GRanges functions
 target_locations <- matrix(data = NA, nrow = loc_count, ncol = 4)
 colnames(target_locations) <- c("gene", "chr", "start", "end")
 idx <- 1
@@ -63,6 +68,7 @@ for (a in 1:loc_count){
       target_locations[idx,4] <- target_list[[a]][["genomic_pos"]][["end"]]
       idx <- (idx+1)}}}
 
+
 ## Convert the genomic locations of the targets into GRanges
 gr <- GRanges(
   seqnames = target_locations[,2],
@@ -71,9 +77,22 @@ gr <- GRanges(
 #seqinfo = Seqinfo(genome="hg38"),
 #score = c(rep(1, times = num_names)))
 
-# prune to standard xsomes
+## prune to standard xsomes
 gr <- keepStandardChromosomes(gr, pruning.mode="coarse")
+start(gr) <- (start(gr) - 2000)
+width(gr) <- (width(gr) + 2000)
 
 
 ## Intersect the targets GRanges with the binding sites list
+wg_sites <- mergedMotifs[["sites"]]
+#
 intersection <- intersect(gr, wg_sites)
+
+## Find overlaps
+## YOU WILL WANT TO FIND THE OVERLAPS FOR A RANGE OF EXTENDED VALUES PAST THE TARGETS, GRAPH IT
+
+overlaps <- findOverlaps(gr, wg_sites)
+
+
+
+
