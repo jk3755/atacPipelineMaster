@@ -120,7 +120,7 @@ cat("Normalizing signals...", "\n")
 com <- paste0("for (f in 1:totalsites){for (g in 1:totalbp){mergeSignals[f,g] <- (mergeSignals[f,g]/maxsig)}}")
 eval(parse(text = com))
 ## reset maxsig for plotting purposes, should always equal 1 now
-maxsig <- max(mergeSignals)
+maxsig2 <- max(mergeSignals)
 
 ## This format required for heatmap generation
 # generate plot title
@@ -138,7 +138,7 @@ ChIPpeakAnno::featureAlignedHeatmap(sigs,
                                     annoMcols="rowtotals",
                                     sortBy="rowtotals",
                                     n.tile=totalbp,
-                                    upper.extreme = maxsig,
+                                    upper.extreme = maxsig2,
                                     margin = c(0.1, 0.005, 0.05, 0.2),
                                     color=colorRampPalette(c("blue", "white", "yellow", "red"), bias=3)(100),
                                     gp = gpar(fontsize=10),
