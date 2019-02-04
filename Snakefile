@@ -134,6 +134,10 @@ rule snu61_heatmaps:
         #
         "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ZSWIM1.motif1.heatmap.svg"
 
+rule snu61_merge_motifs:
+    input:
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.CDX2.4.mergedmotif.Rdata"
+
 
 ########################
 ##### LS1034 WT 01 #####
@@ -670,4 +674,13 @@ rule make_parsed_heatmaps:
         "{path}footprints/heatmaps/{mergedsample}.{gene}.motif{motif}.heatmap.svg"
     script:
         "scripts/snakeFootprintHeatmaps.R"
+#
+rule make_merged_motifs:
+    input:
+        "{path}parsed/{mergedsample}.{gene}.parsed.done.txt"
+    output:
+        "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
+    script:
+        "scripts/snakeMergeMotifs.R"
+
 ########################################################################
