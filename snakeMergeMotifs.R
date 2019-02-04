@@ -128,7 +128,7 @@ mergedMotifs$gene <- genename
 mergedMotifs$totalmotif <- nummotif
 mergedMotifs$totalsites <- totalsites
 mergedMotifs$totalbp <- totalbp
-save(merged, file = outputfile)
+save(mergedMotifs, file = outputfile)
 
 
 
