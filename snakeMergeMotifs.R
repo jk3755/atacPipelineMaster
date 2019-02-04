@@ -74,11 +74,12 @@ for (c in 1:nummotif){
   com <- paste0("sigs", c, "new <- matrix(data = NA, nrow = length(sigplus[,1]), ncol = totalbp)")
   eval(parse(text = com))
   #
-  com <- paste0("for (d in 1:length(sigplus[,1])){for (e in 1:totalbp){sigs", c, "new[c,d] <- (sigplus[c,d] + sigminus[c,d])")
+  com <- paste0("for (d in 1:length(sigplus[,1])){for (e in 1:totalbp){sigs", c, "new[d,e] <- (sigplus[d,e] + sigminus[d,e])}}")
   eval(parse(text = com))
 }
 
 ##
+cat("Merging signals...", "\n")
 mergePlus <- matrix(data = NA, nrow = totalsites, ncol = totalbp)
 ##
 mergeSignals <- sigs1new
@@ -95,12 +96,12 @@ sigs$signal <- mergeSignals
 
 ## FIX ME
 cat("Merging Granges...", "\n")
-mergesites <- c(sites1,sites2,sites3,sites4)
+mergesites <- c(sites1,sites2)
 
 
 ##
 cat("Generating heatmap...", "\n")
-heatmappath <- paste0("dirpath/merged_motifs/", samplename, ".", genename, ".merged.heatmap.svg")
+heatmappath <- paste0(dirpath, "merged_motifs/", samplename, ".", genename, ".merged.heatmap.svg")
 svg(file = heatmappath)
 ChIPpeakAnno::featureAlignedHeatmap(sigs,
                                     feature.gr=reCenterPeaks(mergesites,width=totalbp), 
