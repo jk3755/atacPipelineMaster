@@ -1,18 +1,26 @@
 ##
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#   install.packages("BiocManager")
 #BiocManager::install("aracne.networks", version = "3.8")
-BiocManager::install("org.Hs.eg.db")
+#BiocManager::install("org.Hs.eg.db")
 #BiocManager::install("annotate")
 #BiocManager::install("viper")
 #BiocManager::install("AnnotationDbi")
 #install.packages("rlist")
+##
+cat("Loading libraries...", "\n")
 library(aracne.networks)
 library(org.Hs.eg.db)
 library(annotate)
 library(rlist)
 library(viper)
 library(GenomicRanges)
+
+
+##
+cat("Setting snakemake vars...", "\n")
+inputfile <- snakemake@input[[1]]
+outputfile <- snakemake@output[[1]]
 
 
 

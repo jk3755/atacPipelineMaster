@@ -147,6 +147,10 @@ rule snu61_merge_motifs:
         "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.TCF7.6.mergedmotif.Rdata",
         "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.GMEB2.3.mergedmotif.Rdata"
 
+rule snu61_aracne_overlap:
+    input:
+        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.aracne.Rdata"
+
 
 ########################
 ##### LS1034 WT 01 #####
@@ -691,5 +695,15 @@ rule make_merged_motifs:
         "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
     script:
         "scripts/snakeMergeMotifs.R"
+
+rule make_aracne_overlap:
+    input:
+        "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
+    output:
+        "{path}aracne/{mergedsample}.{gene}.aracne.Rdata"
+    script:
+        "scripts/snakeFindARACNeFootprintOverlap"
+
+        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.aracne.Rdata"
 
 ########################################################################
