@@ -136,7 +136,7 @@ rule snu61_heatmaps:
 
 rule snu61_merge_motifs:
     input:
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.ESRRA.2.mergedmotif.Rdata"
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.ESRRA.6.mergedmotif.Rdata"
 
 
 ########################

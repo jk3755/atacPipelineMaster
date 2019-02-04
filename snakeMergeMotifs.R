@@ -90,14 +90,17 @@ for (e in 2:nummotif){
 
 }
 
-##
+## This format required for heatmap generation
 sigs <- list()
 sigs$signal <- mergeSignals
 
-## FIX ME
-cat("Merging Granges...", "\n")
-mergedsites <- c(sites1,sites2)
-
+## 
+cat("Merging GRanges...", "\n")
+temp1 <- paste0("sites", c(1:nummotif), ",")
+temp2 <- gsub(paste0(nummotif,","), nummotif, temp1)
+temp3 <- paste(temp2, collapse = " ")
+com <- paste0("mergedsites <- c(", temp3, ")")
+eval(parse(text = com))
 
 ##
 cat("Generating heatmap...", "\n")
@@ -116,6 +119,7 @@ ChIPpeakAnno::featureAlignedHeatmap(sigs,
 dev.off()
 
 ##
+cat("Processed a total of ", totalsites, "sites from ", nummotif, "unique binding motifs", "\n")
 cat("Saving merged info...", "\n")
 merged <- list()
 merged$sigs <- sigs
