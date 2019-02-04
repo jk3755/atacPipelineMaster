@@ -121,9 +121,13 @@ dev.off()
 ##
 cat("Processed a total of ", totalsites, "sites from ", nummotif, "unique binding motifs", "\n")
 cat("Saving merged info...", "\n")
-merged <- list()
-merged$sigs <- sigs
-merged$sites <- mergedsites
+mergedMotifs <- list()
+mergedMotifs$sigs <- sigs
+mergedMotifs$sites <- mergedsites
+mergedMotifs$gene <- genename
+mergedMotifs$totalmotif <- nummotif
+mergedMotifs$totalsites <- totalsites
+mergedMotifs$totalbp <- totalbp
 save(merged, file = outputfile)
 
 
