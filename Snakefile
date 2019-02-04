@@ -149,7 +149,7 @@ rule snu61_merge_motifs:
 
 rule snu61_aracne_overlap:
     input:
-        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.aracne.Rdata"
+        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.9.2101.aracne.Rdata"
 
 
 ########################
@@ -700,10 +700,8 @@ rule make_aracne_overlap:
     input:
         "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
     output:
-        "{path}aracne/{mergedsample}.{gene}.aracne.Rdata"
+        "{path}aracne/{mergedsample}.{gene}.{nummotif}.{entrez}.aracne.Rdata"
     script:
-        "scripts/snakeFindARACNeFootprintOverlap"
-
-        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.aracne.Rdata"
+        "scripts/snakeFindARACNeFootprintOverlap.R"
 
 ########################################################################

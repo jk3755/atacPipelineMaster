@@ -6,7 +6,9 @@
 #BiocManager::install("annotate")
 #BiocManager::install("viper")
 #BiocManager::install("AnnotationDbi")
+#BiocManager::install("mygene")
 #install.packages("rlist")
+
 ##
 cat("Loading libraries...", "\n")
 library(aracne.networks)
@@ -15,32 +17,37 @@ library(annotate)
 library(rlist)
 library(viper)
 library(GenomicRanges)
-
+library(mygene)
 
 ##
 cat("Setting snakemake vars...", "\n")
 inputfile <- snakemake@input[[1]]
 outputfile <- snakemake@output[[1]]
+entrezid <- snakemake@wildcards[["entrez"]]
 
+## load file
+load(inputfile)
 
+## get binding sites of merged signals
+sites <- mergedMotifs[["sites"]]
 
 ## get the ARACNe interactome
 coad_interactome <- aracne.networks::reguloncoad
 
-
-## get the mnx1 targets
-cdx2_targets <- names(coad_interactome[["1045"]][["tfmode"]])
+## get the targets
+com <- paste0("targets <- names(coad_interactome[['", entrezid, "']][['tfmode']])")
+eval(parse(text = com))
 
 
 ## Retrieve info for the network targets
 target_list <- list()
-for (a in 1:length(cdx2_targets)){
-  target_list[a] <- mygene::getGene(geneid = cdx2_targets[a], fields = "all")}
+for (a in 1:length(targets)){
+  target_list[a] <- mygene::getGene(geneid = targets[a], fields = "all")}
 
 
 ## count the number of gene locations we have
 loc_count <- 0
-for (a in 1:length(cdx2_targets)){
+for (a in 1:length(targets)){
   if (is.null(target_list[[a]][["genomic_pos"]])){next} else {
     if (is.list(target_list[[a]][["genomic_pos"]][[1]])){
       loc_count <- (loc_count + length(target_list[[a]][["genomic_pos"]]))
@@ -87,19 +94,30 @@ gr <- GRanges(
 
 ## prune to standard xsomes
 gr <- keepStandardChromosomes(gr, pruning.mode="coarse")
-start(gr) <- (start(gr) - 2000)
-width(gr) <- (width(gr) + 2000)
 
-
-## Intersect the targets GRanges with the binding sites list
-wg_sites <- mergedMotifs[["sites"]]
+gr1 <- gr
+gr2 <- gr
 #
-intersection <- intersect(gr, wg_sites)
+start(gr1) <- (start(gr1) - 2000)
+width(gr1) <- (width(gr1) + 2000)
+#
+start(gr2) <- (start(gr2) - 50000)
+width(gr2) <- (width(gr2) + 50000)
+
+
+##
+#intersection <- intersect(gr, wg_sites)
 
 ## Find overlaps
 ## YOU WILL WANT TO FIND THE OVERLAPS FOR A RANGE OF EXTENDED VALUES PAST THE TARGETS, GRAPH IT
+overlaps1 <- findOverlaps(gr1, sites)
+overlaps2 <- findOverlaps(gr2, sites)
 
-overlaps <- findOverlaps(gr, wg_sites)
+info <- list()
+info$overlap1 <- overlaps1
+info$overlap2 <- overlaps2
+
+save(info, file = outputfile)
 
 
 
