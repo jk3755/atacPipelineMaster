@@ -96,7 +96,7 @@ sigs$signal <- mergeSignals
 
 ## FIX ME
 cat("Merging Granges...", "\n")
-mergesites <- c(sites1,sites2)
+mergedsites <- c(sites1,sites2)
 
 
 ##
@@ -104,7 +104,7 @@ cat("Generating heatmap...", "\n")
 heatmappath <- paste0(dirpath, "merged_motifs/", samplename, ".", genename, ".merged.heatmap.svg")
 svg(file = heatmappath)
 ChIPpeakAnno::featureAlignedHeatmap(sigs,
-                                    feature.gr=reCenterPeaks(mergesites,width=totalbp), 
+                                    feature.gr=reCenterPeaks(mergedsites,width=totalbp), 
                                     annoMcols="score",
                                     sortBy="score",
                                     n.tile=totalbp,
