@@ -21,8 +21,8 @@ dirpath <- snakemake@wildcards[["path"]]
 ##
 widths <- c()
 totalsites <- 0
-totalBp <- 0
-signalsMerged <- list()
+totalbp <- 0
+mergeSignals <- list()
 
 ## Load the individual motifs, do one by one for memory considerations
 cat("Loading data...", "\n")
@@ -45,6 +45,7 @@ for (a in 1:nummotif){
   # add
   com <- paste0("widths <- c(widths, motifwidth", a, ")")
   eval(parse(text = com))
+  #
   com <- paste0("totalsites <- (totalsites + length(signals", a, "[['+']][,1]))")
   eval(parse(text = com))
   
@@ -54,7 +55,6 @@ for (a in 1:nummotif){
 minwidth <- min(widths)
 totalbp <- (minwidth+200)
 
-
 ## To center the Granges, change the width of all sites to the size of smallest motif width
 cat("Centering GRanges...", "\n")
 for (b in 1:nummotif){
@@ -63,43 +63,70 @@ for (b in 1:nummotif){
 }
 
 ## Now that all granges are centered together, can simply remove trailing values
-cat("Combining and merging signals...", "\n")
+cat("Combining plus and minus strand signals and annotating by total row signal...", "\n")
 for (c in 1:nummotif){
   
+  ##
   com <- paste0("sigplus <- signals", c, "[['+']]")
   eval(parse(text = com))
+  
+  ##
   com <- paste0("sigminus <- signals", c, "[['-']]")
   eval(parse(text = com))
-  #
+  
+  ##
   com <- paste0("sigs", c, "new <- matrix(data = NA, nrow = length(sigplus[,1]), ncol = totalbp)")
   eval(parse(text = com))
-  #
+  
+  ##
   com <- paste0("for (d in 1:length(sigplus[,1])){for (e in 1:totalbp){sigs", c, "new[d,e] <- (sigplus[d,e] + sigminus[d,e])}}")
   eval(parse(text = com))
+  
 }
 
-##
+
+## Merge the signals with rbind
 cat("Merging signals...", "\n")
-mergePlus <- matrix(data = NA, nrow = totalsites, ncol = totalbp)
-##
 mergeSignals <- sigs1new
 for (e in 2:nummotif){
-  
   com <- paste0("mergeSignals <- rbind(mergeSignals, sigs", e, "new)")
   eval(parse(text = com))
-
 }
 
-## This format required for heatmap generation
-sigs <- list()
-sigs$signal <- mergeSignals
+## Find row totals from merged signals
+cat("Calculating row totals...", "\n")
+rowtotals <- c()
+nsites <- length(mergeSignals[,1])
+com <- paste0("for (x in 1:nsites){rowtotals[x] <- sum(mergeSignals[x,])}")
+eval(parse(text = com))
 
-## 
+##
 cat("Merging GRanges...", "\n")
 temp1 <- paste0("sites", c(1:nummotif), ",")
 temp2 <- gsub(paste0(nummotif,","), nummotif, temp1)
 temp3 <- paste(temp2, collapse = " ")
 com <- paste0("mergedsites <- c(", temp3, ")")
+eval(parse(text = com))
+## Add annotation column for row total signal
+cat("Adding row totals annotation to GRanges...", "\n")
+mergedsites@elementMetadata@listData$rowtotals <- rowtotals
+
+
+## set the max value
+cat("Finding max signal...", "\n")
+maxsig <- max(mergeSignals)
+## normalize all values to max signal
+cat("Normalizing signals...", "\n")
+com <- paste0("for (f in 1:totalsites){for (g in 1:totalbp){mergeSignals[f,g] <- (mergeSignals[f,g]/maxsig)}}")
+eval(parse(text = com))
+## reset maxsig for plotting purposes, should always equal 1 now
+maxsig <- max(mergeSignals)
+
+## This format required for heatmap generation
+# generate plot title
+plottitle <- paste0(genename, "_mergedMotifs", "_numSites", totalsites)
+sigs <- list()
+com <- paste0("sigs$", plottitle, " <- mergeSignals")
 eval(parse(text = com))
 
 ##
@@ -108,10 +135,10 @@ heatmappath <- paste0(dirpath, "merged_motifs/", samplename, ".", genename, ".me
 svg(file = heatmappath)
 ChIPpeakAnno::featureAlignedHeatmap(sigs,
                                     feature.gr=reCenterPeaks(mergedsites,width=totalbp), 
-                                    annoMcols="score",
-                                    sortBy="score",
+                                    annoMcols="rowtotals",
+                                    sortBy="rowtotals",
                                     n.tile=totalbp,
-                                    #upper.extreme = maxsig, # set this to control the heatmap scale
+                                    upper.extreme = maxsig,
                                     margin = c(0.1, 0.005, 0.05, 0.2),
                                     color=colorRampPalette(c("blue", "white", "yellow", "red"), bias=3)(100),
                                     gp = gpar(fontsize=10),
@@ -128,6 +155,7 @@ mergedMotifs$gene <- genename
 mergedMotifs$totalmotif <- nummotif
 mergedMotifs$totalsites <- totalsites
 mergedMotifs$totalbp <- totalbp
+mergedMotifs$maxsig <- maxsig
 save(mergedMotifs, file = outputfile)
 
 
