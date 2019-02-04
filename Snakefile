@@ -134,12 +134,18 @@ rule snu61_heatmaps:
         #
         "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ZSWIM1.motif1.heatmap.svg"
 
+## Genes with only one motif
+# CBFA2T2
+# POU5F1B
+# ZSWIM1
+# Copy these directly to the merged_motifs folder for downstream analysis (aracne overlaps)
 rule snu61_merge_motifs:
     input:
         "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.ESRRA.9.mergedmotif.Rdata",
         "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.CDX2.4.mergedmotif.Rdata",
         "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.MNX1.2.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.TCF7.6.mergedmotif.Rdata"
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.TCF7.6.mergedmotif.Rdata",
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.GMEB2.3.mergedmotif.Rdata"
 
 
 ########################

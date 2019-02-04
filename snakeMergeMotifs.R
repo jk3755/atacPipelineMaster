@@ -130,10 +130,11 @@ com <- paste0("sigs$", plottitle, " <- mergeSignals")
 eval(parse(text = com))
 
 ##
+## For merged motifs that have a ton of sites, like >100,000, can increase the (100) next to colorRampPallette, increase to 1000
 cat("Generating heatmap...", "\n")
 heatmappath <- paste0(dirpath, "merged_motifs/", samplename, ".", genename, ".merged.heatmap.svg")
 svg(file = heatmappath)
-ChIPpeakAnno::featureAlignedHeatmap(sigs,
+ChIPpeakAnno::featureAlignedHeatmap(sig,
                                     feature.gr=reCenterPeaks(mergedsites,width=totalbp), 
                                     annoMcols="rowtotals",
                                     sortBy="rowtotals",

@@ -328,7 +328,20 @@ for (x in 1:num_motifs){
     bfPeakPass <- pvaluePeak[idxbfPeakPass]
     
     ## Subset the peak sites based on bf-corrected p-values
+    ### FIX ME LATER ###
     cat("Subsetting binding sites based on bf corrected p-values...", "\n")
+    if (length(idxbfPeakPass) == 0){
+      
+      bfPassPeakSignals <- list()
+      bfPassPeakSignals$"+" <- peakSignals[["+"]][1:10,]
+      bfPassPeakSignals$"-" <- peakSignals[["-"]][1:10,]
+      bfPassPeakSites <- peakSites[1:10]
+      numbfPassPeakSites <- length(bfPassPeakSignals[["+"]][,1])
+      bfPassPeakSignalTotals <- genomeSignalTotals[1:10]
+      bfPassPeakMotifSignalTotals <- motifGenomeSignalTotals[1:10]
+      
+    } else {
+    
     bfPassPeakSignals <- list()
     bfPassPeakSignals$"+" <- peakSignals[["+"]][idxbfPeakPass,]
     bfPassPeakSignals$"-" <- peakSignals[["-"]][idxbfPeakPass,]
@@ -336,6 +349,7 @@ for (x in 1:num_motifs){
     numbfPassPeakSites <- length(bfPassPeakSignals[["+"]][,1])
     bfPassPeakSignalTotals <- genomeSignalTotals[idxbfPeakPass]
     bfPassPeakMotifSignalTotals <- motifGenomeSignalTotals[idxbfPeakPass]
+    }
     
     ## Generate combined signal for bf passing sites
     combinedbfPassPeakSignal <- list()

@@ -60,7 +60,7 @@ for (a in 1:num_motif){ # An iterator for each unique motif for this gene
   
   ## error handling
   # if current sites object has < 5 sites, the pipeline will crash
-  if ((length(sites@ranges@start)) < 6){
+  if ((length(sites@ranges@start)) < 10){
     
     cat("No binding sites detected for current chr. Skipping", "\n")
     next
