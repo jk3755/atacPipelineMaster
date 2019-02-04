@@ -11,13 +11,13 @@
 
 ##
 cat("Loading libraries...", "\n")
-library(aracne.networks)
-library(org.Hs.eg.db)
-library(annotate)
-library(rlist)
-library(viper)
-library(GenomicRanges)
-library(mygene)
+suppressMessages(library(aracne.networks))
+suppressMessages(library(org.Hs.eg.db))
+suppressMessages(library(annotate))
+suppressMessages(library(rlist))
+suppressMessages(library(viper))
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(mygene))
 
 ##
 cat("Setting snakemake vars...", "\n")
@@ -61,7 +61,7 @@ target_locations <- matrix(data = NA, nrow = loc_count, ncol = 4)
 colnames(target_locations) <- c("gene", "chr", "start", "end")
 idx <- 1
 #
-for (a in 1:loc_count){
+for (a in 1:length(target_list)){
   
   if (is.null(target_list[[a]][["genomic_pos"]])){next} else {
     
