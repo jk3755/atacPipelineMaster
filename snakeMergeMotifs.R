@@ -40,6 +40,7 @@ motifWidth2 <- sites2@ranges@width[1]
 motifWidths <- c(motifWidths, motifWidth2)
 totalSites <- (totalSites + length(signals2[["+"]][,1]))
 
+
 ## Must set the total bp to the length of the smallest vector
 minWidth <- min(motifWidths)
 totalBp <- min(motifWidths)+200
@@ -63,20 +64,37 @@ if (mod == 1){}
 width(sites2) <- 8
 
 ## Once all Granges are centered together, can simply remove trailing values from the signals on right side
-sig2 <- signals2[['+']]
+sigs2 <- signals2[['+']]
+sigs1 <- signals1[['+']]
+sigs2new <- matrix(data = NA, nrow = length(sigs2[,1]), ncol = (200+minWidth))
+#
+for (a in 1:length(sigs2[,1])){for (b in 1:(200+minWidth)){sigs2new[a,b] <- sigs2[a,b]}}
 
 ##
 mergePlus <- matrix(data = NA, nrow = totalSites, ncol = totalBp)
+mergeSignals <- rbind(sigs1,sigs2new)
+mergeSites <- c(sites1,sites2)
+si <- list()
+si$signals <- mergeSignals
 #
-for (a in 1:numSites1){for (b in 1:totalBp){mergePlus[a,b] <- signals1[["+"]][a,b]}}
-for (a in (1+numSites1):(numSites1+numSites2)){for (b in 1:totalBp){mergePlus[a,b] <- signals2[["+"]][(a-numSites1),b]}}
+#for (a in 1:numSites1){for (b in 1:totalBp){mergePlus[a,b] <- signals1[["+"]][a,b]}}
+#for (a in (1+numSites1):(numSites1+numSites2)){for (b in 1:totalBp){mergePlus[a,b] <- signals2[["+"]][(a-numSites1),b]}}
 
 ## use rbind to merge the matrices by row. Note, must handle the bp mismatch problem prior to this
-signalsMerged$'+' <- mergePlus
+#signalsMerged$'+' <- mergePlus
 
-one <- signals1[["+"]]
-two <- signals2[["+"]]
-new <- rbind(one,two)
+ChIPpeakAnno::featureAlignedHeatmap(si,
+                                    feature.gr=reCenterPeaks(mergeSites,width=totalBp), 
+                                    annoMcols="score",
+                                    sortBy="score",
+                                    n.tile=totalBp,
+                                    #upper.extreme = maxsig, # set this to control the heatmap scale
+                                    margin = c(0.1, 0.005, 0.05, 0.2),
+                                    color=colorRampPalette(c("blue", "white", "yellow", "red"), bias=3)(100),
+                                    gp = gpar(fontsize=10),
+                                    newpage = TRUE)
+
+
 
 
 
