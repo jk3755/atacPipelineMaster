@@ -5,17 +5,13 @@
 # H508-1_S3_L001_R1_001.fastq.gz - Sample 1
 # H508-2_S2_L001_R1_001.fastq.gz - Sample 2
 # H508-3_S1_L001_R1_001.fastq.gz - Sample 3
-#
 ## Before running pipeline, rename these to:
 # H508-WT-01_REP1_L1_R1.fastq.gz
 # H508-WT-01_REP2_L1_R1.fastq.gz
 # H508-WT-01_REP3_L1_R1.fastq.gz
-
 rule h508go:
     input:
         "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.done.txt"
-
-
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -288,7 +284,6 @@ rule STEP17_makecorrheatmap:
             "{path}logs/{sample}.makecorrheatmap.txt"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
-
 rule STEP18_makebigwig_bamcov_individual:
         # params:
         # -b bam input
@@ -306,7 +301,6 @@ rule STEP18_makebigwig_bamcov_individual:
             "{path}logs/{sample}.makebigwig_bamcov_individual.txt"
         shell:
             "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-
 rule STEP19_makebigwig_bamcov_merged:
         # params:
         # -b bam input
@@ -324,7 +318,6 @@ rule STEP19_makebigwig_bamcov_merged:
             "{path}logs/{mergedsample}.makebigwig_bamcov_merged.txt"
         shell:
             "bamCoverage -b {input} -o {output} -of bigwig -bs 1 -p 20 -v"
-
 rule STEP20_downsamplebam:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -339,7 +332,6 @@ rule STEP20_downsamplebam:
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
-
 rule STEP21_sortdownsampled:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -354,7 +346,6 @@ rule STEP21_sortdownsampled:
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
-
 rule STEP22_markdupdownsampled:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -371,29 +362,6 @@ rule STEP22_markdupdownsampled:
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
              REMOVE_DUPLICATES=true \
              ASSUME_SORTED=true"
-
-rule AGGREGATE_preprocessing:
- 		input:
- 			"{path}10unique/{sample}-REP1.u.bai",
- 			"{path}10unique/{sample}-REP2.u.bai",
- 			"{path}10unique/{sample}-REP3.u.bai",
- 			"{path}12all/{sample}.all.bai",
- 			"{path}11peaks/{sample}-REP1_peaks.xls",
- 			"{path}11peaks/{sample}-REP2_peaks.xls",
- 			"{path}11peaks/{sample}-REP3_peaks.xls",
- 			"{path}13allpeaks/{sample}.all_peaks.xls",
- 			"{path}14qcplots/{sample}.spearman.heatmap.svg",
- 			"{path}16bigwig/{sample}-REP1.u.bw",
- 			"{path}16bigwig/{sample}-REP2.u.bw",
- 			"{path}16bigwig/{sample}-REP3.u.bw",
- 			"{path}16bigwig/{sample}.all.bw"
- 		output:
- 			"{path}logs/{sample}.preprocessing.done.txt"
- 		shell:
- 			"touch {path}logs/{sample}.preprocessing.done.txt"
-
-
-
 rule STEP23_indexdownsampled:
         input:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
@@ -405,7 +373,34 @@ rule STEP23_indexdownsampled:
             "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-
+rule AGGREGATE_preprocessing:
+        input:
+            "{path}10unique/{sample}-REP1.u.bai",
+            "{path}10unique/{sample}-REP2.u.bai",
+            "{path}10unique/{sample}-REP3.u.bai",
+            "{path}12all/{sample}.all.bai",
+            "{path}11peaks/{sample}-REP1_peaks.xls",
+            "{path}11peaks/{sample}-REP2_peaks.xls",
+            "{path}11peaks/{sample}-REP3_peaks.xls",
+            "{path}13allpeaks/{sample}.all_peaks.xls",
+            "{path}14qcplots/{sample}.spearman.heatmap.svg",
+            "{path}16bigwig/{sample}-REP1.u.bw",
+            "{path}16bigwig/{sample}-REP2.u.bw",
+            "{path}16bigwig/{sample}-REP3.u.bw",
+            "{path}16bigwig/{sample}.all.bw",
+            "{path}15downsample/complexity/{sample}.9.md.bai",
+            "{path}15downsample/complexity/{sample}.8.md.bai",
+            "{path}15downsample/complexity/{sample}.7.md.bai",
+            "{path}15downsample/complexity/{sample}.6.md.bai",
+            "{path}15downsample/complexity/{sample}.5.md.bai",
+            "{path}15downsample/complexity/{sample}.4.md.bai",
+            "{path}15downsample/complexity/{sample}.3.md.bai",
+            "{path}15downsample/complexity/{sample}.2.md.bai",
+            "{path}15downsample/complexity/{sample}.1.md.bai"
+        output:
+            "{path}logs/{sample}.preprocessing.done.txt"
+        shell:
+            "touch {path}logs/{sample}.preprocessing.done.txt"
 ########################################################################################################################################
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
