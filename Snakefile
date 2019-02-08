@@ -1,179 +1,41 @@
 ####################################################################################################################################################################
-################################ File Targets ######################################################################################################################
+################################ H508 WT 01 File Targets ###########################################################################################################
 ####################################################################################################################################################################
+## Raw file info
+# H508-1_S3_L001_R1_001.fastq.gz - Sample 1
+# H508-2_S2_L001_R1_001.fastq.gz - Sample 2
+# H508-3_S1_L001_R1_001.fastq.gz - Sample 3
+#
+## Before running pipeline, rename these to:
+# H508-WT-01_REP1_L1_R1.fastq.gz
+# H508-WT-01_REP2_L1_R1.fastq.gz
+# H508-WT-01_REP3_L1_R1.fastq.gz
 
-########################
-##### SNU61 WT 01 ######
-########################
-## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
-rule snu61_bai:
-        input:
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP1.u.bai",
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP2.u.bai",
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP3.u.bai"
-rule snu61_peaks_ind:
-        input:
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP1_peaks.xls",
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP2_peaks.xls",
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP3_peaks.xls"
-rule snu61_bai_all:
-        input:
-            "snu61/wt01/preprocessing/12all/SNU61-WT-01.all.bai"
-rule snu61_peaks_all:
-        input:
-            "snu61/wt01/preprocessing/13allpeaks/SNU61-WT-01.all_peaks.xls"
-rule snu61_corr_heatmap:
-        input:
-            "snu61/wt01/preprocessing/14qcplots/SNU61-WT-01.spearman.heatmap.svg"
-rule snu61_index_downsampled:
-        input:
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.9.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.8.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.7.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.6.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.5.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.4.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
-## The below rule bw_cov can run the whole pipeline from start to finish
-rule snu61_bwcov:
-        input:
-            "snu61/wt01/preprocessing/16bigwig/SNU61-WT-01.all.bw"
-
-### Use these for footprinting saturation analysis
-rule snu61_footprint_saturation:
-        input:
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.9.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.8.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.7.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.6.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.5.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.4.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.3.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.2.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.1.CTCF.done.txt"
-
-
-## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
-## This method will generate the footprint signals by chromosome and then merge the results
-## NOTE it makes more sense to run the first operations, calc by chr and merge separately, as these can handle 20 threads
-## To parse, use only 4 threads or it may crash from memory overload
-rule snu61_make_fp_bychr_10threads:
-        input:
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt"
-
-## Run me with 4 threads maximum
-rule snu61_coad_footprints_parsed_4threads:
-        input:
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.TCF7.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.POU5F1B.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.HNF4A.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.OVOL1.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.GMEB2.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.CBFA2T2.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.HOXA3.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
-
-
-## heatmaps
-rule snu61_heatmaps:
+rule h508go:
     input:
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CBFA2T2.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif3.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif4.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif3.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif4.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif5.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif6.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif7.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif8.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif9.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif3.heatmap.svg",
-        #"snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif4.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif2.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.OVOL1.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.POU5F1B.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif3.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif4.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif5.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif6.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ZSWIM1.motif1.heatmap.svg"
-
-## Genes with only one motif
-# CBFA2T2
-# POU5F1B
-# ZSWIM1
-# Copy these directly to the merged_motifs folder for downstream analysis (aracne overlaps)
-rule snu61_merge_motifs:
-    input:
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.ESRRA.9.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.CDX2.4.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.MNX1.2.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.TCF7.6.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.GMEB2.3.mergedmotif.Rdata"
-
-rule snu61_aracne_overlap:
-    input:
-        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.9.2101.aracne.Rdata"
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L1_R1.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L2_R1.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L3_R1.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L4_R1.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L1_R2.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L2_R2.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L3_R2.good.fq",
+        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L4_R2.good.fq"
 
 
-########################
-##### LS1034 WT 01 #####
-########################
-rule ls1034_bwcov:
-        input:
-            "ls1034/wt01/preprocessing/16bigwig/LS1034-WT-01.all.bw"
+########################################################################################################################################
+#### PREPROCESSING RULES ###############################################################################################################
+########################################################################################################################################
+rule step1_simplifynames_gunzip:
+        # params: -k keep original files, -c write to standard output
+        input: "{path}preprocessing/1gz/{sample}_L00{lane}_R{read}_001.fastq.gz"
+        output: "{path}preprocessing/2fastq/{sample}_L{lane}_R{read}.fastq"
+        log: "{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
+        shell: "gunzip -k -c {input} > {output}"
 
-####################################################################################################################################################################
-################################ Preprocessing Rules ###############################################################################################################
-####################################################################################################################################################################
-# STEP 1 - GUNZIP FASTQ FILES
-# params: -k keep original files, -c write to standard output
-rule gunzip_namechange:
-        input:
-            "{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz"
-        output:
-            "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
-        shell:
-            "gunzip -k -c {input} > {output}"
-# STEP 2 - FASTQ QUALITY FILTERING WITH AFTERQC
-# param -s is the shortest trimmed read length allowed past QC filter
-rule afterqc_qc:
+
+rule step2_afterqc_fastqfiltering:
+        # params: -s is the shortest trimmed read length allowed past QC filter
         input:
             a="{path}2fastq/{sample}_R1.fastq",
             b="{path}2fastq/{sample}_R2.fastq"
@@ -182,8 +44,8 @@ rule afterqc_qc:
             d="{path}3goodfastq/{sample}_R2.good.fq"
         shell:
             "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b {wildcards.path}3goodfastq -s 15"
-# STEP 3 - ALIGN TO MYCO WITH BOWTIE2
-rule myco_align:
+
+rule step3_mycoalign:
         input:
             a="{path}3goodfastq/{sample}_R1.good.fq",
             b="{path}3goodfastq/{sample}_R2.good.fq"
@@ -191,14 +53,14 @@ rule myco_align:
             "{path}4mycoalign/{sample}.myco.sam"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
-# STEP 4 - ALIGN TO HG38 WITH BOWTIE2
-## params:
-# -q fastq input
-# -p num threads
-# -X1000 align to a maximum of 1000 bp frag length
-# -1/2 inputs
-# -S output
-rule hg38_align:
+
+rule step4_hg38align:
+        # params:
+        # -q fastq input
+        # -p num threads
+        # -X1000 align to a maximum of 1000 bp frag length
+        # -1/2 inputs
+        # -S output
         input:
             a="{path}3goodfastq/{sample}_R1.good.fq",
             b="{path}3goodfastq/{sample}_R2.good.fq",
@@ -207,6 +69,9 @@ rule hg38_align:
             "{path}5hg38align/{sample}.hg38.sam"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
+
+
+
 # STEP 5 - CONVERT SAM TO BAM
 ## params:
 # -Xmx50g set java mem limit to 50 gb
@@ -705,3 +570,154 @@ rule make_aracne_overlap:
         "scripts/snakeFindARACNeFootprintOverlap.R"
 
 ########################################################################
+
+
+
+
+####################################################################################################################################################################
+################################ SNU-61 WT 01 File Targets #########################################################################################################
+####################################################################################################################################################################
+## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
+rule snu61_bai:
+        input:
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP1.u.bai",
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP2.u.bai",
+            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP3.u.bai"
+rule snu61_peaks_ind:
+        input:
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP1_peaks.xls",
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP2_peaks.xls",
+            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP3_peaks.xls"
+rule snu61_bai_all:
+        input:
+            "snu61/wt01/preprocessing/12all/SNU61-WT-01.all.bai"
+rule snu61_peaks_all:
+        input:
+            "snu61/wt01/preprocessing/13allpeaks/SNU61-WT-01.all_peaks.xls"
+rule snu61_corr_heatmap:
+        input:
+            "snu61/wt01/preprocessing/14qcplots/SNU61-WT-01.spearman.heatmap.svg"
+rule snu61_index_downsampled:
+        input:
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.9.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.8.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.7.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.6.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.5.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.4.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
+            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
+## The below rule bw_cov can run the whole pipeline from start to finish
+rule snu61_bwcov:
+        input:
+            "snu61/wt01/preprocessing/16bigwig/SNU61-WT-01.all.bw"
+### Use these for footprinting saturation analysis
+rule snu61_footprint_saturation:
+        input:
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.9.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.8.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.7.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.6.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.5.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.4.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.3.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.2.CTCF.done.txt",
+            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.1.CTCF.done.txt"
+## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
+## This method will generate the footprint signals by chromosome and then merge the results
+## NOTE it makes more sense to run the first operations, calc by chr and merge separately, as these can handle 20 threads
+## To parse, use only 4 threads or it may crash from memory overload
+rule snu61_make_fp_bychr_10threads:
+        input:
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
+            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt"
+## Run me with 4 threads maximum
+rule snu61_coad_footprints_parsed_4threads:
+        input:
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.TCF7.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.POU5F1B.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.HNF4A.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.OVOL1.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.GMEB2.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.CBFA2T2.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.HOXA3.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
+            "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
+## heatmaps
+rule snu61_heatmaps:
+    input:
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CBFA2T2.motif1.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif1.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif2.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif3.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif4.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif1.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif2.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif3.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif4.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif5.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif6.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif7.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif8.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif9.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif1.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif2.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif3.heatmap.svg",
+        #"snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif4.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif1.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif2.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.OVOL1.motif1.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif1.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.POU5F1B.motif1.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif1.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif2.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif3.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif4.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif5.heatmap.svg",
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif6.heatmap.svg",
+        #
+        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ZSWIM1.motif1.heatmap.svg"
+## Genes with only one motif
+# CBFA2T2
+# POU5F1B
+# ZSWIM1
+# Copy these directly to the merged_motifs folder for downstream analysis (aracne overlaps)
+rule snu61_merge_motifs:
+    input:
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.ESRRA.9.mergedmotif.Rdata",
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.CDX2.4.mergedmotif.Rdata",
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.MNX1.2.mergedmotif.Rdata",
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.TCF7.6.mergedmotif.Rdata",
+        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.GMEB2.3.mergedmotif.Rdata"
+rule snu61_aracne_overlap:
+    input:
+        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.9.2101.aracne.Rdata"
+
+####################################################################################################################################################################
+################################ LS1034 WT 01 File Targets #########################################################################################################
+####################################################################################################################################################################
+rule ls1034_bwcov:
+        input:
+            "ls1034/wt01/preprocessing/16bigwig/LS1034-WT-01.all.bw"
