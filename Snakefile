@@ -5,7 +5,7 @@
 # A dry run of the pipeline can be run with:
 # snakemake -np h508go
 # On one of the virtualization servers, run the pipeline with the following to allocate 20 threads and 90 gb max memory (to avoid crashing the process)
-# snakemake -j 20 h508go --reousrces mem_gb=90
+# snakemake -j 20 h508go --resources mem_gb=90
 #
 ## Raw file info
 # H508-1_S3_L001_R1_001.fastq.gz - Sample 1
@@ -263,7 +263,8 @@ rule STEP15_callpeaksmacs2merged:
         # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
         # -p set the p-value cutoff for peak calling
         input:
-            "{path}12all/{sample}.all.bam"
+            "{path}12all/{sample}.all.bam",
+	    "{path}12all/{sample}.all.bai"
         output:
             "{path}13allpeaks/{sample}.all_peaks.xls"
         log:
@@ -318,14 +319,14 @@ rule STEP19_makebigwig_bamcov_merged:
         # -v verbose mode
         # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
         input:
-            "{path}12all/{mergedsample}.all.bam",
-            "{path}12all/{mergedsample}.all.bai"
+            a="{path}12all/{mergedsample}.all.bam",
+            b="{path}12all/{mergedsample}.all.bai"
         output:
             "{path}16bigwig/{mergedsample}.all.bw"
         log:
             "{path}logs/{mergedsample}.makebigwig_bamcov_merged.txt"
         shell:
-            "bamCoverage -b {input} -o {output} -of bigwig -bs 1 -p 20 -v"
+            "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 rule STEP20_downsamplebam:
         # params:
         # -Xmx50g set java mem limit to X gb
