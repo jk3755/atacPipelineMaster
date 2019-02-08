@@ -13,14 +13,7 @@
 
 rule h508go:
     input:
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L1_R1.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L2_R1.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L3_R1.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L4_R1.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L1_R2.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L2_R2.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L3_R2.good.fq",
-        "h508/wt01/preprocessing/3goodfastq/H508-WT-01-REP1_L4_R2.good.fq"
+        "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.done.txt"
 
 
 ########################################################################################################################################
@@ -32,7 +25,6 @@ rule STEP1_simplifynames_gunzip:
         output: "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
         log: "{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
         shell: "gunzip -k -c {input} > {output}"
-
 rule STEP2_afterqc_fastqfiltering:
         # params: -s is the shortest trimmed read length allowed past QC filter
         input:
@@ -42,10 +34,9 @@ rule STEP2_afterqc_fastqfiltering:
             c="{path}3goodfastq/{sample}_R1.good.fq",
             d="{path}3goodfastq/{sample}_R2.good.fq"
         log:
-            "{path}logs/{sample}.L{lane}.R{read}.afterqc_fastqfiltering.txt"
+            "{path}logs/{sample}.afterqc_fastqfiltering.txt"
         shell:
             "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b {wildcards.path}3goodfastq -s 15"
-
 rule STEP3_mycoalign:
         input:
             a="{path}3goodfastq/{sample}_R1.good.fq",
@@ -55,8 +46,7 @@ rule STEP3_mycoalign:
         log:
             "{path}logs/{sample}.mycoalign.txt"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
-
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 rule STEP4_hg38align:
         # params:
         # -q fastq input
@@ -73,8 +63,7 @@ rule STEP4_hg38align:
         log:
             "{path}logs/{sample}.hg38align.txt"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
-
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 rule STEP5_samtobam:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -85,10 +74,9 @@ rule STEP5_samtobam:
         log:
             "{path}logs/{sample}.samtobam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
-
 rule STEP6_addrgandcsbam:
         # note - proper specification of RG tags is critical
         # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
@@ -103,9 +91,9 @@ rule STEP6_addrgandcsbam:
         output:
             "{path}7rgsort/{sample}_L{lane}.rg.cs.bam"
         log:
-            "{path}logs/{sample}.addrgandcsbam.txt"
+            "{path}logs/{sample}.L{lane}.addrgandcsbam.txt"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
             O={output} \
             SORT_ORDER=coordinate \
@@ -114,7 +102,6 @@ rule STEP6_addrgandcsbam:
             RGPL=ILLUMINA \
             RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
             RGSM={wildcards.sample}"
-
 rule STEP7_cleanbam:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -123,12 +110,11 @@ rule STEP7_cleanbam:
         output:
             "{path}7rgsort/{sample}_L{lane}.clean.bam"
         log:
-            "{path}logs/{sample}.cleanbam.txt"
+            "{path}logs/{sample}.L{lane}.cleanbam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
-
 rule STEP8_mergelanes:
         input:
             a="{path}7rgsort/{sample}_L1.clean.bam",
@@ -140,7 +126,7 @@ rule STEP8_mergelanes:
         log:
             "{path}logs/{sample}.mergelanes.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -150,7 +136,6 @@ rule STEP8_mergelanes:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-
 rule STEP9_purgeduplicates:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -162,13 +147,12 @@ rule STEP9_purgeduplicates:
         log:
             "{path}logs/{sample}.purgeduplicates.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
             REMOVE_DUPLICATES=true \
             ASSUME_SORTED=true"
-
 rule STEP10_mapqfilter:
         # STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
         # Notes:
@@ -187,7 +171,6 @@ rule STEP10_mapqfilter:
             "{path}logs/{sample}.mapqfilter.txt"
         shell:
             "samtools view -h -q 2 -b {input} > {output}"
-
 rule STEP11_buildindex:
         # params:
         # -XmxXg set java mem limit to X gb
@@ -198,10 +181,9 @@ rule STEP11_buildindex:
         log:
             "{path}logs/{sample}.buildindex.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-
 rule STEP12_mergereplicates:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -214,7 +196,7 @@ rule STEP12_mergereplicates:
         log:
             "{path}logs/{sample}.mergereplicates.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -223,7 +205,6 @@ rule STEP12_mergereplicates:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-
 rule STEP13_indexmerged:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -232,12 +213,11 @@ rule STEP13_indexmerged:
         output:
             "{path}12all/{mergedsample}.all.bai"
         log:
-            "{path}logs/{sample}.indexmerged.txt"
+            "{path}logs/{mergedsample}.indexmerged.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-
 rule STEP14_callpeaksmac2replicates:
         # notes:
         # because we are going to use the TCGA data downstream likely as a reference point,
@@ -260,10 +240,9 @@ rule STEP14_callpeaksmac2replicates:
         output:
             "{path}11peaks/{sample}-{REP}_peaks.xls"
         log:
-            "{path}logs/{sample}.callpeaksmac2replicates.txt"
+            "{path}logs/{sample}-{REP}.callpeaksmac2replicates.txt"
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
 rule STEP15_callpeaksmacs2merged:
         # notes:
         # because we are going to use the TCGA data downstream likely as a reference point,
@@ -282,14 +261,13 @@ rule STEP15_callpeaksmacs2merged:
         # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
         # -p set the p-value cutoff for peak calling
         input:
-            a="{path}12all/{sample}.all.bam"
+            "{path}12all/{sample}.all.bam"
         output:
             "{path}13allpeaks/{sample}.all_peaks.xls"
         log:
             "{path}logs/{sample}.callpeaksmac2merged.txt"
         shell:
             "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
 rule STEP16_plotcorrspearman:
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
@@ -301,7 +279,6 @@ rule STEP16_plotcorrspearman:
             "{path}logs/{sample}.plotcorrspearman.txt"
         shell:
             "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
-
 rule STEP17_makecorrheatmap:
         input:
             "{path}14qcplots/{sample}.spearman.corrTest"
@@ -344,7 +321,7 @@ rule STEP19_makebigwig_bamcov_merged:
         output:
             "{path}16bigwig/{mergedsample}.all.bw"
         log:
-            "{path}logs/{sample}.makebigwig_bamcov_merged.txt"
+            "{path}logs/{mergedsample}.makebigwig_bamcov_merged.txt"
         shell:
             "bamCoverage -b {input} -o {output} -of bigwig -bs 1 -p 20 -v"
 
@@ -356,9 +333,9 @@ rule STEP20_downsamplebam:
         output:
             "{path}15downsample/{mergedsample}.{prob}.bam"
         log:
-            "{path}logs/{sample}.downsamplebam.txt"
+            "{path}logs/{mergedsample}.{prob}.downsamplebam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
@@ -371,9 +348,9 @@ rule STEP21_sortdownsampled:
         output:
             "{path}15downsample/{mergedsample}.{prob}.cs.bam"
         log:
-            "{path}logs/{sample}.sortdownampled.txt"
+            "{path}logs/{mergedsample}.{prob}.sortdownampled.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
@@ -386,16 +363,36 @@ rule STEP22_markdupdownsampled:
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         log:
-            "{path}logs/{sample}.markdupdownsampled.txt"
+            "{path}logs/{mergedsample}.{prob}.markdupdownsampled.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
              REMOVE_DUPLICATES=true \
              ASSUME_SORTED=true"
 
-rule STEP23_analyze_saturation_complexity
+rule AGGREGATE_preprocessing:
+ 		input:
+ 			"{path}10unique/{sample}-REP1.u.bai",
+ 			"{path}10unique/{sample}-REP2.u.bai",
+ 			"{path}10unique/{sample}-REP3.u.bai",
+ 			"{path}12all/{sample}.all.bai",
+ 			"{path}11peaks/{sample}-REP1_peaks.xls",
+ 			"{path}11peaks/{sample}-REP2_peaks.xls",
+ 			"{path}11peaks/{sample}-REP3_peaks.xls",
+ 			"{path}13allpeaks/{sample}.all_peaks.xls",
+ 			"{path}14qcplots/{sample}.spearman.heatmap.svg",
+ 			"{path}16bigwig/{sample}-REP1.u.bw",
+ 			"{path}16bigwig/{sample}-REP2.u.bw",
+ 			"{path}16bigwig/{sample}-REP3.u.bw",
+ 			"{path}16bigwig/{sample}.all.bw"
+ 		output:
+ 			"{path}logs/{sample}.preprocessing.done.txt"
+ 		shell:
+ 			"touch {path}logs/{sample}.preprocessing.done.txt"
+
+
 
 rule STEP23_indexdownsampled:
         input:
@@ -403,9 +400,9 @@ rule STEP23_indexdownsampled:
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bai"
         log:
-            "{path}logs/{sample}.indexdownsampled.txt"
+            "{path}logs/{mergedsample}.{prob}.indexdownsampled.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 
@@ -413,20 +410,21 @@ rule STEP23_indexdownsampled:
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
 
-rule STEP24_saturation_libcomplexity
+#rule STEP23_analyze_saturation_complexity
+#rule STEP24_saturation_libcomplexity
 
-rule STEP25_saturation_peaks
-input:
-    "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
-output:
-    "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
-log:
-    "{path}logs/{sample}.peaksaturation.txt"
-shell:
-    "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+#rule STEP25_saturation_peaks
+#input:
+#    "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
+#output:
+#    "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
+#log:
+#    "{path}logs/{sample}.peaksaturation.txt"
+#shell:
+#    "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 
-rule STEP26_saturation_footprints
+#rule STEP26_saturation_footprints
 
 # STEP 22 - FOOTPRINT SATURATION Analysis
 rule saturation_makefp_by_chr:
@@ -654,145 +652,3 @@ rule make_aracne_overlap:
         "{path}aracne/{mergedsample}.{gene}.{nummotif}.{entrez}.aracne.Rdata"
     script:
         "scripts/snakeFindARACNeFootprintOverlap.R"
-
-####################################################################################################################################################################
-################################ SNU-61 WT 01 File Targets #########################################################################################################
-####################################################################################################################################################################
-## Run the pipeline all the way up to indexed, deduplicated, uniquely mapped bam files
-rule snu61_bai:
-        input:
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP1.u.bai",
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP2.u.bai",
-            "snu61/wt01/preprocessing/10unique/SNU61-WT-01-REP3.u.bai"
-rule snu61_peaks_ind:
-        input:
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP1_peaks.xls",
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP2_peaks.xls",
-            "snu61/wt01/preprocessing/11peaks/SNU61-WT-01-REP3_peaks.xls"
-rule snu61_bai_all:
-        input:
-            "snu61/wt01/preprocessing/12all/SNU61-WT-01.all.bai"
-rule snu61_peaks_all:
-        input:
-            "snu61/wt01/preprocessing/13allpeaks/SNU61-WT-01.all_peaks.xls"
-rule snu61_corr_heatmap:
-        input:
-            "snu61/wt01/preprocessing/14qcplots/SNU61-WT-01.spearman.heatmap.svg"
-rule snu61_index_downsampled:
-        input:
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.9.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.8.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.7.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.6.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.5.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.4.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
-            "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
-
-## The below rule bw_cov can run the whole pipeline from start to finish
-rule snu61_bwcov:
-        input:
-            "snu61/wt01/preprocessing/16bigwig/SNU61-WT-01.all.bw"
-### Use these for footprinting saturation analysis
-rule snu61_footprint_saturation:
-        input:
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.9.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.8.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.7.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.6.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.5.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.4.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.3.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.2.CTCF.done.txt",
-            "snu61/wt01/preprocessing/15downsample/footprints/parsed/SNU61-WT-01.1.CTCF.done.txt"
-## Used to generate ATAC-seq footprints with ATACseqQC package coad_sites
-## This method will generate the footprint signals by chromosome and then merge the results
-## NOTE it makes more sense to run the first operations, calc by chr and merge separately, as these can handle 20 threads
-## To parse, use only 4 threads or it may crash from memory overload
-rule snu61_make_fp_bychr_10threads:
-        input:
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ASCL2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ESRRA.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.TCF7.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.POU5F1B.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.HNF4A.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.OVOL1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.GMEB2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CBFA2T2.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.HOXA3.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.MNX1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.ZSWIM1.graphs.done.txt",
-            "snu61/wt01/footprints/graphs/SNU61-WT-01.CDX2.graphs.done.txt"
-## Run me with 4 threads maximum
-rule snu61_coad_footprints_parsed_4threads:
-        input:
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.ASCL2.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.ESRRA.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.TCF7.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.POU5F1B.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.HNF4A.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.OVOL1.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.GMEB2.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.CBFA2T2.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.HOXA3.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.MNX1.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.ZSWIM1.parsed.done.txt",
-            "snu61/wt01/footprints/parsed/SNU61-WT-01.CDX2.parsed.done.txt"
-## heatmaps
-rule snu61_heatmaps:
-    input:
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CBFA2T2.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif3.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.CDX2.motif4.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif3.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif4.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif5.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif6.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif7.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif8.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ESRRA.motif9.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif3.heatmap.svg",
-        #"snu61/wt01/footprints/heatmaps/SNU61-WT-01.GMEB2.motif4.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif2.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.OVOL1.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.MNX1.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.POU5F1B.motif1.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif1.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif2.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif3.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif4.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif5.heatmap.svg",
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.TCF7.motif6.heatmap.svg",
-        #
-        "snu61/wt01/footprints/heatmaps/SNU61-WT-01.ZSWIM1.motif1.heatmap.svg"
-## Genes with only one motif
-# CBFA2T2
-# POU5F1B
-# ZSWIM1
-# Copy these directly to the merged_motifs folder for downstream analysis (aracne overlaps)
-rule snu61_merge_motifs:
-    input:
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.ESRRA.9.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.CDX2.4.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.MNX1.2.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.TCF7.6.mergedmotif.Rdata",
-        "snu61/wt01/footprints/merged_motifs/SNU61-WT-01.GMEB2.3.mergedmotif.Rdata"
-rule snu61_aracne_overlap:
-    input:
-        "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.9.2101.aracne.Rdata"
