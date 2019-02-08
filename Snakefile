@@ -11,7 +11,8 @@
 # H508-WT-01_REP3_L1_R1.fastq.gz
 rule h508go:
     input:
-        "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.done.txt"
+        "h508/wt01/preprocessing/logs/H508-WT-01.saturation_analysis.done.txt"
+        #"h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.done.txt"
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -394,11 +395,8 @@ rule STEP24_callpeaksmacs2downsampled:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         output:
             "{path}15downsample/peaks/{mergedsample}.{prob}_peaks.xls"
-        log:
-            "{path}logs/{mergedsample}.{prob}.callpeaksmac2downsampled.txt"
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir {wildcards.path}15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
 rule AGGREGATE_preprocessing:
         input:
             "{path}10unique/{sample}-REP1.u.bai",
@@ -439,7 +437,7 @@ rule AGGREGATE_preprocessing:
 ########################################################################################################################################
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
-rule STEP24_analyzecomplexitysaturation:
+rule STEP25_analyzecomplexitysaturation:
         input:
             "{path}15downsample/complexity/{sample}.9.md.bam",
             "{path}15downsample/complexity/{sample}.8.md.bam",
@@ -454,28 +452,34 @@ rule STEP24_analyzecomplexitysaturation:
             "{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt"
         shell:
             "awk '/ESTIMATED_LIBRARY_SIZE/ { getline; print $10; }' {input} >> {output}"
-
-rule STEP25_analyzepeaksaturation:
+rule STEP26_analyzepeaksaturation:
         input:
-            "{path}13allpeaks/{sample}.all_peaks.xls"
+            "{path}15downsample/peaks/{sample}.9_peaks.xls",
+            "{path}15downsample/peaks/{sample}.8_peaks.xls",
+            "{path}15downsample/peaks/{sample}.7_peaks.xls",
+            "{path}15downsample/peaks/{sample}.6_peaks.xls",
+            "{path}15downsample/peaks/{sample}.5_peaks.xls",
+            "{path}15downsample/peaks/{sample}.4_peaks.xls",
+            "{path}15downsample/peaks/{sample}.3_peaks.xls",
+            "{path}15downsample/peaks/{sample}.2_peaks.xls",
+            "{path}15downsample/peaks/{sample}.1_peaks.xls"
         output:
+            "{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
         shell:
-            "wl -l < {input} > {output}"
+            "wl -l < {input} >> {output}"
 
-#rule STEP25_saturation_peaks
-#input:
-#    "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
-#output:
-#    "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
-#log:
-#    "{path}logs/{sample}.peaksaturation.txt"
-#shell:
-#    "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+rule AGGREGATE_saturationanalysis:
+        input:
+            "{path}logs/{sample}.preprocessing.done.txt",
+            "{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt",
+            "{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
+        output:
+            "{path}logs/{sample}.saturation_analysis.done.txt"
+        shell:
+            "touch {output}"
 
 
-#rule STEP26_saturation_footprints
 
-# STEP 22 - FOOTPRINT SATURATION Analysis
 rule saturation_makefp_by_chr:
     input:
         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
@@ -485,7 +489,6 @@ rule saturation_makefp_by_chr:
         "{path}preprocessing/15downsample/footprints/temp/{mergedsample}.{prob}.{gene}.{chr}.done.txt",
     script:
         "scripts/snakeMakeFPbyChrDownsampled.R"
-#
 rule saturation_merge_chr:
     input:
         "sites/{gene}.sites.Rdata",
@@ -517,7 +520,6 @@ rule saturation_merge_chr:
         "{path}preprocessing/15downsample/footprints/merged/{mergedsample}.{prob}.{gene}.merged.done.txt"
     script:
         "scripts/snakeMergeFPbyChrDownsampled.R"
-#
 rule saturation_make_graphs:
     input:
         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
@@ -528,7 +530,6 @@ rule saturation_make_graphs:
         "{path}preprocessing/15downsample/footprints/graphs/{mergedsample}.{prob}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraphDownsample.R"
-#
 rule saturation_parse_footprints:
     input:
         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
@@ -540,7 +541,6 @@ rule saturation_parse_footprints:
         "{path}preprocessing/15downsample/footprints/parsed/{mergedsample}.{prob}.{gene}.parsed.done.txt"
     script:
         "scripts/snakeParseFPDownsample.R"
-#
 rule makefp_by_chr_downsampled:
     input:
         "{path}complexity/{sample}.{prob}.cs.bam",
@@ -550,7 +550,6 @@ rule makefp_by_chr_downsampled:
         "{path}footprints/temp/{sample}.{gene}.{prob}.{chr}.done.txt"
     script:
         "scripts/snakeMakeFPbyChrDownsampled.R"
-#
 rule merge_chr_downsampled:
     input:
         "sites/{gene}.sites.Rdata",
@@ -582,9 +581,6 @@ rule merge_chr_downsampled:
         "{path}merged/{sample}.{gene}.{prob}.merged.done.txt"
     script:
         "scripts/snakeMergeFPbyChrDownsampled.R"
-#
-# STEP 21 - FOOTPRINT SATURATION analysis
-# must use a few, include CTCF, CDX2, etc
 rule footprint_saturation:
         input:
             "{path}14downsample/complexity/{sample}.09.cs.bam",
@@ -609,6 +605,7 @@ rule footprint_saturation:
             "{path}14downsample/footprints/{sample}.{gene}.done.txt"
         shell:
             "scripts/snakeFootprintSaturation.R"
+
 
 ########################################################################################################################################
 #### Footprint Analysis Rules ##########################################################################################################
