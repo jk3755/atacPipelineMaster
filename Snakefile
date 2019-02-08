@@ -373,6 +373,32 @@ rule STEP23_indexdownsampled:
             "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
+rule STEP24_callpeaksmacs2downsampled:
+        # notes:
+        # because we are going to use the TCGA data downstream likely as a reference point,
+        # we will need to call the peaks in the exact same way as they did in this paper:
+        # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+        # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        # params:
+        # -t input bam file (treatment)
+        # -n base name for output files
+        # --outdir output directory
+        # --shift find all tags in the bam, and shift them by 75 bp
+        # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+        # --nomodel do not use the macs2 function to determine shifting model
+        # --call-summits call the peak summits, detect subpeaks within a peaks
+        # --nolambda do not use local bias correction, use background nolambda
+        # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+        # -p set the p-value cutoff for peak calling
+        input:
+            "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
+        output:
+            "{path}15downsample/peaks/{mergedsample}.{prob}_peaks.xls"
+        log:
+            "{path}logs/{mergedsample}.{prob}.callpeaksmac2downsampled.txt"
+        shell:
+            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir {wildcards.path}15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
 rule AGGREGATE_preprocessing:
         input:
             "{path}10unique/{sample}-REP1.u.bai",
@@ -396,7 +422,16 @@ rule AGGREGATE_preprocessing:
             "{path}15downsample/complexity/{sample}.4.md.bai",
             "{path}15downsample/complexity/{sample}.3.md.bai",
             "{path}15downsample/complexity/{sample}.2.md.bai",
-            "{path}15downsample/complexity/{sample}.1.md.bai"
+            "{path}15downsample/complexity/{sample}.1.md.bai",
+            "{path}15downsample/peaks/{sample}.9_peaks.xls",
+            "{path}15downsample/peaks/{sample}.8_peaks.xls",
+            "{path}15downsample/peaks/{sample}.7_peaks.xls",
+            "{path}15downsample/peaks/{sample}.6_peaks.xls",
+            "{path}15downsample/peaks/{sample}.5_peaks.xls",
+            "{path}15downsample/peaks/{sample}.4_peaks.xls",
+            "{path}15downsample/peaks/{sample}.3_peaks.xls",
+            "{path}15downsample/peaks/{sample}.2_peaks.xls",
+            "{path}15downsample/peaks/{sample}.1_peaks.xls"
         output:
             "{path}logs/{sample}.preprocessing.done.txt"
         shell:
@@ -404,9 +439,28 @@ rule AGGREGATE_preprocessing:
 ########################################################################################################################################
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
+rule STEP24_analyzecomplexitysaturation:
+        input:
+            "{path}15downsample/complexity/{sample}.9.md.bam",
+            "{path}15downsample/complexity/{sample}.8.md.bam",
+            "{path}15downsample/complexity/{sample}.7.md.bam",
+            "{path}15downsample/complexity/{sample}.6.md.bam",
+            "{path}15downsample/complexity/{sample}.5.md.bam",
+            "{path}15downsample/complexity/{sample}.4.md.bam",
+            "{path}15downsample/complexity/{sample}.3.md.bam",
+            "{path}15downsample/complexity/{sample}.2.md.bam",
+            "{path}15downsample/complexity/{sample}.1.md.bam"
+        output:
+            "{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt"
+        shell:
+            "awk '/ESTIMATED_LIBRARY_SIZE/ { getline; print $10; }' {input} >> {output}"
 
-#rule STEP23_analyze_saturation_complexity
-#rule STEP24_saturation_libcomplexity
+rule STEP25_analyzepeaksaturation:
+        input:
+            "{path}13allpeaks/{sample}.all_peaks.xls"
+        output:
+        shell:
+            "wl -l < {input} > {output}"
 
 #rule STEP25_saturation_peaks
 #input:
