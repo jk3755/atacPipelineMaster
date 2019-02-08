@@ -26,15 +26,14 @@ rule h508go:
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
-rule step1_simplifynames_gunzip:
+rule STEP1_simplifynames_gunzip:
         # params: -k keep original files, -c write to standard output
-        input: "{path}preprocessing/1gz/{sample}_L00{lane}_R{read}_001.fastq.gz"
-        output: "{path}preprocessing/2fastq/{sample}_L{lane}_R{read}.fastq"
+        input: "{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz"
+        output: "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
         log: "{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
         shell: "gunzip -k -c {input} > {output}"
 
-
-rule step2_afterqc_fastqfiltering:
+rule STEP2_afterqc_fastqfiltering:
         # params: -s is the shortest trimmed read length allowed past QC filter
         input:
             a="{path}2fastq/{sample}_R1.fastq",
@@ -42,19 +41,23 @@ rule step2_afterqc_fastqfiltering:
         output:
             c="{path}3goodfastq/{sample}_R1.good.fq",
             d="{path}3goodfastq/{sample}_R2.good.fq"
+        log:
+            "{path}logs/{sample}.L{lane}.R{read}.afterqc_fastqfiltering.txt"
         shell:
             "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}3goodfastq -b {wildcards.path}3goodfastq -s 15"
 
-rule step3_mycoalign:
+rule STEP3_mycoalign:
         input:
             a="{path}3goodfastq/{sample}_R1.good.fq",
             b="{path}3goodfastq/{sample}_R2.good.fq"
         output:
             "{path}4mycoalign/{sample}.myco.sam"
+        log:
+            "{path}logs/{sample}.mycoalign.txt"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 
-rule step4_hg38align:
+rule STEP4_hg38align:
         # params:
         # -q fastq input
         # -p num threads
@@ -67,37 +70,40 @@ rule step4_hg38align:
             c="{path}4mycoalign/{sample}.myco.sam"
         output:
             "{path}5hg38align/{sample}.hg38.sam"
+        log:
+            "{path}logs/{sample}.hg38align.txt"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 
-
-
-# STEP 5 - CONVERT SAM TO BAM
-## params:
-# -Xmx50g set java mem limit to 50 gb
-rule sam_to_bam:
+rule STEP5_samtobam:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}5hg38align/{sample}.hg38.sam"
         output:
             "{path}6rawbam/{sample}.bam"
+        log:
+            "{path}logs/{sample}.samtobam.txt"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
-# STEP 6
-# note - proper specification of RG tags is critical
-# see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
-## Required @RG parameter specifications:
-# RGID (read group ID) - this must be a globally unique string. for illumina data, use flowcell + lane
-# RGLB (read group library) - This is used by MarkDuplicates to collect reads from the same library on different lanes, so it must be common to all files from the same library
-# RGPL (read group platform) - ILLUMINA
-# RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
-# RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
-rule add_rg_and_cs_bam:
+
+rule STEP6_addrgandcsbam:
+        # note - proper specification of RG tags is critical
+        # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
+        # Required @RG parameter specifications:
+        # RGID (read group ID) - this must be a globally unique string. for illumina data, use flowcell + lane
+        # RGLB (read group library) - This is used by MarkDuplicates to collect reads from the same library on different lanes, so it must be common to all files from the same library
+        # RGPL (read group platform) - ILLUMINA
+        # RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
+        # RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
         input:
             "{path}6rawbam/{sample}_L{lane}.bam"
         output:
             "{path}7rgsort/{sample}_L{lane}.rg.cs.bam"
+        log:
+            "{path}logs/{sample}.addrgandcsbam.txt"
         shell:
             "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
@@ -108,18 +114,22 @@ rule add_rg_and_cs_bam:
             RGPL=ILLUMINA \
             RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
             RGSM={wildcards.sample}"
-# STEP 7 - CLEAN BAM FILES
-rule clean_bam:
+
+rule STEP7_cleanbam:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}7rgsort/{sample}_L{lane}.rg.cs.bam"
         output:
             "{path}7rgsort/{sample}_L{lane}.clean.bam"
+        log:
+            "{path}logs/{sample}.cleanbam.txt"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
-# STEP 8 - MERGE LANES
-rule merge_lanes:
+
+rule STEP8_mergelanes:
         input:
             a="{path}7rgsort/{sample}_L1.clean.bam",
             b="{path}7rgsort/{sample}_L2.clean.bam",
@@ -127,8 +137,10 @@ rule merge_lanes:
             d="{path}7rgsort/{sample}_L4.clean.bam"
         output:
             "{path}8merged/{sample}.m.bam"
+        log:
+            "{path}logs/{sample}.mergelanes.txt"
         shell:
-            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -138,59 +150,71 @@ rule merge_lanes:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-# STEP 9 - PURGE PCR DUPLICATES
-rule purge_duplicates:
+
+rule STEP9_purgeduplicates:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}8merged/{sample}.m.bam"
         output:
             a="{path}9dedup/{sample}.dp.bam",
             b="{path}9dedup/{sample}.metrics.txt"
+        log:
+            "{path}logs/{sample}.purgeduplicates.txt"
         shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
             REMOVE_DUPLICATES=true \
             ASSUME_SORTED=true"
-# STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
-## Notes:
-# for an explanation of how bowtie2 calculates mapq scores:
-# http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
-# for bowtie2, mapq higher than 2 is a uniquely mapped read
-## params:
-# -h include the header in the output
-# -q only include reads with mapping quality X or higher
-# -b output as a bam file
-rule mapq_filter:
+
+rule STEP10_mapqfilter:
+        # STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
+        # Notes:
+        # for an explanation of how bowtie2 calculates mapq scores:
+        # http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
+        # for bowtie2, mapq higher than 2 is a uniquely mapped read
+        # params:
+        # -h include the header in the output
+        # -q only include reads with mapping quality X or higher
+        # -b output as a bam file
         input:
             "{path}9dedup/{sample}.dp.bam"
         output:
-            a="{path}10unique/{sample}.u.bam",
+            "{path}10unique/{sample}.u.bam"
+        log:
+            "{path}logs/{sample}.mapqfilter.txt"
         shell:
             "samtools view -h -q 2 -b {input} > {output}"
-# STEP 11 - BUILD AN INDEX OF THE FINAL BAM FILES
-rule build_index:
+
+rule STEP11_buildindex:
+        # params:
+        # -XmxXg set java mem limit to X gb
         input:
             "{path}10unique/{sample}.u.bam"
         output:
             "{path}10unique/{sample}.u.bai"
+        log:
+            "{path}logs/{sample}.buildindex.txt"
         shell:
-            "java -Xmx30g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-# STEP 12 - MERGE REPLICATES
-rule merge_replicates:
+
+rule STEP12_mergereplicates:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
-            c="{path}10unique/{sample}-REP3.u.bam",
-            d="{path}10unique/{sample}-REP1.u.bai",
-            e="{path}10unique/{sample}-REP2.u.bai",
-            f="{path}10unique/{sample}-REP3.u.bai"
+            c="{path}10unique/{sample}-REP3.u.bam"
         output:
             "{path}12all/{sample}.all.bam"
+        log:
+            "{path}logs/{sample}.mergereplicates.txt"
         shell:
-            "java -Xmx80g -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -199,150 +223,211 @@ rule merge_replicates:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-# STEP 13 - INDEX BAM MERGED REPLICATES
-rule index_merged:
+
+rule STEP13_indexmerged:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}12all/{mergedsample}.all.bam"
         output:
             "{path}12all/{mergedsample}.all.bai"
+        log:
+            "{path}logs/{sample}.indexmerged.txt"
         shell:
-            "java -Xmx50g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-# STEP 14 - IND CALL PEAKS WITH MACS2
-## notes:
-# because we are going to use the TCGA data downstream likely as a reference point,
-# we will need to call the peaks in the exact same way as they did in this paper:
-# http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-# which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-## params:
-# -t input bam file (treatment)
-# -n base name for output files
-# --outdir output directory
-# --shift find all tags in the bam, and shift them by 75 bp
-# --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-# --nomodel do not use the macs2 function to determine shifting model
-# --call-summits call the peak summits, detect subpeaks within a peaks
-# --nolambda do not use local bias correction, use background nolambda
-# --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-# -p set the p-value cutoff for peak calling
-rule peaks_macs2_ind:
+
+rule STEP14_callpeaksmac2replicates:
+        # notes:
+        # because we are going to use the TCGA data downstream likely as a reference point,
+        # we will need to call the peaks in the exact same way as they did in this paper:
+        # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+        # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        ## params:
+        # -t input bam file (treatment)
+        # -n base name for output files
+        # --outdir output directory
+        # --shift find all tags in the bam, and shift them by 75 bp
+        # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+        # --nomodel do not use the macs2 function to determine shifting model
+        # --call-summits call the peak summits, detect subpeaks within a peaks
+        # --nolambda do not use local bias correction, use background nolambda
+        # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+        # -p set the p-value cutoff for peak calling
         input:
             "{path}10unique/{sample}-{REP}.u.bam"
         output:
             "{path}11peaks/{sample}-{REP}_peaks.xls"
+        log:
+            "{path}logs/{sample}.callpeaksmac2replicates.txt"
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-# STEP 14 - MERGED CALL PEAKS WITH MACS2
-## notes:
-# because we are going to use the TCGA data downstream likely as a reference point,
-# we will need to call the peaks in the exact same way as they did in this paper:
-# http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-# which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-## params:
-# -t input bam file (treatment)
-# -n base name for output files
-# --outdir output directory
-# --shift find all tags in the bam, and shift them by 75 bp
-# --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-# --nomodel do not use the macs2 function to determine shifting model
-# --call-summits call the peak summits, detect subpeaks within a peaks
-# --nolambda do not use local bias correction, use background nolambda
-# --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-# -p set the p-value cutoff for peak calling
-rule peaks_macs2_merged:
+
+rule STEP15_callpeaksmacs2merged:
+        # notes:
+        # because we are going to use the TCGA data downstream likely as a reference point,
+        # we will need to call the peaks in the exact same way as they did in this paper:
+        # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+        # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        # params:
+        # -t input bam file (treatment)
+        # -n base name for output files
+        # --outdir output directory
+        # --shift find all tags in the bam, and shift them by 75 bp
+        # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+        # --nomodel do not use the macs2 function to determine shifting model
+        # --call-summits call the peak summits, detect subpeaks within a peaks
+        # --nolambda do not use local bias correction, use background nolambda
+        # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+        # -p set the p-value cutoff for peak calling
         input:
-            a="{path}12all/{sample}.all.bam",
-            b="{path}12all/{sample}.all.bai",
-            c="{path}11peaks/{sample}-REP1_peaks.xls",
-            d="{path}11peaks/{sample}-REP2_peaks.xls",
-            e="{path}11peaks/{sample}-REP3_peaks.xls"
+            a="{path}12all/{sample}.all.bam"
         output:
             "{path}13allpeaks/{sample}.all_peaks.xls"
+        log:
+            "{path}logs/{sample}.callpeaksmac2merged.txt"
         shell:
             "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-# STEP 15 - PLOT REPLICATE CORRELATION
-rule plot_corr_spearman:
+
+rule STEP16_plotcorrspearman:
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
-            c="{path}10unique/{sample}-REP3.u.bam",
-            d="{path}13allpeaks/{sample}.all_peaks.xls"
+            c="{path}10unique/{sample}-REP3.u.bam"
         output:
             "{path}14qcplots/{sample}.spearman.corrTest"
+        log:
+            "{path}logs/{sample}.plotcorrspearman.txt"
         shell:
             "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
-# STEP 16 - MAKE CORRELATION HEATMAP
-rule make_corr_heatmap:
+
+rule STEP17_makecorrheatmap:
         input:
             "{path}14qcplots/{sample}.spearman.corrTest"
         output:
             "{path}14qcplots/{sample}.spearman.heatmap.svg"
+        log:
+            "{path}logs/{sample}.makecorrheatmap.txt"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
-# STEP 17 - DOWNSAMPLE FOR SATURATION ANALYSIS
-rule downsample_bam:
+
+rule STEP18_makebigwig_bamcov_individual:
+        # params:
+        # -b bam input
+        # -o output file
+        # -of output format
+        # -bs binsize in bp
+        # -p number of processors to use
+        # -v verbose mode
+        # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+        input:
+            a="{path}10unique/{sample}.u.bam"
+        output:
+            "{path}16bigwig/{sample}.u.bw"
+        log:
+            "{path}logs/{sample}.makebigwig_bamcov_individual.txt"
+        shell:
+            "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
+rule STEP19_makebigwig_bamcov_merged:
+        # params:
+        # -b bam input
+        # -o output file
+        # -of output format
+        # -bs binsize in bp
+        # -p number of processors to use
+        # -v verbose mode
+        # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+        input:
+            "{path}12all/{mergedsample}.all.bam"
+        output:
+            "{path}16bigwig/{mergedsample}.all.bw"
+        log:
+            "{path}logs/{sample}.makebigwig_bamcov_merged.txt"
+        shell:
+            "bamCoverage -b {input} -o {output} -of bigwig -bs 1 -p 20 -v"
+
+rule STEP20_downsamplebam:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}12all/{mergedsample}.all.bam"
         output:
             "{path}15downsample/{mergedsample}.{prob}.bam"
+        log:
+            "{path}logs/{sample}.downsamplebam.txt"
         shell:
-            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
-# STEP 18 - COORDINATE SORT DOWNSAMPLED
-rule sort_downsampled:
+
+rule STEP21_sortdownsampled:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}15downsample/{mergedsample}.{prob}.bam"
         output:
             "{path}15downsample/{mergedsample}.{prob}.cs.bam"
+        log:
+            "{path}logs/{sample}.sortdownampled.txt"
         shell:
-            "java -Xmx9g -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
-# STEP 19 - MARK DUPLICATES DOWNSAMPLED AND LIBRARY COMPLEXITY SATURATION ANALYSIS
-rule markdup_downsampled:
+
+rule STEP22_markdupdownsampled:
+        # params:
+        # -Xmx50g set java mem limit to X gb
         input:
             "{path}15downsample/{mergedsample}.{prob}.cs.bam"
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
+        log:
+            "{path}logs/{sample}.markdupdownsampled.txt"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
              REMOVE_DUPLICATES=true \
              ASSUME_SORTED=true"
-# STEP 20 - INDEX DUPLICATE PURGED DOWNSAMPLES BAM
-rule index_downsampled:
+
+rule STEP23_analyze_saturation_complexity
+
+rule STEP23_indexdownsampled:
         input:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         output:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bai"
+        log:
+            "{path}logs/{sample}.indexdownsampled.txt"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-# STEP 21 - Generate bigwig files with deeptools/bamCoverage/bamCompate for genome browser viewing
-# parameters: -b bam input, -o output file, -of output format, -bs bin size in bp, -p number of processors to use, -v verbose mode, --normalizeUsing RPKM (reads per kilobase per million mapped)
-rule make_bigwig_bamcov:
-        input:
-            a="{path}12all/{mergedsample}.all.bam",
-            b="{path}12all/{mergedsample}.all.bai",
-        output:
-            "{path}16bigwig/{mergedsample}.all.bw"
-        shell:
-            "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v --normalizeUsing RPKM"
-# STEP 21 - PEAK SATURATION ANALYSIS
-rule peak_saturation_macs2:
-        input:
-            "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
-        output:
-            "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
-        shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+########################################################################################################################################
+#### Saturation Analysis Rules #########################################################################################################
+########################################################################################################################################
+
+rule STEP24_saturation_libcomplexity
+
+rule STEP25_saturation_peaks
+input:
+    "{path}14downsample/complexity/{sample}.{prob}.cs.bam"
+output:
+    "{path}14downsample/peaks/{sample}.{prob}.peaks.xls"
+log:
+    "{path}logs/{sample}.peaksaturation.txt"
+shell:
+    "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.num} --outdir {path}14downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+
+rule STEP26_saturation_footprints
+
 # STEP 22 - FOOTPRINT SATURATION Analysis
 rule saturation_makefp_by_chr:
     input:
@@ -477,9 +562,10 @@ rule footprint_saturation:
             "{path}14downsample/footprints/{sample}.{gene}.done.txt"
         shell:
             "scripts/snakeFootprintSaturation.R"
-####################################################################################################################################################################
-################################ Footprint Analysis Rules ##########################################################################################################
-####################################################################################################################################################################
+
+########################################################################################################################################
+#### Footprint Analysis Rules ##########################################################################################################
+########################################################################################################################################
 rule makefp_by_chr:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -569,11 +655,6 @@ rule make_aracne_overlap:
     script:
         "scripts/snakeFindARACNeFootprintOverlap.R"
 
-########################################################################
-
-
-
-
 ####################################################################################################################################################################
 ################################ SNU-61 WT 01 File Targets #########################################################################################################
 ####################################################################################################################################################################
@@ -608,6 +689,7 @@ rule snu61_index_downsampled:
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.3.md.bai",
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.2.md.bai",
             "snu61/wt01/preprocessing/15downsample/complexity/SNU61-WT-01.1.md.bai"
+
 ## The below rule bw_cov can run the whole pipeline from start to finish
 rule snu61_bwcov:
         input:
@@ -714,10 +796,3 @@ rule snu61_merge_motifs:
 rule snu61_aracne_overlap:
     input:
         "snu61/wt01/footprints/aracne/SNU61-WT-01.ESRRA.9.2101.aracne.Rdata"
-
-####################################################################################################################################################################
-################################ LS1034 WT 01 File Targets #########################################################################################################
-####################################################################################################################################################################
-rule ls1034_bwcov:
-        input:
-            "ls1034/wt01/preprocessing/16bigwig/LS1034-WT-01.all.bw"
