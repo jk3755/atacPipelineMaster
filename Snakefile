@@ -1,6 +1,6 @@
-####################################################################################################################################################################
-################################ H508 WT 01 File Targets ###########################################################################################################
-####################################################################################################################################################################
+###########################################################################################################################################
+################################ GENERAL INFO #############################################################################################
+###########################################################################################################################################
 ## Snakemake execution guide
 # A dry run of the pipeline can be run with:
 # snakemake -np h508go
@@ -15,19 +15,31 @@
 # H508-WT-01_REP1_L1_R1.fastq.gz
 # H508-WT-01_REP2_L1_R1.fastq.gz
 # H508-WT-01_REP3_L1_R1.fastq.gz
-rule h508go:
+#
+#######################################################################################################################
+#### SPOOL PIPELINE RULES #############################################################################################
+#######################################################################################################################
+
+rule run_h508wt01:
     input:
     	"h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
-rule ls1034go:
+
+rule run_ls1034wt01:
     input:
     	"ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
-rule snu61go:
+
+rule run_snu61wt01:
 	input:
 		"snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
 
-rule sample_correlation_h508_snu61_ls1034:
+rule run_xsample_corr_h508_snu61_ls1034:
 	input:
 		"xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+
+rule run_xsample_corr_replicates_h508_snu61_ls1034:
+	input:
+		"xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -703,6 +715,38 @@ rule threesample_plotcorrspearman:
 rule threesample_makecorrheatmap:
         input:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
+        output:
+            "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.heatmap.svg"
+        shell:
+            "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
+
+rule ninesample_plotcorrspearman:
+		# parameters:
+		# -b input bam files
+		# -o output file name
+		# -bs set the bin size used for comparison, default is 10000 bp
+		# -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+		# -p set the number of computing processors to use
+		# -v verbose mode
+		# For processing nine sample, restrict analysis to chr1, or computation will take forever
+        input:
+            a="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
+            b="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
+            c="{sample1}/{wt1}{num1}/preprocessing/10unique/{s3}-REP3.u.bam",
+            d="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
+            e="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
+            f="{sample1}/{wt1}{num1}/preprocessing/10unique/{s3}-REP3.u.bam",
+            g="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
+            h="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
+            i="{sample1}/{wt1}{num1}/preprocessing/10unique/{s3}-REP3.u.bam"
+        output:
+            "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.REPS.spearman.corrTest"
+        shell:
+            "multiBamSummary bins -b {input.a} {input.b} {input.c} {input.d} {input.e} {input.f} {input.g} {input.h} {input.i} -o {output} -bs 10000 -p 20 -v -r chr1"
+
+rule ninesample_makecorrheatmap:
+        input:
+            "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.REPS.spearman.corrTest"
         output:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.heatmap.svg"
         shell:
