@@ -303,6 +303,13 @@ rule STEP15_callpeaksmacs2merged:
         shell:
             "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 rule STEP16_plotcorrspearman:
+		# parameters:
+		# -b input bam files
+		# -o output file name
+		# -bs set the bin size used for comparison, default is 10000 bp
+		# -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+		# -p set the number of computing processors to use
+		# -v verbose mode
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
@@ -678,6 +685,13 @@ rule make_aracne_overlap:
 ########################################################################################################################################
 
 rule threesample_plotcorrspearman:
+		# parameters:
+		# -b input bam files
+		# -o output file name
+		# -bs set the bin size used for comparison, default is 10000 bp
+		# -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+		# -p set the number of computing processors to use
+		# -v verbose mode
         input:
             a="{sample1}/{wt1}{num1}/preprocessing/12all/{s1}.bam",
             b="{sample1}/{wt1}{num1}/preprocessing/12all/{s2}.bam",
@@ -685,7 +699,7 @@ rule threesample_plotcorrspearman:
         output:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
         shell:
-            "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
+            "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
 rule threesample_makecorrheatmap:
         input:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
