@@ -331,7 +331,7 @@ rule STEP16_plotcorrspearman:
         log:
             "{path}logs/{sample}.plotcorrspearman.txt"
         shell:
-            "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
+            "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
 rule STEP17_makecorrheatmap:
         input:
             "{path}14qcplots/{sample}.spearman.corrTest"
