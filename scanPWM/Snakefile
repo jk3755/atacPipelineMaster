@@ -10,6 +10,18 @@
 # 'TFAP2A(var.2).sites.Rdata', 'TFAP2B(var.2).sites.Rdata', 'TFAP2B(var.3).sites.Rdata', 'TFAP2C(var.2).sites.Rdata', 'TFAP2C(var.3).sites.Rdata', 'SREBF2(var.2).sites.Rdata', 'TFAP2A(var.3).sites.Rdata',
 # 'TFAP2A(var.2).sites.Rdata', 'TFAP2B(var.2).sites.Rdata', 'TFAP2B(var.3).sites.Rdata', 'RARA(var.2).sites.Rdata',
 
+rule runmotifscan:
+		input:
+			"logs/all.done.txt"
+
+###################################################################################################################
+rule scanPWM:
+        output:
+            "{gene}.sites.Rdata"
+        script:
+            "scripts/scanMotifs.R"
+##################################################################################################################
+
 rule group1:
 	input:
 		'TFAP2A.sites.Rdata', 'NFIL3.sites.Rdata', 'HLF.sites.Rdata', 'NHLH1.sites.Rdata', 'MAX.sites.Rdata', 'USF1.sites.Rdata', 'CEBPA.sites.Rdata', 'EBF1.sites.Rdata', 'CEBPB.sites.Rdata', 'FOS.sites.Rdata',
@@ -34,6 +46,10 @@ rule group1:
 		'DPRX.sites.Rdata', 'DRGX.sites.Rdata', 'DUXA.sites.Rdata', 'E2F1.sites.Rdata', 'E2F2.sites.Rdata', 'EGR4.sites.Rdata', 'EHF.sites.Rdata', 'ELF1.sites.Rdata', 'ELF2.sites.Rdata',
 		'ELF3.sites.Rdata', 'ELF5.sites.Rdata', 'ELK1.sites.Rdata', 'ELK3.sites.Rdata', 'ELK4.sites.Rdata', 'EMX1.sites.Rdata', 'EGR4.sites.Rdata', 'EHF.sites.Rdata', 'ELF1.sites.Rdata',
 		'ELF2.sites.Rdata', 'ELF3.sites.Rdata', 'ELF5.sites.Rdata', 'ELK1.sites.Rdata', 'ELK3.sites.Rdata', 'ELK4.sites.Rdata', 'EMX1.sites.Rdata'
+	output:
+		"logs/group1.done.txt"
+	shell:
+		"touch {output}"
 
 rule group2:
 	input:
@@ -60,6 +76,10 @@ rule group2:
 		'MYBB.sites.Rdata', 'MYB.sites.Rdata', 'MZF1.sites.Rdata', 'NANOG.sites.Rdata', 'NDF1.sites.Rdata', 'NDF2.sites.Rdata', 'NF2L1.sites.Rdata', 'NF2L2.sites.Rdata', 'NFAC1.sites.Rdata',
 		'NFAC2.sites.Rdata', 'MYBB.sites.Rdata', 'MYB.sites.Rdata', 'MZF1.sites.Rdata', 'NANOG.sites.Rdata', 'NDF1.sites.Rdata', 'NDF2.sites.Rdata', 'NF2L1.sites.Rdata', 'NF2L2.sites.Rdata',
 		'NFAC1.sites.Rdata', 'NFAC2.sites.Rdata'
+	output:
+		"logs/group2.done.txt"
+	shell:
+		"touch {output}"
 
 rule group3:
 	input:
@@ -86,6 +106,10 @@ rule group3:
 		'TGIF2.sites.Rdata', 'THAP1.sites.Rdata', 'THA.sites.Rdata', 'THB.sites.Rdata', 'TLX1.sites.Rdata', 'TWST1.sites.Rdata', 'TYY1.sites.Rdata', 'TYY2.sites.Rdata', 'UBIP1.sites.Rdata',
 		'UNC4.sites.Rdata', 'TGIF2.sites.Rdata', 'THAP1.sites.Rdata', 'THA.sites.Rdata', 'THB.sites.Rdata', 'TLX1.sites.Rdata', 'TWST1.sites.Rdata', 'TYY1.sites.Rdata', 'TYY2.sites.Rdata',
 		'UBIP1.sites.Rdata', 'UNC4.sites.Rdata'
+	output:
+		"logs/group3.done.txt"
+	shell:
+		"touch {output}"
 
 rule group4:
 	input:
@@ -112,6 +136,10 @@ rule group4:
 		'KIF22.sites.Rdata', 'LARP1.sites.Rdata', 'LARP4.sites.Rdata', 'MAGEF1.sites.Rdata', 'MAGOH.sites.Rdata', 'MAP4K2.sites.Rdata', 'MAPK1.sites.Rdata', 'MBTPS2.sites.Rdata', 'MCTP2.sites.Rdata',
 		'MDM2.sites.Rdata', 'MEF2BNB-MEF2B.sites.Rdata', 'GLTPD1.sites.Rdata', 'RBM42.sites.Rdata', 'MAGEF1.sites.Rdata', 'MAGOH.sites.Rdata', 'MAP4K2.sites.Rdata', 'MAPK1.sites.Rdata', 'MBTPS2.sites.Rdata',
 		'MCTP2.sites.Rdata', 'MDM2.sites.Rdata', 'MEF2BNB-MEF2B.sites.Rdata', 'GLTPD1.sites.Rdata', 'RBM42.sites.Rdata'
+	output:
+		"logs/group4.done.txt"
+	shell:
+		"touch {output}"
 
 rule group5:
 	input:
@@ -138,6 +166,10 @@ rule group5:
 		'ZMAT2.sites.Rdata', 'ZMAT4.sites.Rdata', 'ZNF124.sites.Rdata', 'ZNF131.sites.Rdata', 'ZNF160.sites.Rdata', 'ZKSCAN8.sites.Rdata', 'ZSCAN9.sites.Rdata', 'ZNF205.sites.Rdata', 'ZNF207.sites.Rdata',
 		'ZBTB18.sites.Rdata', 'ZMAT2.sites.Rdata', 'ZMAT4.sites.Rdata', 'ZNF124.sites.Rdata', 'ZNF131.sites.Rdata', 'ZNF160.sites.Rdata', 'ZKSCAN8.sites.Rdata', 'ZSCAN9.sites.Rdata', 'ZNF205.sites.Rdata',
 		'ZNF207.sites.Rdata', 'ZBTB18.sites.Rdata'
+	output:
+		"logs/group5.done.txt"
+	shell:
+		"touch {output}"
 
 rule group6:
 	input:
@@ -161,6 +193,10 @@ rule group6:
 		'HOXA7.sites.Rdata', 'HOXA9.sites.Rdata', 'HOXB1.sites.Rdata', 'HOXB4.sites.Rdata', 'HOXB6.sites.Rdata', 'HOXB7.sites.Rdata', 'HOXB8.sites.Rdata', 'HOXC4.sites.Rdata', 'HOXC5.sites.Rdata',
 		'HOXC6.sites.Rdata', 'HOXA7.sites.Rdata', 'HOXA9.sites.Rdata', 'HOXB1.sites.Rdata', 'HOXB4.sites.Rdata', 'HOXB6.sites.Rdata', 'HOXB7.sites.Rdata', 'HOXB8.sites.Rdata', 'HOXC4.sites.Rdata',
 		'HOXC5.sites.Rdata', 'HOXC6.sites.Rdata'
+	output:
+		"logs/group6.done.txt"
+	shell:
+		"touch {output}"
 
 rule group7:
 	input:
@@ -173,11 +209,21 @@ rule group7:
 		'TAF1.sites.Rdata', 'TBL1XR1.sites.Rdata', 'TCF21.sites.Rdata', 'TFAP2E.sites.Rdata', 'TFCP2L1.sites.Rdata', 'TLX2.sites.Rdata', 'ZNF274.sites.Rdata', 'ZNF281.sites.Rdata', 'ZNF333.sites.Rdata',
 		'ZNF350.sites.Rdata', 'ZNF35.sites.Rdata', 'ZNF384.sites.Rdata', 'ZNF423.sites.Rdata', 'ZNF652.sites.Rdata', 'ZNF691.sites.Rdata', 'ZNF711.sites.Rdata', 'ZNF274.sites.Rdata', 'ZNF281.sites.Rdata',
 		'ZNF333.sites.Rdata', 'ZNF350.sites.Rdata', 'ZNF35.sites.Rdata', 'ZNF384.sites.Rdata', 'ZNF423.sites.Rdata', 'ZNF652.sites.Rdata', 'ZNF691.sites.Rdata', 'ZNF711.sites.Rdata'
+	output:
+		"logs/group7.done.txt"
+	shell:
+		"touch {output}"
 
-###################################################################################################################
-rule scanPWM:
-        output:
-            "{gene}.sites.Rdata"
-        script:
-            "scripts/scanMotifs.R"
-##################################################################################################################
+rule AGGREGATE_groups:
+	input:
+		"logs/group1.done.txt",
+		"logs/group2.done.txt",
+		"logs/group3.done.txt",
+		"logs/group4.done.txt",
+		"logs/group5.done.txt",
+		"logs/group6.done.txt",
+		"logs/group7.done.txt"
+	output:
+		"logs/all.done.txt"
+	shell:
+		"touch {output}"
