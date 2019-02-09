@@ -24,6 +24,10 @@ rule ls1034go:
 rule snu61go:
 	input:
 		"snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
+
+rule sample_correlation_h508_snu61_ls1034:
+	input:
+		"xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -43,7 +47,6 @@ rule PREP_builddirstructure:
 			mkdir -p -v {wildcards.path}preprocessing/15downsample/complexity {wildcards.path}preprocessing/15downsample/footprints {wildcards.path}preprocessing/15downsample/peaks
 			touch {wildcards.path}1gz/snu61_dirtree.built.done
 			"""
-
 rule STEP1_simplifynames_gunzip:
         # params: -k keep original files, -c write to standard output
         input: 
@@ -488,7 +491,6 @@ rule CLEAN_preprocessing:
             touch {output}
             """
 
-
 ########################################################################################################################################
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
@@ -531,8 +533,6 @@ rule AGGREGATE_saturationanalysis:
 			"{path}logs/{sample}.saturation_analysis.done.txt"
 		shell:
 			"touch {output}"
-
-
 
 ## NOT WORKING YET ##
 # rule STEP27_makefpbychr_downsampled:
@@ -599,7 +599,6 @@ rule makefp_by_chr:
         "{path}footprints/temp/{mergedsample}.{gene}.{chr}.done.txt"
     script:
         "scripts/snakeMakeFPbyChr.R"
-
 rule merge_chr:
     input:
         "sites/{gene}.sites.Rdata",
@@ -631,7 +630,6 @@ rule merge_chr:
         "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
     script:
         "scripts/snakeMergeFPbyChr.R"
-
 rule make_graphs:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -642,7 +640,6 @@ rule make_graphs:
         "{path}footprints/graphs/{mergedsample}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraph.R"
-
 rule parse_footprints:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -654,7 +651,6 @@ rule parse_footprints:
         "{path}footprints/parsed/{mergedsample}.{gene}.parsed.done.txt"
     script:
         "scripts/snakeParseFP.R"
-
 rule make_parsed_heatmaps:
     input:
         "{path}footprints/parsed/{mergedsample}.{gene}.motif{motif}.info.Rdata",
@@ -662,7 +658,6 @@ rule make_parsed_heatmaps:
         "{path}footprints/heatmaps/{mergedsample}.{gene}.motif{motif}.heatmap.svg"
     script:
         "scripts/snakeFootprintHeatmaps.R"
-
 rule make_merged_motifs:
     input:
         "{path}parsed/{mergedsample}.{gene}.parsed.done.txt"
@@ -670,7 +665,6 @@ rule make_merged_motifs:
         "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
     script:
         "scripts/snakeMergeMotifs.R"
-
 rule make_aracne_overlap:
     input:
         "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
@@ -678,3 +672,24 @@ rule make_aracne_overlap:
         "{path}aracne/{mergedsample}.{gene}.{nummotif}.{entrez}.aracne.Rdata"
     script:
         "scripts/snakeFindARACNeFootprintOverlap.R"
+
+########################################################################################################################################
+#### Analysis Rules ####################################################################################################################
+########################################################################################################################################
+
+rule threesample_plotcorrspearman:
+        input:
+            a="{sample1}/{wt1}{num1}/preprocessing/12all/{s1}.bam",
+            b="{sample1}/{wt1}{num1}/preprocessing/12all/{s2}.bam",
+            c="{sample1}/{wt1}{num1}/preprocessing/12all/{s3}.bam"
+        output:
+            "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
+        shell:
+            "multiBamSummary bins --bamfiles {input.a} {input.b} {input.c} --outFileName {output}"
+rule threesample_makecorrheatmap:
+        input:
+            "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
+        output:
+            "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.heatmap.svg"
+        shell:
+            "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
