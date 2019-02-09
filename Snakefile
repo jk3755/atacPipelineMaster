@@ -17,7 +17,7 @@
 # H508-WT-01_REP3_L1_R1.fastq.gz
 rule h508go:
     input:
-    	"h508/wt01/preprocessing/logs/H508-WT-01.saturation_analysis.done.txt"
+    	"h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -365,7 +365,7 @@ rule STEP22_markdupdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.markdupdownsampled.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
@@ -442,6 +442,25 @@ rule AGGREGATE_preprocessing:
  			"{path}logs/{sample}.preprocessing.done.txt"
  		shell:
  			"touch {wildcards.path}logs/{wildcards.sample}.preprocessing.done.txt"
+rule CLEAN_preprocessing:
+        input:
+            "{path}logs/{sample}.preprocessing.done.txt"
+        output:
+            "{path}logs/{sample}.preprocessing.cleaning.done.txt"
+        shell:
+            """
+            rm {wildcards.path}2fastq/*.fastq
+            rm {wildcards.path}3goodfastq/*.fq
+            rm {wildcards.path}4mycoalign/*.sam
+            rm {wildcards.path}5hg38align/*.sam
+            rm {wildcards.path}6rawbam/*.bam
+            rm {wildcards.path}7rgsort/*.bam
+            rm {wildcards.path}8merged/*.bam
+            rm {wildcards.path}9dedup/*.bam
+            touch {output}
+            """
+
+
 ########################################################################################################################################
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
