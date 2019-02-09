@@ -1,0 +1,30 @@
+---
+title: "atacSOM"
+author: "Jordan S. Kesner"
+date: "November 12, 2018"
+output: html_document
+---
+
+Install/load libraries
+```{r}
+#install.packages("kohonen")
+library(kohonen)
+install.packages("scatterplot3d")
+library(scatterplot3d)
+```
+
+
+
+```{r}
+data("wines")
+wines.sc <- scale(wines)
+set.seed(7)
+wine.som <- som(wines.sc, grid = somgrid(5, 4, "hexagonal"))
+plot(wine.som, main = "Wine data")
+
+
+plus <- H508_WT_01_CDX2_motif1_wg_signals$signal$`+`
+plus.sc <- scale(plus)
+plus.som <- som(plus.sc, grid = somgrid(5, 4, "hexagonal"))
+```
+

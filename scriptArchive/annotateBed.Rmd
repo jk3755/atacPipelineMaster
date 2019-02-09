@@ -1,0 +1,92 @@
+---
+title: "annotateBed"
+author: "Jordan S. Kesner"
+date: "1/22/2019"
+output: html_document
+---
+
+```{r}
+
+## load libs
+library(ChIPpeakAnno)
+library(genomation)
+library(org.Hs.eg.db)
+
+
+## import
+h508_ls1034_peak <- readBed("/home/ubuntu1/atac/peaks/H508_LS1034_unique.txt")
+h508_snu61_peak <- readBed("/home/ubuntu1/atac/peaks/H508_SNU61_unique.txt")
+#
+ls1034_h508_peak <- readBed("/home/ubuntu1/atac/peaks/LS1034_H508_unique.txt")
+ls1034_snu61_peak <- readBed("/home/ubuntu1/atac/peaks/LS1034_SNU61_unique.txt")
+#
+snu61_h508_peak <- readBed("/home/ubuntu1/atac/peaks/SNU61_H508_unique.txt")
+snu61_ls1034_peak <- readBed("/home/ubuntu1/atac/peaks/SNU61_LS1034_unique.txt")
+
+
+## annotate the peaks with precompiled ensembl annotation
+data(TSS.human.GRCh38)
+
+
+##
+h508_ls1034.anno <- annotatePeakInBatch(h508_ls1034_peak, AnnotationData=TSS.human.GRCh38)
+h508_snu61.anno <- annotatePeakInBatch(h508_snu61_peak, AnnotationData=TSS.human.GRCh38)
+ls1034_h508.anno <- annotatePeakInBatch(ls1034_h508_peak, AnnotationData=TSS.human.GRCh38)
+ls1034_snu61.anno <- annotatePeakInBatch(ls1034_snu61_peak, AnnotationData=TSS.human.GRCh38)
+snu61_h508.anno <- annotatePeakInBatch(snu61_h508_peak, AnnotationData=TSS.human.GRCh38)
+snu61_ls1034.anno <- annotatePeakInBatch(snu61_ls1034_peak, AnnotationData=TSS.human.GRCh38)
+
+## add gene symbols
+
+#
+h508_ls1034.anno <- addGeneIDs(annotatedPeak=h508_ls1034.anno, 
+                        orgAnn="org.Hs.eg.db", 
+                        IDs2Add="symbol")
+#
+h508_snu61.anno <- addGeneIDs(annotatedPeak=h508_snu61.anno, 
+                        orgAnn="org.Hs.eg.db", 
+                        IDs2Add="symbol")
+#
+ls1034_h508.anno <- addGeneIDs(annotatedPeak=ls1034_h508.anno, 
+                        orgAnn="org.Hs.eg.db", 
+                        IDs2Add="symbol")
+#
+ls1034_snu61.anno <- addGeneIDs(annotatedPeak=ls1034_snu61.anno, 
+                        orgAnn="org.Hs.eg.db", 
+                        IDs2Add="symbol")
+#
+snu61_h508.anno <- addGeneIDs(annotatedPeak=snu61_h508.anno, 
+                        orgAnn="org.Hs.eg.db", 
+                        IDs2Add="symbol")
+#
+snu61_ls1034.anno <- addGeneIDs(annotatedPeak=snu61_ls1034.anno, 
+                        orgAnn="org.Hs.eg.db", 
+                        IDs2Add="symbol")
+
+
+#
+h508_ls1034_genes <- unique(h508_ls1034.anno@elementMetadata@listData[["symbol"]])
+h508_snu61_genes <- unique(h508_snu61.anno@elementMetadata@listData[["symbol"]])
+ls1034_h508_genes <- unique(ls1034_h508.anno@elementMetadata@listData[["symbol"]])
+ls1034_snu61_genes <- unique(ls1034_snu61.anno@elementMetadata@listData[["symbol"]])
+snu61_h508_genes <- unique(snu61_h508.anno@elementMetadata@listData[["symbol"]])
+snu61_ls1034_genes <- unique(snu61_ls1034.anno@elementMetadata@listData[["symbol"]])
+
+
+##
+write.table(h508_ls1034_genes, file = "/home/ubuntu1/atac/peaks/h508_ls1034_genes.txt", quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
+#
+write.table(h508_snu61_genes, file = "/home/ubuntu1/atac/peaks/h508_snu61_genes.txt", quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
+#
+write.table(ls1034_h508_genes, file = "/home/ubuntu1/atac/peaks/ls1034_h508_genes.txt", quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
+#
+write.table(ls1034_snu61_genes, file = "/home/ubuntu1/atac/peaks/ls1034_snu61_genes.txt", quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
+#
+write.table(snu61_h508_genes, file = "/home/ubuntu1/atac/peaks/snu61_h508_genes.txt", quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
+#
+write.table(snu61_ls1034_genes, file = "/home/ubuntu1/atac/peaks/snu61_ls1034_genes.txt", quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
+#
+
+
+```
+

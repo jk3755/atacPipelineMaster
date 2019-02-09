@@ -1,0 +1,291 @@
+---
+title: "atacNormChromAccess"
+author: "Jordan S. Kesner"
+date: "November 7, 2018"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+Reference: https://cdn.elifesciences.org/articles/20148/elife-20148-supp6-v2.pdf
+
+```{r}
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("BSgenome.Hsapiens.UCSC.hg38", suppresUpdates = TRUE)
+#biocLite("Repitools", suppresUpdates = TRUE)
+#biocLite("genomation", suppresUpdates = TRUE)
+library(GenomicRanges)
+library(GenomicAlignments)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(Repitools)
+library(Rsamtools)
+library(genomation)
+```
+
+Functions
+```{r}
+make.windows = function(binsize)
+{bins = tileGenome(seqinfo(Hsapiens), tilewidth = binsize, 
+                  cut.last.tile.in.chrom = TRUE)
+return(bins)}
+
+####
+basecount = function(windows, data, chrlist)
+{
+    # this is an instance of the general basecount function that takes as input 
+    # a set of bins (in GRanges format), a GRanges object containing count data,
+    # and a list of chromosomes of interest. It returns a GRanges object 
+    # identical to the input bins, with a score column indicating the average 
+    # number of instances where a feature in the count data was present within 
+    # the bin. It does not normalize to anything.
+	require(GenomicRanges)
+	require(GenomicAlignments)
+    
+	binnedAverage = function(bins,numvar)
+	{
+		stopifnot(is(bins, "GRanges"))
+		stopifnot(is(numvar, "RleList"))
+		stopifnot(identical(seqlevels(bins), names(numvar)))
+		bins_per_chrom = split(ranges(bins), seqnames(bins))
+		means_list = lapply(names(numvar),
+			function(seqname){
+				views = Views(numvar[[seqname]],
+				bins_per_chrom[[seqname]])
+			viewMeans(views)	
+			})
+		new_mcol = unsplit( means_list, as.factor( seqnames( bins)))
+		mcols( bins)[['basecount']] = new_mcol
+		bins
+	}
+		
+	good.uns = chrlist
+	windows = windows[seqnames( windows) %in% good.uns]
+	seqlevels( windows) = seqlevelsInUse( windows)
+	cov = coverage( data)
+	cov = cov[match( seqlevels( windows),names( cov))]
+	
+	bcount = binnedAverage( windows, cov)
+	bcount = mcols( bcount)[,1]
+	score( windows) = bcount
+	return( windows)
+}
+
+####
+
+```
+
+Setup
+```{r}
+
+#### Define a string for selecting which chromosomes youre interested in
+good.uns = c( 'chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX','chrY')
+
+#### Generate 100 bp windows across hg38 genome
+genome.windows = make.windows(binsize = 100) # increase the bin size for hg38 to deal with memory issues
+
+```
+
+Specify your input files
+```{r}
+
+# line_replicate$bam
+# line_replicate$bai
+# line_replicate$num.reads
+# line_replicate$all.reads
+# line_replicate$open.reads
+
+#### SNU61 WT01 Replicate 1 ####
+snu61_r1 <- list()
+snu61_r1$bam <- "/home/ubuntu1/atac/snu61/wt01/dp_bam/test1.bam"
+snu61_r1$bai <- "/home/ubuntu1/atac/snu61/wt01/dp_bam/test1.bam.bai"
+snu61_r1$all.data <- granges(readGAlignmentPairs(bampath, index=idxpath, use.names=TRUE, param=NULL, with.which_label=FALSE, strandMode=1), on.discordant.seqnames="drop")
+snu61_r1$num.reads <- length(snu61_r1$all.data)
+snu61_r1$open.reads <- snu61_r1$all.data[width(snu61_r1$all.data) <= 100]
+snu61_r1$num.open.reads <- length(open.reads)
+snu61_r1$open.basecount <- basecount(windows=genome.windows, data=snu61_r1$open.reads, chrlist=good.uns)
+snu61_r1$open.basecount@elementMetadata@listData[["score"]] <- (snu61_r1$open.basecount@elementMetadata@listData[["score"]] / snu61_r1[["num.reads"]]) * 1e+6
+# peaks
+snu61_r1$bed <- "/home/ubuntu1/atac/snu61/wt01/peaks_macs_m1/SNU61-WT-01-S3_S1.macs.m1_summits.bed"
+snu61_r1$peaks <-  readBed(snu61_r1$bed, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
+
+
+
+
+## Specify the Granges objects to turn into a list
+glist <- GRangesList(snu61_r1[["open.reads"]], snu61_r2[["open.reads"]])
+
+```
+
+
+Standardize - transform CPM to num standard devs above or below population mean
+```{r}
+
+## Designate a set of noise peaks from which to determine background counts
+N = 2.5e+4 # the number of background regions to generate
+bins = genome.windows[seqnames(genome.windows) %in% good.uns]
+
+## create a container for the standardized data
+## define which genome windows do not overlap with peaks
+## after enlarging peaks to uniform 20000 bp windows
+notopen = gaps(reduce(trim(resize(snu61_r1[["peaks"]], fix = 'center', width = 20000))))
+
+# retain only * (both) stranded data
+notopen = notopen[strand(notopen) %in% '*']
+
+# this finds the indices of 100 bp windows overlapping the set of noise ranges.
+bgoverI = subjectHits(findOverlaps(notopen, bins)) 
+
+# sets the seed for random number selection.
+set.seed(138)
+
+# this samples N of the noise regions for use downstream
+bgseeds = sort(bgoverI[sample(seq(1,length(bgoverI),1),N)])
+
+# this models a set of noise peaks whose centers are the regions we sampled 
+# above, and whose widths are randomly distributed over the mean and sd of the
+# log2 widths of the true peaks list. The log2 widths of the peaks approximates
+# a normal distribution.
+bgpeaks = trim(resize(bins[bgseeds],width = 2^(rnorm(N, mean = mean(log2(width(snu61_r1[["peaks"]]))),sd =sd(log2(width(snu61_r1[["peaks"]]))))),fix = 'center'))
+
+# reduce overlapping peaks to a single peak
+bgpeaks = reduce( 
+    bgpeaks[!as.logical( countOverlaps( bgpeaks, snu61_r1[["peaks"]]))])
+
+
+
+```
+
+
+
+
+
+** Standardization -> transform the coverage values in CPM to the number of standard deviations above or below population mean **
+```{r, error = FALSE, warning = FALSE, echo = TRUE}
+
+#### the reason the loop was so slow
+### is that its supposed to be run on a GRANGES LIST
+### not every variable from a granges object
+### lol
+
+# Now, we need to measure the mean and standard deviation of reads within this
+# set of background regions for each timepoint.
+
+bgmeans = NULL # container for measured means
+bgsds = NULL # container for measured standard deviations
+openmeans = NULL # container for the measured open means
+opensds = NULL # container for the measured open sds
+zscores = list() # container for the calculated z-scores
+bgzmeans = NULL # container for the standardized means
+bgzsds = NULL # container for the standardized standard deviations
+openzmeans = NULL # container for the standardized open means
+openzsds = NULL # container for the standardized open sds
+
+# Find overlaps between scores overlapping with a noise peak
+test <- GenomicRanges::findOverlaps(bgpeaks, bins)
+tidx <- test@to
+ah <- GenomicRanges::score(snu61_r1[["open.basecount"]][tidx])
+
+# Find scores for real peaks
+test2 <- GenomicRanges::findOverlaps(snu61_r1[["peaks"]], bins)
+tidx2 <- test2@to
+ah2 <- GenomicRanges::score(snu61_r1[["open.basecount"]][tidx2])
+
+bgoverscores <- ah
+openoverscores <- ah2
+
+bgmean = mean( bgoverscores) # calculates the mean of these scores
+bgsd = sd( bgoverscores) # calculates the standard deviation of these scores
+
+
+for(i in 1 : length(snu61_r1[["open.basecount"]]))
+{
+
+
+
+
+
+	bgmeans[i] = bgmean # assigns the mean to our initialized object
+
+	bgsds[i] = bgsd # assigns the sd to our initialized object
+
+  openmeans[i] = mean( openoverscores) # calculates the mean of the open scores
+ 
+  opensds[i] = sd( openoverscores) # calculates the mean of the open sds
+  
+  cat("i")
+  # populates a new variable with the scores
+	znorm = GenomicRanges::score(snu61_r1[["open.basecount"]][i])
+	cat("j")
+	# calculates the zscore 
+  znorm = ( znorm - bgmean) / bgsd
+  cat("k")
+  # populates our initialized object with the vector
+  cat("l")
+	zscores[[i]] = znorm
+  # of z-scores for i-th timepoint
+  
+	cat("m")
+	bgz = znorm[subjectHits( GenomicRanges::findOverlaps( bgpeaks, bins))]
+    # gets the new calculated z-scores overlapping the noise peaks
+  
+	cat("n")
+	openz = znorm[subjectHits( GenomicRanges::findOverlaps( snu61_r1[["peaks"]], bins))]
+    # gets the new calculated z-scores overlapping the open peaks
+  
+	cat("o")
+	bgzmeans[i] = mean( bgz) # populates our initialized object with the z mean
+	cat("p")
+	bgzsds[i] = sd( bgz) # populates our initialized object with the z sd
+	cat("q")
+  openzmeans[i] = mean( openz) # populates our initialized object with z mean
+  # for open regions
+  cat("r")
+  openzsds[i] = sd( openz) # populates our initialized object with the z sd
+  # for open regions
+}
+
+
+
+
+
+
+# what does this do to the data?
+##################
+initial.mean = unlist( lapply( wt.open, function( x) mean( score( x))))
+zscore.mean = unlist( lapply( zscores, function( x) mean( x)))
+
+stripchart(
+    list( initial.mean, zscore.mean, bgmeans, bgzmeans, openmeans, openzmeans), 
+    vertical = TRUE, pch = 19, col = 'blue', method = 'jitter', las = 1, 
+    xlab = '', xaxt = 'n', ylab = 'mean score per timepoint')
+
+mtext(side = 1, at = c(1:6), 
+      c( 'CPM.all', 'Z.all','BG.CPM', 'BG.Z', 'OPEN.CPM','OPEN.Z'))
+
+boxplot(
+    list( initial.mean, zscore.mean, bgmeans, bgzmeans, openmeans, openzmeans), 
+    add = TRUE, xaxt = 'n', yaxt = 'n')
+
+```
+
+
+The new z-scores can be appended to the *wt.open* object as a score and used for further analysis. Note, the boxplot above is meant to highlight how the average values of the scores change with this normalization. It is important to keep in mind that the effective units for the CPM values are in counts per million, whereas the z-score units are in standard deviations above the mean.
+
+
+```{r}
+bam <- granges(readGAlignmentPairs(bampath, index=idxpath, use.names=TRUE, param=NULL, with.which_label=FALSE, strandMode=1))
+
+all.data <- granges(bam, on.discordant.seqnames="drop")
+
+#### Read in the paired end bam file(s) as GAlingments
+bam <- readGAlignmentPairs(bampath, index=idxpath, use.names=TRUE, param=NULL, with.which_label=FALSE, strandMode=1)
+
+#### Convert the GAlignments to GRanges
+all.data <- granges(bam, on.discordant.seqnames="drop")
+
+### Get the total number of reads in the Granges object, this will be used as the denominator for CPM normalization
+total.reads = length(all.data)
+total.reads
+```
+
+

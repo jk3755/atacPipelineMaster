@@ -1,0 +1,100 @@
+## experimenting with running rules on given files in directories ##
+# see here: https://snakemake.readthedocs.io/en/stable/project_info/faq.html#how-do-i-run-my-rule-on-all-files-of-a-certain-directory
+IDS = "SNU61-WT-01-S1_S6.u.bam SNU61-WT-01-S2_S4.u.bam SNU61-WT-01-S3_S1.u.bam".split()
+
+# a pseudo-rule that collects the target files
+rule all:
+    input:  expand("otherdir/{id}.bam", id=IDS)
+
+# a general rule using wildcards that does the work
+rule:
+    input:  "thedir/{id}.fastq"
+    output: "otherdir/{id}.bam"
+    shell:  "..."
+
+
+#
+rule ins_matrix:
+    input:
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr1.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr2.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr3.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr4.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr5.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr6.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr7.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr8.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr9.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr10.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr11.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr12.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr13.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr14.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr15.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr16.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr17.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr18.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr19.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr20.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr21.insmatrix.Rdata",
+        "ls1034/wt01/ins_matrix/LS1034-WT-01.all.chr22.insmatrix.Rdata"
+
+rule sites_signal:
+    input:
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr1.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr2.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr3.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr4.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr5.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr6.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr7.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr8.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr9.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr10.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr11.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr12.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr13.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr14.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr15.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr16.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr17.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr18.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr19.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr20.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr21.sites_signal.Rdata",
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.chr22.sites_signal.Rdata"
+
+rule merge_sites_signal:
+    input:
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.sites_signal.merged.Rdata"
+
+#####################################################################################################################################################################
+#####################################################################################################################################################################
+
+#
+rule make_ins_matrix:
+    input:
+        "ls1034/wt01/counts/{sample}.{chr}.counts.txt"
+    output:
+        "ls1034/wt01/ins_matrix/{sample}.{chr}.insmatrix.Rdata"
+    script:
+        "scripts/makeInsMatrix.R"
+
+#
+rule make_sites_signal:
+    input:
+        "ls1034/wt01/ins_matrix/{sample}.{chr}.insmatrix.Rdata",
+        "coad_sites/{gene}.sites.Rdata"
+    output:
+        "ls1034/wt01/sites_signal/{sample}.{gene}.{chr}.sites_signal.Rdata"
+    script:
+        "scripts/makeSiteSignal.R"
+
+#
+rule merge_sites_signal:
+    input:
+        "ls1034/wt01/sites_signal/{sample}.{gene}.{chr}.sites_signal.Rdata"
+    output:
+        "ls1034/wt01/sites_signal/LS1034-WT-01.all.MNX1.sites_signal.merged.Rdata"
+    script:
+        "scripts/mergeSiteSignal.R"
