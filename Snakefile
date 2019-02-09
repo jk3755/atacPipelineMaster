@@ -263,14 +263,14 @@ rule STEP15_callpeaksmacs2merged:
         # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
         # -p set the p-value cutoff for peak calling
         input:
-            "{path}12all/{sample}.all.bam",
-	    "{path}12all/{sample}.all.bai"
+            a="{path}12all/{sample}.all.bam",
+	    b="{path}12all/{sample}.all.bai"
         output:
             "{path}13allpeaks/{sample}.all_peaks.xls"
         log:
             "{path}logs/{sample}.callpeaksmac2merged.txt"
         shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 rule STEP16_plotcorrspearman:
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
