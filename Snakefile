@@ -18,15 +18,43 @@
 rule h508go:
     input:
     	"h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
+rule ls1034go:
+    input:
+    	"ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
+rule snu61go:
+	input:
+		"snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
+rule PREP_builddirstructure:
+		# params: -p ignore error if existing, make parent dirs, -v verbose
+		input:
+			"{path}1gz/snu61_wt01_basespace_manifest.sh"
+		output:
+			"{path}1gz/snu61_dirtree.built.done"
+		shell:
+			"""
+			mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
+			mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
+			mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
+			mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15downsample {wildcards.path}preprocessing/16bigwig {wildcards.path}preprocessing/logs
+			mkdir -p -v {wildcards.path}info {wildcards.path}footprints {wildcards.path}saturation
+			mkdir -p -v {wildcards.path}preprocessing/15downsample/complexity {wildcards.path}preprocessing/15downsample/footprints {wildcards.path}preprocessing/15downsample/peaks
+			touch {wildcards.path}1gz/snu61_dirtree.built.done
+			"""
+
 rule STEP1_simplifynames_gunzip:
         # params: -k keep original files, -c write to standard output
-        input: "{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz"
-        output: "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
-        log: "{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
-        shell: "gunzip -k -c {input} > {output}"
+        input: 
+        	a="{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz",
+        	b="{path}1gz/snu61_dirtree.built.done"
+        output: 
+        	"{path}2fastq/{sample}_L{lane}_R{read}.fastq"
+        log: 
+        	"{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
+        shell: 
+        	"gunzip -k -c {input.a} > {output}"
 rule STEP2_afterqc_fastqfiltering:
         # params: -s is the shortest trimmed read length allowed past QC filter
         input:
