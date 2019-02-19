@@ -91,7 +91,7 @@ rule STEP3_mycoalign:
         log:
             "{path}logs/{sample}.mycoalign.txt"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 rule STEP4_hg38align:
         # params:
         # -q fastq input
@@ -108,7 +108,7 @@ rule STEP4_hg38align:
         log:
             "{path}logs/{sample}.hg38align.txt"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 rule STEP5_samtobam:
         # params:
         # -Xmx50g set java mem limit to X gb
@@ -119,7 +119,7 @@ rule STEP5_samtobam:
         log:
             "{path}logs/{sample}.samtobam.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
 rule STEP6_addrgandcsbam:
@@ -138,7 +138,7 @@ rule STEP6_addrgandcsbam:
         log:
             "{path}logs/{sample}.L{lane}.addrgandcsbam.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
             O={output} \
             SORT_ORDER=coordinate \
@@ -157,7 +157,7 @@ rule STEP7_cleanbam:
         log:
             "{path}logs/{sample}.L{lane}.cleanbam.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
 rule STEP8_mergelanes:
@@ -171,7 +171,7 @@ rule STEP8_mergelanes:
         log:
             "{path}logs/{sample}.mergelanes.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -192,7 +192,7 @@ rule STEP9_purgeduplicates:
         log:
             "{path}logs/{sample}.purgeduplicates.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
@@ -226,7 +226,7 @@ rule STEP11_buildindex:
         log:
             "{path}logs/{sample}.buildindex.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 rule STEP12_mergereplicates:
@@ -241,7 +241,7 @@ rule STEP12_mergereplicates:
         log:
             "{path}logs/{sample}.mergereplicates.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -260,7 +260,7 @@ rule STEP13_indexmerged:
         log:
             "{path}logs/{mergedsample}.indexmerged.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 rule STEP14_callpeaksmac2replicates:
@@ -387,7 +387,7 @@ rule STEP20_downsamplebam:
         log:
             "{path}logs/{mergedsample}.{prob}.downsamplebam.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
@@ -401,7 +401,7 @@ rule STEP21_sortdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.sortdownampled.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
@@ -415,7 +415,7 @@ rule STEP22_markdupdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.markdupdownsampled.txt"
         shell:
-            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
@@ -429,7 +429,7 @@ rule STEP23_indexdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.indexdownsampled.txt"
         shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
 rule STEP24_callpeaksmacs2downsampled:
