@@ -108,30 +108,23 @@ rule STEP4_hg38align:
             "{path}logs/{sample}.hg38align.txt"
         shell:
             "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
-rule STEP5_samtobam:
-        # params:
-        # -Xmx50g set java mem limit to X gb
-        input:
-            "{path}5hg38align/{sample}.hg38.sam"
-        output:
-            "{path}6rawbam/{sample}.raw.bam"
-        log:
-            "{path}logs/{sample}.samtobam.txt"
-        shell:
-            "java -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
-            I={input} \
-            O={output}"
-rule STEP6_blacklistfilter:
-    # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
-    # -abam input bam file A
-    # -b input bed file B for filtering
-    # -v keep only reads in A that have no overlaps with reads in B
+rule STEP5_coordsort_sam:
+    # coordinate sort the sam files to prepare for blacklist filtering
     input:
-        "{path}6rawbam/{sample}.raw.bam"
+        "{path}5hg38align/{sample}.hg38.sam"
     output:
-        "{path}6rawbam/{sample}.bam"
+        "{path}5hg38align/{sample}.hg38.cs.sam"
     shell:
-        "bedtools intersect -abam {input} -b /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -v > {output}"
+        "samtools sort {input} -o {output} -O sam"
+rule STEP6_blacklistfilter_bamconversion:
+    # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
+    input:
+        "{path}5hg38align/{sample}.hg38.cs.sam"
+    output:
+        a="{path}6rawbam/{sample}.blacklist.bam",
+        b="{path}6rawbam/{sample}.bam"
+    shell:
+        "samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
 rule STEP7_addrgandcsbam:
         # note - proper specification of RG tags is critical
         # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
