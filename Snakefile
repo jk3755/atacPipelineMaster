@@ -42,27 +42,25 @@ rule run_xsample_corr_replicates_h508_snu61_ls1034:
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
-# rule PREP_builddirstructure:
-#         # params: -p ignore error if existing, make parent dirs, -v verbose
-#         input:
-#             "{path}1gz/{sample}_basespace_manifest.sh"
-#         output:
-#             "{path}1gz/{sample}_dirtree.built.done"
-#         shell:
-#             """
-#             mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
-#             mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
-#             mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
-#             mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15downsample {wildcards.path}preprocessing/16bigwig {wildcards.path}preprocessing/logs
-#             mkdir -p -v {wildcards.path}info {wildcards.path}footprints {wildcards.path}saturation
-#             mkdir -p -v {wildcards.path}preprocessing/15downsample/complexity {wildcards.path}preprocessing/15downsample/footprints {wildcards.path}preprocessing/15downsample/peaks
-#             touch {wildcards.path}1gz/{sample}_dirtree.built.done
-#             """
+rule PREP_builddirstructure:
+        # params: -p ignore error if existing, make parent dirs, -v verbose
+        output:
+            "{path}preprocessing/1gz/dirtree.built.done"
+        shell:
+            """
+            mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
+            mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
+            mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
+            mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15downsample {wildcards.path}preprocessing/16bigwig {wildcards.path}preprocessing/logs
+            mkdir -p -v {wildcards.path}info {wildcards.path}footprints {wildcards.path}saturation
+            mkdir -p -v {wildcards.path}preprocessing/15downsample/complexity {wildcards.path}preprocessing/15downsample/footprints {wildcards.path}preprocessing/15downsample/peaks
+            touch {output}
+            """
 rule STEP1_simplifynames_gunzip:
         # params: -k keep original files, -c write to standard output
         input: 
             a="{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz",
-            #b="{path}1gz/{sample}_dirtree.built.done"
+            b="{path}1gz/dirtree.built.done"
         output: 
             "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
         log: 
