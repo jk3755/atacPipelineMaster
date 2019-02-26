@@ -327,7 +327,7 @@ rule STEP17_callpeaksmacs2merged_localnorm:
         log:
             "{path}logs/{sample}.callpeaksmac2merged.localnorm.txt"
         shell:
-            "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input.a} -n {wildcards.sample}.localnorm.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 rule STEP18_plotcorrspearman:
         # parameters:
         # -b input bam files
