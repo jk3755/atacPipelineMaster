@@ -210,7 +210,7 @@ for (x in 1:num_motifs){
     cat("Parsed file not found, generating", "\n")
     ##
     cat("Setting parameters...", "\n")
-    motif_score <- "95%"
+    motif_score <- "99%"
     upstream <- 100
     downstream <- 100
     genome <- Hsapiens

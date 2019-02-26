@@ -30,7 +30,7 @@ sample_path <- snakemake@wildcards[["path"]]
 
 ##
 cat("Setting parameters...", "\n")
-motif_score <- "95%"
+motif_score <- "99%"
 upstream <- 100
 downstream <- 100
 scope <- current_chr
