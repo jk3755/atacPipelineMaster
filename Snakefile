@@ -339,7 +339,10 @@ rule STEP18_plotcorrspearman:
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
-            c="{path}10unique/{sample}-REP3.u.bam"
+            c="{path}10unique/{sample}-REP3.u.bam",
+            d="{path}10unique/{sample}-REP1.u.bai",
+            e="{path}10unique/{sample}-REP2.u.bai",
+            f="{path}10unique/{sample}-REP3.u.bai"
         output:
             "{path}14qcplots/{sample}.spearman.corrTest"
         log:
