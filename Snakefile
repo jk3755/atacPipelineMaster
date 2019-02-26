@@ -282,13 +282,14 @@ rule STEP15_callpeaksmac2replicates:
         # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
         # -p set the p-value cutoff for peak calling
         input:
-            "{path}10unique/{sample}-{REP}.u.bam"
+            a="{path}10unique/{sample}-{REP}.u.bam",
+            b="{path}10unique/{sample}-{REP}.u.bai"
         output:
             "{path}11peaks/{sample}-{REP}_peaks.xls"
         log:
             "{path}logs/{sample}-{REP}.callpeaksmac2replicates.txt"
         shell:
-            "macs2 callpeak -t {input} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+            "macs2 callpeak -t {input.a} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 rule STEP16_callpeaksmacs2merged:
         # notes:
         # because we are going to use the TCGA data downstream likely as a reference point,
