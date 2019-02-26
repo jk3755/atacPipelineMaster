@@ -19,57 +19,56 @@
 #######################################################################################################################
 #### PIPELINE SPOOLING COMMANDS #######################################################################################
 #######################################################################################################################
-
 rule run_h508wt01:
     input:
-    	"h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
+        "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
 
 rule run_ls1034wt01:
     input:
-    	"ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
+        "ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
 
 rule run_snu61wt01:
-	input:
-		"snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
+    input:
+        "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
 
 rule run_xsample_corr_h508_snu61_ls1034:
-	input:
-		"xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+    input:
+        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 
 rule run_xsample_corr_replicates_h508_snu61_ls1034:
-	input:
-		"xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+    input:
+        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
-rule PREP_builddirstructure:
-		# params: -p ignore error if existing, make parent dirs, -v verbose
-		input:
-			"{path}1gz/snu61_wt01_basespace_manifest.sh"
-		output:
-			"{path}1gz/snu61_dirtree.built.done"
-		shell:
-			"""
-			mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
-			mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
-			mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
-			mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15downsample {wildcards.path}preprocessing/16bigwig {wildcards.path}preprocessing/logs
-			mkdir -p -v {wildcards.path}info {wildcards.path}footprints {wildcards.path}saturation
-			mkdir -p -v {wildcards.path}preprocessing/15downsample/complexity {wildcards.path}preprocessing/15downsample/footprints {wildcards.path}preprocessing/15downsample/peaks
-			touch {wildcards.path}1gz/snu61_dirtree.built.done
-			"""
+# rule PREP_builddirstructure:
+#         # params: -p ignore error if existing, make parent dirs, -v verbose
+#         input:
+#             "{path}1gz/{sample}_basespace_manifest.sh"
+#         output:
+#             "{path}1gz/{sample}_dirtree.built.done"
+#         shell:
+#             """
+#             mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
+#             mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
+#             mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
+#             mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15downsample {wildcards.path}preprocessing/16bigwig {wildcards.path}preprocessing/logs
+#             mkdir -p -v {wildcards.path}info {wildcards.path}footprints {wildcards.path}saturation
+#             mkdir -p -v {wildcards.path}preprocessing/15downsample/complexity {wildcards.path}preprocessing/15downsample/footprints {wildcards.path}preprocessing/15downsample/peaks
+#             touch {wildcards.path}1gz/{sample}_dirtree.built.done
+#             """
 rule STEP1_simplifynames_gunzip:
         # params: -k keep original files, -c write to standard output
         input: 
-        	a="{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz",
-        	b="{path}1gz/snu61_dirtree.built.done"
+            a="{path}1gz/{sample}_L00{lane}_R{read}_001.fastq.gz",
+            #b="{path}1gz/{sample}_dirtree.built.done"
         output: 
-        	"{path}2fastq/{sample}_L{lane}_R{read}.fastq"
+            "{path}2fastq/{sample}_L{lane}_R{read}.fastq"
         log: 
-        	"{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
+            "{path}logs/{sample}.L{lane}.R{read}.simplifynames_gunzip.txt"
         shell: 
-        	"gunzip -k -c {input.a} > {output}"
+            "gunzip -k -c {input.a} > {output}"
 rule STEP2_afterqc_fastqfiltering:
         # params: -s is the shortest trimmed read length allowed past QC filter
         input:
@@ -91,7 +90,7 @@ rule STEP3_mycoalign:
         log:
             "{path}logs/{sample}.mycoalign.txt"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}4mycoalign/{wildcards.sample}alignment_metrics.txt"
 rule STEP4_hg38align:
         # params:
         # -q fastq input
@@ -108,21 +107,32 @@ rule STEP4_hg38align:
         log:
             "{path}logs/{sample}.hg38align.txt"
         shell:
-            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
+            "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}5hg38align/{wildcards.sample}alignment_metrics.txt"
 rule STEP5_samtobam:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
             "{path}5hg38align/{sample}.hg38.sam"
         output:
-            "{path}6rawbam/{sample}.bam"
+            "{path}6rawbam/{sample}.raw.bam"
         log:
             "{path}logs/{sample}.samtobam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar SamFormatConverter \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar SamFormatConverter \
             I={input} \
             O={output}"
-rule STEP6_addrgandcsbam:
+rule STEP6_blacklistfilter:
+    # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
+    # -abam input bam file A
+    # -b input bed file B for filtering
+    # -v keep only reads in A that have no overlaps with reads in B
+    input:
+        "{path}6rawbam/{sample}.raw.bam"
+    output:
+        "{path}6rawbam/{sample}.bam"
+    shell:
+        "bedtools intersect -abam {input} -b /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -v > {output}"
+rule STEP7_addrgandcsbam:
         # note - proper specification of RG tags is critical
         # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
         # Required @RG parameter specifications:
@@ -138,7 +148,7 @@ rule STEP6_addrgandcsbam:
         log:
             "{path}logs/{sample}.L{lane}.addrgandcsbam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
             I={input} \
             O={output} \
             SORT_ORDER=coordinate \
@@ -147,7 +157,7 @@ rule STEP6_addrgandcsbam:
             RGPL=ILLUMINA \
             RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
             RGSM={wildcards.sample}"
-rule STEP7_cleanbam:
+rule STEP8_cleanbam:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -157,10 +167,10 @@ rule STEP7_cleanbam:
         log:
             "{path}logs/{sample}.L{lane}.cleanbam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
             I={input} \
             O={output}"
-rule STEP8_mergelanes:
+rule STEP9_mergelanes:
         input:
             a="{path}7rgsort/{sample}_L1.clean.bam",
             b="{path}7rgsort/{sample}_L2.clean.bam",
@@ -171,7 +181,7 @@ rule STEP8_mergelanes:
         log:
             "{path}logs/{sample}.mergelanes.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -181,7 +191,7 @@ rule STEP8_mergelanes:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-rule STEP9_purgeduplicates:
+rule STEP10_purgeduplicates:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -192,13 +202,13 @@ rule STEP9_purgeduplicates:
         log:
             "{path}logs/{sample}.purgeduplicates.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
             I={input} \
             O={output.a} \
             M={output.b} \
             REMOVE_DUPLICATES=true \
             ASSUME_SORTED=true"
-rule STEP10_mapqfilter:
+rule STEP11_mapqfilter:
         # STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
         # Notes:
         # for an explanation of how bowtie2 calculates mapq scores:
@@ -216,7 +226,7 @@ rule STEP10_mapqfilter:
             "{path}logs/{sample}.mapqfilter.txt"
         shell:
             "samtools view -h -q 2 -b {input} > {output}"
-rule STEP11_buildindex:
+rule STEP12_buildindex:
         # params:
         # -XmxXg set java mem limit to X gb
         input:
@@ -226,10 +236,10 @@ rule STEP11_buildindex:
         log:
             "{path}logs/{sample}.buildindex.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-rule STEP12_mergereplicates:
+rule STEP13_mergereplicates:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -241,7 +251,7 @@ rule STEP12_mergereplicates:
         log:
             "{path}logs/{sample}.mergereplicates.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
             I={input.a} \
             I={input.b} \
             I={input.c} \
@@ -250,7 +260,7 @@ rule STEP12_mergereplicates:
             ASSUME_SORTED=true \
             MERGE_SEQUENCE_DICTIONARIES=true \
             USE_THREADING=true"
-rule STEP13_indexmerged:
+rule STEP14_indexmerged:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -260,10 +270,10 @@ rule STEP13_indexmerged:
         log:
             "{path}logs/{mergedsample}.indexmerged.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-rule STEP14_callpeaksmac2replicates:
+rule STEP15_callpeaksmac2replicates:
         # notes:
         # because we are going to use the TCGA data downstream likely as a reference point,
         # we will need to call the peaks in the exact same way as they did in this paper:
@@ -288,7 +298,7 @@ rule STEP14_callpeaksmac2replicates:
             "{path}logs/{sample}-{REP}.callpeaksmac2replicates.txt"
         shell:
             "macs2 callpeak -t {input} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-rule STEP15_callpeaksmacs2merged:
+rule STEP16_callpeaksmacs2merged:
         # notes:
         # because we are going to use the TCGA data downstream likely as a reference point,
         # we will need to call the peaks in the exact same way as they did in this paper:
@@ -307,21 +317,33 @@ rule STEP15_callpeaksmacs2merged:
         # -p set the p-value cutoff for peak calling
         input:
             a="{path}12all/{sample}.all.bam",
-	    	b="{path}12all/{sample}.all.bai"
+            b="{path}12all/{sample}.all.bai"
         output:
             "{path}13allpeaks/{sample}.all_peaks.xls"
         log:
             "{path}logs/{sample}.callpeaksmac2merged.txt"
         shell:
             "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-rule STEP16_plotcorrspearman:
-		# parameters:
-		# -b input bam files
-		# -o output file name
-		# -bs set the bin size used for comparison, default is 10000 bp
-		# -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-		# -p set the number of computing processors to use
-		# -v verbose mode
+rule STEP17_callpeaksmacs2merged_localnorm:
+        # notes:
+        # same as above, but with local background correction enabled
+        input:
+            a="{path}12all/{sample}.all.bam",
+            b="{path}12all/{sample}.all.bai"
+        output:
+            "{path}13allpeaks/{sample}.localnorm.all_peaks.xls"
+        log:
+            "{path}logs/{sample}.callpeaksmac2merged.localnorm.txt"
+        shell:
+            "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+rule STEP18_plotcorrspearman:
+        # parameters:
+        # -b input bam files
+        # -o output file name
+        # -bs set the bin size used for comparison, default is 10000 bp
+        # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+        # -p set the number of computing processors to use
+        # -v verbose mode
         input:
             a="{path}10unique/{sample}-REP1.u.bam",
             b="{path}10unique/{sample}-REP2.u.bam",
@@ -332,7 +354,7 @@ rule STEP16_plotcorrspearman:
             "{path}logs/{sample}.plotcorrspearman.txt"
         shell:
             "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
-rule STEP17_makecorrheatmap:
+rule STEP19_makecorrheatmap:
         input:
             "{path}14qcplots/{sample}.spearman.corrTest"
         output:
@@ -341,7 +363,7 @@ rule STEP17_makecorrheatmap:
             "{path}logs/{sample}.makecorrheatmap.txt"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
-rule STEP18_makebigwig_bamcov_individual:
+rule STEP20_makebigwig_bamcov_individual:
         # params:
         # -b bam input
         # -o output file
@@ -359,7 +381,7 @@ rule STEP18_makebigwig_bamcov_individual:
             "{path}logs/{sample}.makebigwig_bamcov_individual.txt"
         shell:
             "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-rule STEP19_makebigwig_bamcov_merged:
+rule STEP21_makebigwig_bamcov_merged:
         # params:
         # -b bam input
         # -o output file
@@ -377,7 +399,7 @@ rule STEP19_makebigwig_bamcov_merged:
             "{path}logs/{mergedsample}.makebigwig_bamcov_merged.txt"
         shell:
             "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-rule STEP20_downsamplebam:
+rule STEP22_downsamplebam:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -387,11 +409,11 @@ rule STEP20_downsamplebam:
         log:
             "{path}logs/{mergedsample}.{prob}.downsamplebam.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
              I={input} \
              O={output} \
              PROBABILITY=0.{wildcards.prob}"
-rule STEP21_sortdownsampled:
+rule STEP23_sortdownsampled:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -401,11 +423,11 @@ rule STEP21_sortdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.sortdownampled.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
              I={input} \
              O={output} \
              SORT_ORDER=coordinate"
-rule STEP22_markdupdownsampled:
+rule STEP24_markdupdownsampled:
         # params:
         # -Xmx50g set java mem limit to X gb
         input:
@@ -415,13 +437,13 @@ rule STEP22_markdupdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.markdupdownsampled.txt"
         shell:
-            "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
+            "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
              I={input} \
              O={output} \
              M={wildcards.path}15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
              REMOVE_DUPLICATES=true \
              ASSUME_SORTED=true"
-rule STEP23_indexdownsampled:
+rule STEP25_indexdownsampled:
         input:
             "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
         output:
@@ -429,11 +451,11 @@ rule STEP23_indexdownsampled:
         log:
             "{path}logs/{mergedsample}.{prob}.indexdownsampled.txt"
         shell:
-            "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
+            "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
             I={input} \
             O={output}"
-rule STEP24_callpeaksmacs2downsampled:
-		# notes:
+rule STEP26_callpeaksmacs2downsampled:
+        # notes:
         # because we are going to use the TCGA data downstream likely as a reference point,
         # we will need to call the peaks in the exact same way as they did in this paper:
         # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
@@ -449,49 +471,50 @@ rule STEP24_callpeaksmacs2downsampled:
         # --nolambda do not use local bias correction, use background nolambda
         # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
         # -p set the p-value cutoff for peak calling
-		input:
-			"{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
-		output:
-			"{path}15downsample/peaks/{mergedsample}.{prob}_peaks.xls"
-		shell:
-			"macs2 callpeak -t {input} -n {wildcards.mergedsample}.{wildcards.prob} --outdir {wildcards.path}15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        input:
+            "{path}15downsample/complexity/{mergedsample}.{prob}.md.bam"
+        output:
+            "{path}15downsample/peaks/{mergedsample}.{prob}_peaks.xls"
+        shell:
+            "macs2 callpeak -t {input} -n {wildcards.mergedsample}.{wildcards.prob} --outdir {wildcards.path}15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 rule AGGREGATE_preprocessing:
- 		input:
- 			"{path}10unique/{sample}-REP1.u.bai",
- 			"{path}10unique/{sample}-REP2.u.bai",
- 			"{path}10unique/{sample}-REP3.u.bai",
- 			"{path}12all/{sample}.all.bai",
- 			"{path}11peaks/{sample}-REP1_peaks.xls",
- 			"{path}11peaks/{sample}-REP2_peaks.xls",
- 			"{path}11peaks/{sample}-REP3_peaks.xls",
- 			"{path}13allpeaks/{sample}.all_peaks.xls",
- 			"{path}14qcplots/{sample}.spearman.heatmap.svg",
- 			"{path}16bigwig/{sample}-REP1.u.bw",
- 			"{path}16bigwig/{sample}-REP2.u.bw",
- 			"{path}16bigwig/{sample}-REP3.u.bw",
- 			"{path}16bigwig/{sample}.all.bw",
- 			"{path}15downsample/complexity/{sample}.9.md.bai",
- 			"{path}15downsample/complexity/{sample}.8.md.bai",
- 			"{path}15downsample/complexity/{sample}.7.md.bai",
- 			"{path}15downsample/complexity/{sample}.6.md.bai",
- 			"{path}15downsample/complexity/{sample}.5.md.bai",
- 			"{path}15downsample/complexity/{sample}.4.md.bai",
- 			"{path}15downsample/complexity/{sample}.3.md.bai",
- 			"{path}15downsample/complexity/{sample}.2.md.bai",
- 			"{path}15downsample/complexity/{sample}.1.md.bai",
- 			"{path}15downsample/peaks/{sample}.9_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.8_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.7_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.6_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.5_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.4_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.3_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.2_peaks.xls",
- 			"{path}15downsample/peaks/{sample}.1_peaks.xls"
- 		output:
- 			"{path}logs/{sample}.preprocessing.done.txt"
- 		shell:
- 			"touch {wildcards.path}logs/{wildcards.sample}.preprocessing.done.txt"
+        input:
+            "{path}10unique/{sample}-REP1.u.bai",
+            "{path}10unique/{sample}-REP2.u.bai",
+            "{path}10unique/{sample}-REP3.u.bai",
+            "{path}12all/{sample}.all.bai",
+            "{path}11peaks/{sample}-REP1_peaks.xls",
+            "{path}11peaks/{sample}-REP2_peaks.xls",
+            "{path}11peaks/{sample}-REP3_peaks.xls",
+            "{path}13allpeaks/{sample}.all_peaks.xls",
+            "{path}13allpeaks/{sample}.localnorm.all_peaks.xls",
+            "{path}14qcplots/{sample}.spearman.heatmap.svg",
+            "{path}16bigwig/{sample}-REP1.u.bw",
+            "{path}16bigwig/{sample}-REP2.u.bw",
+            "{path}16bigwig/{sample}-REP3.u.bw",
+            "{path}16bigwig/{sample}.all.bw",
+            "{path}15downsample/complexity/{sample}.9.md.bai",
+            "{path}15downsample/complexity/{sample}.8.md.bai",
+            "{path}15downsample/complexity/{sample}.7.md.bai",
+            "{path}15downsample/complexity/{sample}.6.md.bai",
+            "{path}15downsample/complexity/{sample}.5.md.bai",
+            "{path}15downsample/complexity/{sample}.4.md.bai",
+            "{path}15downsample/complexity/{sample}.3.md.bai",
+            "{path}15downsample/complexity/{sample}.2.md.bai",
+            "{path}15downsample/complexity/{sample}.1.md.bai",
+            "{path}15downsample/peaks/{sample}.9_peaks.xls",
+            "{path}15downsample/peaks/{sample}.8_peaks.xls",
+            "{path}15downsample/peaks/{sample}.7_peaks.xls",
+            "{path}15downsample/peaks/{sample}.6_peaks.xls",
+            "{path}15downsample/peaks/{sample}.5_peaks.xls",
+            "{path}15downsample/peaks/{sample}.4_peaks.xls",
+            "{path}15downsample/peaks/{sample}.3_peaks.xls",
+            "{path}15downsample/peaks/{sample}.2_peaks.xls",
+            "{path}15downsample/peaks/{sample}.1_peaks.xls"
+        output:
+            "{path}logs/{sample}.preprocessing.done.txt"
+        shell:
+            "touch {wildcards.path}logs/{wildcards.sample}.preprocessing.done.txt"
 rule CLEAN_preprocessing:
         input:
             "{path}logs/{sample}.preprocessing.done.txt"
@@ -509,101 +532,100 @@ rule CLEAN_preprocessing:
             rm {wildcards.path}9dedup/*.bam
             touch {output}
             """
-
 ########################################################################################################################################
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
 rule STEP25_analyzecomplexitysaturation:
-		input:
-			"{path}15downsample/complexity/{sample}.9.md.bam",
-			"{path}15downsample/complexity/{sample}.8.md.bam",
-			"{path}15downsample/complexity/{sample}.7.md.bam",
-			"{path}15downsample/complexity/{sample}.6.md.bam",
-			"{path}15downsample/complexity/{sample}.5.md.bam",
-			"{path}15downsample/complexity/{sample}.4.md.bam",
-			"{path}15downsample/complexity/{sample}.3.md.bam",
-			"{path}15downsample/complexity/{sample}.2.md.bam",
-			"{path}15downsample/complexity/{sample}.1.md.bam"
-		output:
-			"{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt"
-		shell:
-			"awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input} >> {output}"
+        input:
+            "{path}15downsample/complexity/{sample}.9.md.bam",
+            "{path}15downsample/complexity/{sample}.8.md.bam",
+            "{path}15downsample/complexity/{sample}.7.md.bam",
+            "{path}15downsample/complexity/{sample}.6.md.bam",
+            "{path}15downsample/complexity/{sample}.5.md.bam",
+            "{path}15downsample/complexity/{sample}.4.md.bam",
+            "{path}15downsample/complexity/{sample}.3.md.bam",
+            "{path}15downsample/complexity/{sample}.2.md.bam",
+            "{path}15downsample/complexity/{sample}.1.md.bam"
+        output:
+            "{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt"
+        shell:
+            "awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input} >> {output}"
 rule STEP26_analyzepeaksaturation:
-		input:
-			"{path}15downsample/peaks/{sample}.9_peaks.xls",
-			"{path}15downsample/peaks/{sample}.8_peaks.xls",
-			"{path}15downsample/peaks/{sample}.7_peaks.xls",
-			"{path}15downsample/peaks/{sample}.6_peaks.xls",
-			"{path}15downsample/peaks/{sample}.5_peaks.xls",
-			"{path}15downsample/peaks/{sample}.4_peaks.xls",
-			"{path}15downsample/peaks/{sample}.3_peaks.xls",
-			"{path}15downsample/peaks/{sample}.2_peaks.xls",
-			"{path}15downsample/peaks/{sample}.1_peaks.xls"
-		output:
-			"{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
-		shell:
-			"wl -l < {input} >> {output}"
+        input:
+            "{path}15downsample/peaks/{sample}.9_peaks.xls",
+            "{path}15downsample/peaks/{sample}.8_peaks.xls",
+            "{path}15downsample/peaks/{sample}.7_peaks.xls",
+            "{path}15downsample/peaks/{sample}.6_peaks.xls",
+            "{path}15downsample/peaks/{sample}.5_peaks.xls",
+            "{path}15downsample/peaks/{sample}.4_peaks.xls",
+            "{path}15downsample/peaks/{sample}.3_peaks.xls",
+            "{path}15downsample/peaks/{sample}.2_peaks.xls",
+            "{path}15downsample/peaks/{sample}.1_peaks.xls"
+        output:
+            "{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
+        shell:
+            "wl -l < {input} >> {output}"
 rule AGGREGATE_saturationanalysis:
-		input:
-			"{path}logs/{sample}.preprocessing.done.txt",
-			"{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt",
-			"{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
-		output:
-			"{path}logs/{sample}.saturation_analysis.done.txt"
-		shell:
-			"touch {output}"
+        input:
+            "{path}logs/{sample}.preprocessing.done.txt",
+            "{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt",
+            "{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
+        output:
+            "{path}logs/{sample}.saturation_analysis.done.txt"
+        shell:
+            "touch {output}"
 
 ## NOT WORKING YET ##
 # rule STEP27_makefpbychr_downsampled:
-# 		input:
-# 			"{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
-# 		output:
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.{chr}.done.txt"
-# 		script:
-# 			"scripts/snakeMakeFPbyChrDownsampled.R"
+#       input:
+#           "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
+#       output:
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.{chr}.done.txt"
+#       script:
+#           "scripts/snakeMakeFPbyChrDownsampled.R"
 
 # rule STEP28_mergefpchr_downsampled:
-# 		input:
-# 			"sites/{gene}.sites.Rdata",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr1.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr2.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr3.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr4.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr5.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr6.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr7.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr8.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr9.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr10.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr11.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr12.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr13.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr14.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr15.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr16.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr17.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr18.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr19.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr20.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr21.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr22.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrY.done.txt",
-# 			"{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrX.done.txt"
-# 		output:
-# 			"{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
-# 		script:
-# 			"scripts/snakeMergeFPbyChrDownsampled.R"
+#       input:
+#           "sites/{gene}.sites.Rdata",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr1.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr2.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr3.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr4.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr5.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr6.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr7.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr8.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr9.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr10.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr11.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr12.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr13.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr14.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr15.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr16.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr17.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr18.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr19.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr20.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr21.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr22.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrY.done.txt",
+#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrX.done.txt"
+#       output:
+#           "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
+#       script:
+#           "scripts/snakeMergeFPbyChrDownsampled.R"
 
 # rule STEP29_makefpgraph_downsampled:
-#     	input:
-#         	"{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
-#         	"{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
-#         	"sites/{gene}.sites.Rdata",
-#         	"{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
-#     	output:
-#         	"{path}preprocessing/15downsample/footprints/graphs/{sample}.{prob}.{gene}.graphs.done.txt"
-#     	script:
-#         	"scripts/snakeGenerateMergedFPGraphDownsample.R"
+#       input:
+#           "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
+#           "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
+#           "sites/{gene}.sites.Rdata",
+#           "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
+#       output:
+#           "{path}preprocessing/15downsample/footprints/graphs/{sample}.{prob}.{gene}.graphs.done.txt"
+#       script:
+#           "scripts/snakeGenerateMergedFPGraphDownsample.R"
 
 
 ########################################################################################################################################
@@ -697,13 +719,13 @@ rule make_aracne_overlap:
 ########################################################################################################################################
 
 rule threesample_plotcorrspearman:
-		# parameters:
-		# -b input bam files
-		# -o output file name
-		# -bs set the bin size used for comparison, default is 10000 bp
-		# -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-		# -p set the number of computing processors to use
-		# -v verbose mode
+        # parameters:
+        # -b input bam files
+        # -o output file name
+        # -bs set the bin size used for comparison, default is 10000 bp
+        # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+        # -p set the number of computing processors to use
+        # -v verbose mode
         input:
             a="{sample1}/{wt1}{num1}/preprocessing/12all/{s1}.bam",
             b="{sample1}/{wt1}{num1}/preprocessing/12all/{s2}.bam",
@@ -721,14 +743,14 @@ rule threesample_makecorrheatmap:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
 
 rule ninesample_plotcorrspearman:
-		# parameters:
-		# -b input bam files
-		# -o output file name
-		# -bs set the bin size used for comparison, default is 10000 bp
-		# -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-		# -p set the number of computing processors to use
-		# -v verbose mode
-		# For processing nine sample, restrict analysis to chr1, or computation will take forever
+        # parameters:
+        # -b input bam files
+        # -o output file name
+        # -bs set the bin size used for comparison, default is 10000 bp
+        # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+        # -p set the number of computing processors to use
+        # -v verbose mode
+        # For processing nine sample, restrict analysis to chr1, or computation will take forever
         input:
             a="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
             b="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
