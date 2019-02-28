@@ -293,9 +293,6 @@ print(heatmap.plot.reps)
 
 
 
-
-
-
 Copy gene info from ensembl database and convert to Granges
 ```{r, echo=FALSE}
 edb <- EnsDb.Hsapiens.v86

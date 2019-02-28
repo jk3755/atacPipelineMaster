@@ -10,24 +10,45 @@ library(GenomicRanges)
 library(BSgenome.Hsapiens.UCSC.hg38)
 library(Rsubread)
 library(genomation)
+library(Rsamtools)
 
 ## Generate hg38 Granges
 nContigs = length(seqnames(Hsapiens))
 hg38 = GRanges(seqnames=seqnames(Hsapiens),
-             ranges=IRanges(start=rep(1, nContigs), end=seqlengths(Hsapiens)),
-             strand=rep("*", nContigs))
+               ranges=IRanges(start=rep(1, nContigs), end=seqlengths(Hsapiens)))
 ##
 hg38 <- keepStandardChromosomes(hg38, pruning.mode="coarse")
-
 
 ## Generate windows
 ## This will generate a GRangesList, where each element is a GRanges object with the windows for one chromosome
 ## Individual GRanges can be extracted with "chr1 <- hg38Windows[[1]]" etc.
 #hg38Tiles <- tile(gr, width = 1000000)
-hg38Windows <- slidingWindows(hg38, width=1000000L, step=500000L)
-
+hg38Windows <- slidingWindows(hg38, width = 1000000L, step = 500000L)
+hg38Windows <- unlist(hg38Windows)
 
 ## Calculate the total number of reads in each window
+
+### testing
+bamFile <- "/home/ubuntu2/atac/ls1034/wt01/preprocessing/12all/LS1034-WT-01.all.bam"
+
+## Rsubread required that you add a metadata column 'id' to the GRanges object
+hg38Windows@elementMetadata$id <- c(1:length(hg38Windows@ranges@start))
+
+## Create the annotation object
+annotHg38Windows <- createAnnotationFile(hg38Windows)
+
+# Calculate the number of reads
+countHg38Windows <- featureCounts(files = bamFile, nthreads = 20, annot.ext = annotHg38Windows, isPairedEnd = TRUE)
+
+
+## with Rsamtools
+
+#
+quickBamFlagSummary(bamFile)
+
+params <- ScanBamParam(which = hg38Windows)
+aln <- countBam(bamFile, param = params)
+
 
 
 
