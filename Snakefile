@@ -578,7 +578,8 @@ rule test:
 rule STEP27_makefpbychr_downsampled:
     input:
         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai"
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
+        "sites/{gene}.sites.Rdata"
     output:
         "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.{chr}.done.txt"
     script:
