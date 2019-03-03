@@ -43,7 +43,7 @@ ls1034Peaks <- keepStandardChromosomes(ls1034Peaks, pruning.mode="coarse")
 windowBackgroundReads <- matrix(data = NA, nrow = 6165, ncol = 4)
 colnames(windowBackgroundReads) <- c("window", "total reads", "peak reads", "background reads")
 
-for (a in 1:6165){
+for (a in 1:240){
   
   cat(a, "\n")
   windowBackgroundReads[a,1] <- a
@@ -72,6 +72,6 @@ for (a in 1:6165){
 }
 
 
-
-
+med <- median(windowBackgroundReads[,4])
+me <- mean(windowBackgroundReads[,4])
 
