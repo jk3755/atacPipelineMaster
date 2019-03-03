@@ -38,7 +38,6 @@ rule run_xsample_corr_h508_snu61_ls1034:
 rule run_xsample_corr_replicates_h508_snu61_ls1034:
     input:
         "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
-
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -528,7 +527,7 @@ rule CLEAN_preprocessing:
             touch {output}
             """
 ########################################################################################################################################
-#### Saturation Analysis Rules #########################################################################################################
+#### Peak Saturation Analysis Rules ####################################################################################################
 ########################################################################################################################################
 rule STEP25_analyzecomplexitysaturation:
         input:
@@ -569,60 +568,81 @@ rule AGGREGATE_saturationanalysis:
             "{path}logs/{sample}.saturation_analysis.done.txt"
         shell:
             "touch {output}"
+########################################################################################################################################
+#### Footprint Saturation Analysis Rules ###############################################################################################
+########################################################################################################################################
+rule test:
+    input:
+        "ls1034/wt01/preprocessing/15downsample/footprints/merged/LS1034-WT-01.allprob.CDX2.done.txt"
+#
+rule STEP27_makefpbychr_downsampled:
+    input:
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai"
+    output:
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.{chr}.done.txt"
+    script:
+        "scripts/snakeMakeFPbyChrDownsampled.R"
+rule STEP28_mergefpchr_downsampled:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr1.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr2.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr3.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr4.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr5.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr6.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr7.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr8.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr9.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr10.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr11.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr12.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr13.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr14.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr15.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr16.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr17.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr18.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr19.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr20.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr21.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr22.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrY.done.txt",
+        "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrX.done.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
+    script:
+        "scripts/snakeMergeFPbyChrDownsampled.R"
+rule STEP29_allprob_aggregator:
+    input:
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.9.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.8.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.7.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.6.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.5.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.4.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.3.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.2.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.1.{gene}.done.merged.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.allprob.{gene}.done.txt"
+    shell:
+        "touch {output}"
 
-## NOT WORKING YET ##
-# rule STEP27_makefpbychr_downsampled:
-#       input:
-#           "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
-#       output:
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.{chr}.done.txt"
-#       script:
-#           "scripts/snakeMakeFPbyChrDownsampled.R"
-
-# rule STEP28_mergefpchr_downsampled:
-#       input:
-#           "sites/{gene}.sites.Rdata",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr1.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr2.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr3.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr4.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr5.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr6.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr7.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr8.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr9.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr10.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr11.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr12.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr13.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr14.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr15.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr16.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr17.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr18.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr19.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr20.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr21.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chr22.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrY.done.txt",
-#           "{path}preprocessing/15downsample/footprints/temp/{sample}.{prob}.{gene}.chrX.done.txt"
-#       output:
-#           "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
-#       script:
-#           "scripts/snakeMergeFPbyChrDownsampled.R"
-
-# rule STEP29_makefpgraph_downsampled:
-#       input:
-#           "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
-#           "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
-#           "sites/{gene}.sites.Rdata",
-#           "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
-#       output:
-#           "{path}preprocessing/15downsample/footprints/graphs/{sample}.{prob}.{gene}.graphs.done.txt"
-#       script:
-#           "scripts/snakeGenerateMergedFPGraphDownsample.R"
 
 
+
+rule STEP29_makefpgraph_downsampled:
+      input:
+          "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
+          "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
+          "sites/{gene}.sites.Rdata",
+          "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.merged.done.txt"
+      output:
+          "{path}preprocessing/15downsample/footprints/graphs/{sample}.{prob}.{gene}.graphs.done.txt"
+      script:
+          "scripts/snakeGenerateMergedFPGraphDownsample.R"
 ########################################################################################################################################
 #### Footprint Analysis Rules ##########################################################################################################
 ########################################################################################################################################
@@ -712,7 +732,6 @@ rule make_aracne_overlap:
 ########################################################################################################################################
 #### Analysis Rules ####################################################################################################################
 ########################################################################################################################################
-
 rule threesample_plotcorrspearman:
         # parameters:
         # -b input bam files
@@ -736,7 +755,6 @@ rule threesample_makecorrheatmap:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.heatmap.svg"
         shell:
             "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
-
 rule ninesample_plotcorrspearman:
         # parameters:
         # -b input bam files
@@ -760,7 +778,6 @@ rule ninesample_plotcorrspearman:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.REPS.spearman.corrTest"
         shell:
             "multiBamSummary bins -b {input.a} {input.b} {input.c} {input.d} {input.e} {input.f} {input.g} {input.h} {input.i} -o {output} -bs 10000 -p 20 -v -r chr1"
-
 rule ninesample_makecorrheatmap:
         input:
             "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.REPS.spearman.corrTest"
