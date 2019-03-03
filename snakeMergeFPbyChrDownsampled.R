@@ -41,93 +41,93 @@ sample_path <- snakemake@wildcards[["path"]]
 
 signalpath <- paste0(sample_path, "preprocessing/15downsample/footprints/temp/", sample, ".", prob, ".", gene, ".merged.Rdata")
 
+
 cat("Output path for signal object: ", signalpath, "\n")
-  
+
 if (file.exists(signalpath) == TRUE){
-    
+  
   cat("Merged file already exists, skipping...", "\n")
   next
-    
-  } else {
-      
+  
+} else {
+  
   cat("Merged file not found, processing...", "\n")
-    
+  
   ## Load each chromosome
   ## Note that, because some chromosomes may have been skipped due to finding too few binding sites (<5)
   ## Will need to check that the file exists before loading it and run an error catching loop
   cat("Loading data by chromosome...", "\n")
   chr_names <- paste0("chr", c(1:22, "X", "Y"))
   found_chr <- c()
-    
+  
   #
   for (b in chr_names){
+    
+    cat("Checking for file for", b, "\n")
+    com <- paste0(b, "_in <- gsub('merged', b ,signalpath)")
+    eval(parse(text = com))
+    com <- paste0("curfile <- '", b, "_in'")
+    eval(parse(text = com))
+    
+    ## check if the file for the current chr was output or not
+    if (file.exists(get(curfile)) == FALSE){
       
-      cat("Checking for file for", b, "\n")
-      com <- paste0(b, "_in <- gsub('merged', b ,signalpath)")
+      cat("No file found for", b, "skipping", "\n")
+      next
+      
+    } else {
+      
+      #
+      cat("Found file for", b, "loading...", "\n")
+      found_chr <- c(found_chr, b)
+      com <- paste0("load(", curfile, ")")
       eval(parse(text = com))
-      com <- paste0("curfile <- '", b, "_in'")
+      com <- paste0("sigs_", b, " <- sigs")
       eval(parse(text = com))
       
-      ## check if the file for the current chr was output or not
-      if (file.exists(get(curfile)) == FALSE){
-        
-        cat("No file found for", b, "skipping", "\n")
-        next
-        
-        } else {
-        
-        #
-        cat("Found file for", b, "loading...", "\n")
-        found_chr <- c(found_chr, b)
-        com <- paste0("load(", curfile, ")")
-        eval(parse(text = com))
-        com <- paste0("sigs_", b, " <- sigs")
-        eval(parse(text = com))
-        
-        } # if (file.exists(get(curfile)) == FALSE)
-    } # end for (b in chr_names)
-    
-    cat("Chromosome files found: ", found_chr, "\n")
-    ## Perform the merge
-    cat("Merging data by chromosome...", "\n")
-    merged_signal <- list()
-    merge_names_plus <- paste0("sigs_", found_chr, "[['signal']][['+']]")
-    merge_names_minus <- paste0("sigs_", found_chr, "[['signal']][['-']]")
-    
-    mplus <- paste(merge_names_plus[1:length(merge_names_plus)], collapse = ",")
-    mminus <- paste(merge_names_minus[1:length(merge_names_minus)], collapse = ",")
-    
-    nplus <- gsub((paste0(merge_names_plus[length(merge_names_plus)], ",")), paste0("sigs_", found_chr[(length(merge_names_plus))], "[['signal']][['+']])"), mplus)
-    nminus <- gsub((paste0(merge_names_minus[length(merge_names_minus)], ",")), paste0("sigs_", found_chr[(length(merge_names_minus))], "[['signal']][['+']])"), mminus)
+    } # if (file.exists(get(curfile)) == FALSE)
+  } # end for (b in chr_names)
   
-    com <- paste0("merged_signal$'+' <- rbind(", nplus, ")")
-    eval(parse(text = com))
-    com <- paste0("merged_signal$'-' <- rbind(", nminus, ")")
-    eval(parse(text = com))
-    
-    merge_names_sites <- paste0("sigs_", found_chr, "[['bindingSites']]")
-    msites <- paste(merge_names_sites[1:length(merge_names_sites)], collapse = ",")
-    nsites <- gsub((paste0(merge_names_sites[length(merge_names_sites)], ",")), paste0("sigs_", found_chr[(length(merge_names_sites))], "[['signal']][['+']])"), msites)
-    
-    com <- paste0("merged_sites <- c(", nsites, ")")
-    eval(parse(text = com))
-    
-    #
-    merged_signals <- list()
-    merged_signals$"signal" <- merged_signal
-    merged_signals$"bindingSites" <- merged_sites
-    
-    ##
-    save(merged_signals, file = signalpath)
-    
-    
-  }
+  cat("Chromosome files found: ", found_chr, "\n")
+  ## Perform the merge
+  cat("Merging data by chromosome...", "\n")
+  merged_signal <- list()
+  merge_names_plus <- paste0("sigs_", found_chr, "[['signal']][['+']]")
+  merge_names_minus <- paste0("sigs_", found_chr, "[['signal']][['-']]")
+  
+  mplus <- paste(merge_names_plus[1:length(merge_names_plus)], collapse = ",")
+  mminus <- paste(merge_names_minus[1:length(merge_names_minus)], collapse = ",")
+  
+  nplus <- gsub((paste0(merge_names_plus[length(merge_names_plus)], ",")), paste0("sigs_", found_chr[(length(merge_names_plus))], "[['signal']][['+']])"), mplus)
+  nminus <- gsub((paste0(merge_names_minus[length(merge_names_minus)], ",")), paste0("sigs_", found_chr[(length(merge_names_minus))], "[['signal']][['+']])"), mminus)
+  
+  com <- paste0("merged_signal$'+' <- rbind(", nplus, ")")
+  eval(parse(text = com))
+  com <- paste0("merged_signal$'-' <- rbind(", nminus, ")")
+  eval(parse(text = com))
+  
+  merge_names_sites <- paste0("sigs_", found_chr, "[['bindingSites']]")
+  msites <- paste(merge_names_sites[1:length(merge_names_sites)], collapse = ",")
+  nsites <- gsub((paste0(merge_names_sites[length(merge_names_sites)], ",")), paste0("sigs_", found_chr[(length(merge_names_sites))], "[['signal']][['+']])"), msites)
+  
+  com <- paste0("merged_sites <- c(", nsites, ")")
+  eval(parse(text = com))
+  
+  #
+  merged_signals <- list()
+  merged_signals$"signal" <- merged_signal
+  merged_signals$"bindingSites" <- merged_sites
+  
+  ##
+  signalpath <- paste0(sample_path, "preprocessing/15downsample/footprints/merged/", sample, ".", prob, ".", gene, ".merged.Rdata")
+  save(merged_signals, file = signalpath)
+}
 
 cat("Finished merging!", "\n")
 file.create(output)
 
 
-  
+
 
 
 
