@@ -12,20 +12,19 @@ bampath <- snakemake@input[[1]]
 baipath <- snakemake@input[[2]]
 sitespath <- snakemake@input[[3]]
 mergedpath <- snakemake@input[[4]]
+#
 outpathdone <- snakemake@output[[1]]
-samplename <- snakemake@wildcards[["mergedsample"]]
+#
+samplename <- snakemake@wildcards[["sample"]]
 genename <- snakemake@wildcards[["gene"]]
 dirpath <- snakemake@wildcards[["path"]]
+prob <- snakemake@wildcards[["prob"]]
 
 ##
-cat("Determining number of motifs...", "\n")
 load(sitespath)
-num_motifs <- length(bindingSites)
-cat("Found ", num_motifs, " motifs", "\n")
-
-for (x in 1:num_motifs){
+x <- 1 # set to motif 1
   
-  graphpath <- paste0(dirpath, "footprints/temp/", samplename, ".", genename, ".", "motif", x, ".svg")
+  graphpath <- paste0(dirpath, "preprocessing/15downsample/footprints/graphs/", samplename, ".", prob, ".", genename, ".svg")
   cat("Output path for signal object: ", graphpath, "\n")
   
   if (file.exists(graphpath) == TRUE){
@@ -36,7 +35,7 @@ for (x in 1:num_motifs){
     
     ##
     cat("Setting parameters...", "\n")
-    motif_score <- "95%"
+    motif_score <- "99%"
     upstream <- 100
     downstream <- 100
     genome <- Hsapiens
@@ -44,12 +43,12 @@ for (x in 1:num_motifs){
     
     ##
     cat("Loading data...", "\n")
-    mergein <- gsub("merged.done.txt", paste0("motif", x, ".merged.Rdata"), mergedpath)
+    mergein <- gsub("done.merged.txt", "merged.Rdata", mergedpath)
     load(mergein)
     sigs <- merged_signals[["signal"]]
     
     ##
-    PWM <- bindingSites[[x]][["PWM"]]
+    PWM <- bindingSites[[1]][["PWM"]]
     wid <- length(PWM[1,])
     
     cat("Calculating libFactor...", "\n")
@@ -163,7 +162,7 @@ for (x in 1:num_motifs){
                                Mlen=wid, motif=PWMin)
     dev.off()
     
-    }}
+    }
     
 
 ##
