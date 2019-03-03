@@ -43,7 +43,7 @@ ls1034Peaks <- keepStandardChromosomes(ls1034Peaks, pruning.mode="coarse")
 windowBackgroundReads <- matrix(data = NA, nrow = 6165, ncol = 4)
 colnames(windowBackgroundReads) <- c("window", "total reads", "peak reads", "background reads")
 
-for (a in 1:6165){
+for (a in 1:10){
   
   windowBackgroundReads[a,1] <- a
   windowBackgroundReads[a,2] <- aln[a,6]
@@ -53,10 +53,13 @@ for (a in 1:6165){
   inter <- intersect(window, ls1034Peaks)
   ## Calc signal in the intersection
   sbp <- ScanBamParam(which = inter)
-  peaksignal <- countBam(bamFile, param = params)
+  peaksignal <- countBam(bamFile, param = sbp)
   
   ## 
-  windowBackgroundReads[a,3] <- peaksignal
+  windowBackgroundReads[a,3] <- sum(peaksignal[,6])
+  
+  ##
+  windowBackgroundReads[a,4] <- (windowBackgroundReads[a,2] - windowBackgroundReads[a,3])
 }
 
 
