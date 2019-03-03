@@ -1,5 +1,4 @@
 ## Identification of CNV regions from background ATACseq data
-
 ## Load packages
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("GenomicRanges", suppressUpdates = TRUE)
@@ -10,12 +9,15 @@ library(BSgenome.Hsapiens.UCSC.hg38)
 library(genomation)
 library(Rsamtools)
 
+##
+bamFile <- "/home/ubuntu2/atac/ls1034/wt01/preprocessing/12all/LS1034-WT-01.all.bam"
+
 ## Generate hg38 Granges
 nContigs = length(seqnames(Hsapiens))
 hg38 = GRanges(seqnames=seqnames(Hsapiens),
                ranges=IRanges(start=rep(1, nContigs), end=seqlengths(Hsapiens)))
-##
 hg38 <- keepStandardChromosomes(hg38, pruning.mode="coarse")
+
 
 ## Generate windows
 ## This will generate a GRangesList, where each element is a GRanges object with the windows for one chromosome
@@ -24,14 +26,8 @@ hg38 <- keepStandardChromosomes(hg38, pruning.mode="coarse")
 hg38Windows <- slidingWindows(hg38, width = 1000000L, step = 500000L)
 hg38Windows <- unlist(hg38Windows)
 
-## Calculate the total number of reads in each window
 
-### testing
-bamFile <- "/home/ubuntu2/atac/ls1034/wt01/preprocessing/12all/LS1034-WT-01.all.bam"
-
-## with Rsamtools
-quickBamFlagSummary(bamFile)
-#
+##
 params <- ScanBamParam(which = hg38Windows)
 aln <- countBam(bamFile, param = params)
 
@@ -42,10 +38,26 @@ ls1034Peaks <- readBed(bedFile, track.line = FALSE, remove.unusual = FALSE, zero
 ## Remove the entries that are not on standard chromosomes (chr1-22, X, Y), often helps prevent problems downstream
 ls1034Peaks <- keepStandardChromosomes(ls1034Peaks, pruning.mode="coarse")
 
-## Calculate the total number of reads in each peak
-params <- ScanBamParam(which = ls1034Peaks)
-alnpeaks <- countBam(bamFile, param = params)
+
+## For each window, subtract number of reads in peaks from total to get background reads
+windowBackgroundReads <- matrix(data = NA, nrow = 6165, ncol = 4)
+colnames(windowBackgroundReads) <- c("window", "total reads", "peak reads", "background reads")
+
+for (a in 1:6165){
+  
+  windowBackgroundReads[a,1] <- a
+  windowBackgroundReads[a,2] <- aln[a,6]
+  
+  ## Get intersection of peaks with current window
+  window <- hg38Windows[a]
+  inter <- intersect(window, ls1034Peaks)
+  ## Calc signal in the intersection
+  sbp <- ScanBamParam(which = inter)
+  peaksignal <- countBam(bamFile, param = params)
+  
+  ## 
+  windowBackgroundReads[a,3] <- peaksignal
+}
 
 
-## For each window, find which peaks overlap with it
-peakGeneOverlaps <- findOverlaps(extPeaks, hg38Genes)
+
