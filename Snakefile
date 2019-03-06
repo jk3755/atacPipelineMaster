@@ -40,7 +40,7 @@ rule run_xsample_corr_replicates_h508_snu61_ls1034:
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
-        "{path}preprocessing/1gz/dirtree.built.done"
+        "{path}preprocessing/logs/dirtree.built.done"
     shell:
         """
         mkdir -p -v {wildcards.path}preprocessing
@@ -60,8 +60,8 @@ rule PREP_builddirstructure:
 rule STEP1_simplifynames_gunzip:
     # params: -k keep original files, -c write to standard output
     input: 
-        a="{path}preprocessing/1gz/{sample}_L00{lane}_R{read}_001.fastq.gz",
-        b="{path}preprocessing/1gz/dirtree.built.done"
+        a="{path}data/{sample}_L00{lane}_R{read}_001.fastq.gz",
+        b="{path}preprocessing/logs/dirtree.built.done"
     output: 
         "{path}preprocessing/2fastq/{sample}_L{lane}_R{read}.fastq"
     log: 
@@ -405,11 +405,11 @@ rule STEP22_downsamplebam:
     # params:
     # -Xmx50g set java mem limit to X gb
     input:
-        "{path}preprocessing/12all/{mergedsample}.all.bam"
+        "{path}preprocessing/8merged/{sample}.m.bam"
     output:
-        "{path}preprocessing/15downsample/raw/{mergedsample}.{prob}.bam"
+        "{path}preprocessing/15downsample/raw/{sample}.{prob}.bam"
     log:
-        "{path}preprocessing/logs/{mergedsample}.{prob}.downsamplebam.txt"
+        "{path}preprocessing/logs/{sample}.{prob}.downsamplebam.txt"
     shell:
         "java -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
         I={input} \
@@ -419,11 +419,11 @@ rule STEP23_sortdownsampled:
     # params:
     # -Xmx50g set java mem limit to X gb
     input:
-        "{path}preprocessing/15downsample/raw/{mergedsample}.{prob}.bam"
+        "{path}preprocessing/15downsample/raw/{sample}.{prob}.bam"
     output:
-        "{path}preprocessing/15downsample/raw/{mergedsample}.{prob}.cs.bam"
+        "{path}preprocessing/15downsample/raw/{sample}.{prob}.cs.bam"
     log:
-        "{path}preprocessing/logs/{mergedsample}.{prob}.sortdownampled.txt"
+        "{path}preprocessing/logs/{sample}.{prob}.sortdownampled.txt"
     shell:
         "java -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
         I={input} \
@@ -433,25 +433,26 @@ rule STEP24_markdupdownsampled:
     # params:
     # -Xmx50g set java mem limit to X gb
     input:
-        "{path}preprocessing/15downsample/raw/{mergedsample}.{prob}.cs.bam"
+        "{path}preprocessing/15downsample/raw/{sample}.{prob}.cs.bam"
     output:
-        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam"
+        a="{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
+        b="{path}preprocessing/15downsample/complexity/{sample}.{prob}.dupmetrics.txt",
     log:
-        "{path}preprocessing/logs/{mergedsample}.{prob}.markdupdownsampled.txt"
+        "{path}preprocessing/logs/{sample}.{prob}.markdupdownsampled.txt"
     shell:
         "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
         I={input} \
-        O={output} \
-        M={wildcards.path}preprocessing/15downsample/complexity/{wildcards.mergedsample}.{wildcards.prob}.dupmetrics.txt \
+        O={output.a} \
+        M={output.b} \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 rule STEP25_indexdownsampled:
     input:
-        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam"
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
     output:
-        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bai"
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai"
     log:
-        "{path}preprocessing/logs/{mergedsample}.{prob}.indexdownsampled.txt"
+        "{path}preprocessing/logs/{sample}.{prob}.indexdownsampled.txt"
     shell:
         "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
         I={input} \
@@ -474,11 +475,11 @@ rule STEP26_callpeaksmacs2downsampled:
     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
     # -p set the p-value cutoff for peak calling
     input:
-        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam"
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
     output:
-        "{path}preprocessing/15downsample/peaks/{mergedsample}.{prob}_peaks.xls"
+        "{path}preprocessing/15downsample/peaks/{sample}.{prob}_peaks.xls"
     shell:
-        "macs2 callpeak -t {input} -n {wildcards.mergedsample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 rule AGGREGATE_preprocessing:
     input:
         "{path}preprocessing/10unique/{sample}-REP1.u.bai",
@@ -542,61 +543,71 @@ rule test:
 ########################################################################################################################################
 #### Library Complexity Saturation Analysis Rules ######################################################################################
 ########################################################################################################################################
-rule STEP25_analyzecomplexitysaturation:
+rule analyzecomplexitysaturation:
     input:
-        "{path}preprocessing/15downsample/complexity/{sample}.9.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.8.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.7.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.6.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.5.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.4.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.3.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.2.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.1.md.bam"
+        a="{path}preprocessing/15downsample/complexity/{sample}.9.dupmetrics.txt",
+        b="{path}preprocessing/15downsample/complexity/{sample}.8.dupmetrics.txt",
+        c="{path}preprocessing/15downsample/complexity/{sample}.7.dupmetrics.txt",
+        d="{path}preprocessing/15downsample/complexity/{sample}.6.dupmetrics.txt",
+        e="{path}preprocessing/15downsample/complexity/{sample}.5.dupmetrics.txt",
+        f="{path}preprocessing/15downsample/complexity/{sample}.4.dupmetrics.txt",
+        g="{path}preprocessing/15downsample/complexity/{sample}.3.dupmetrics.txt",
+        h="{path}preprocessing/15downsample/complexity/{sample}.2.dupmetrics.txt",
+        i="{path}preprocessing/15downsample/complexity/{sample}.1.dupmetrics.txt"
     output:
         "{path}saturation/{sample}.downsampled_lib_sizes.txt"
     shell:
-        "awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input} >> {output}"
+        """
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.b} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.c} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.d} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.e} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.f} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.g} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
+        """
 ########################################################################################################################################
 #### Peaks Saturation Analysis Rules ###################################################################################################
 ########################################################################################################################################
-rule STEP26_analyzepeaksaturation:
+rule analyzepeaksaturation:
     input:
-        "{path}15downsample/peaks/{sample}.9_peaks.xls",
-        "{path}15downsample/peaks/{sample}.8_peaks.xls",
-        "{path}15downsample/peaks/{sample}.7_peaks.xls",
-        "{path}15downsample/peaks/{sample}.6_peaks.xls",
-        "{path}15downsample/peaks/{sample}.5_peaks.xls",
-        "{path}15downsample/peaks/{sample}.4_peaks.xls",
-        "{path}15downsample/peaks/{sample}.3_peaks.xls",
-        "{path}15downsample/peaks/{sample}.2_peaks.xls",
-        "{path}15downsample/peaks/{sample}.1_peaks.xls"
+        "{path}15downsample/peaks/{mergedsample}.9_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.8_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.7_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.6_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.5_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.4_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.3_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.2_peaks.xls",
+        "{path}15downsample/peaks/{mergedsample}.1_peaks.xls"
     output:
-        "{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
+        "{path}15downsample/peaks/{mergedsample}.downsampled_numpeaks.txt"
     shell:
         "wl -l < {input} >> {output}"
 rule AGGREGATE_saturationanalysis:
     input:
-        "{path}logs/{sample}.preprocessing.done.txt",
-        "{path}15downsample/complexity/{sample}.downsampled_lib_sizes.txt",
-        "{path}15downsample/peaks/{sample}.downsampled_numpeaks.txt"
+        "{path}logs/{mergedsample}.preprocessing.done.txt",
+        "{path}15downsample/complexity/{mergedsample}.downsampled_lib_sizes.txt",
+        "{path}15downsample/peaks/{mergedsample}.downsampled_numpeaks.txt"
     output:
-        "{path}logs/{sample}.saturation_analysis.done.txt"
+        "{path}logs/{mergedsample}.saturation_analysis.done.txt"
     shell:
         "touch {output}"
 ########################################################################################################################################
 #### Footprints Saturation Analysis Rules ##############################################################################################
 ########################################################################################################################################
-rule STEP27_makefpbychr_downsampled:
+rule makefpbychr_downsampled:
     input:
-        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
-        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
+        "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bai",
         "sites/{gene}.sites.Rdata"
     output:
-        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.{chr}.done.txt"
+        "{path}preprocessing/15downsample/footprints/chr/{mergedsample}.{prob}.{gene}.{chr}.done.txt"
     script:
         "scripts/snakeMakeFPbyChrDownsampled.R"
-rule STEP28_mergefpchr_downsampled:
+rule mergefpchr_downsampled:
     input:
         "sites/{gene}.sites.Rdata",
         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr1.done.txt",
@@ -627,7 +638,7 @@ rule STEP28_mergefpchr_downsampled:
         "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
     script:
         "scripts/snakeMergeFPbyChrDownsampled.R"
-rule STEP29_allprob_aggregator:
+rule allprob_aggregator:
     input:
         "{path}preprocessing/15downsample/footprints/merged/{sample}.9.{gene}.done.merged.txt",
         "{path}preprocessing/15downsample/footprints/merged/{sample}.8.{gene}.done.merged.txt",
@@ -642,7 +653,7 @@ rule STEP29_allprob_aggregator:
         "{path}preprocessing/15downsample/footprints/merged/{sample}.allprob.{gene}.done.txt"
     shell:
         "touch {output}"
-rule STEP30_makefpgraph_downsampled:
+rule makefpgraph_downsampled:
     input:
         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
@@ -652,7 +663,7 @@ rule STEP30_makefpgraph_downsampled:
         "{path}saturation/footprints/{sample}.{prob}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraphDownsampled.R"
-rule STEP31_allgraph_aggregator:
+rule allgraph_aggregator:
     input:
         "{path}saturation/footprints/{sample}.9.{gene}.graphs.done.txt",
         "{path}saturation/footprints/{sample}.8.{gene}.graphs.done.txt",
