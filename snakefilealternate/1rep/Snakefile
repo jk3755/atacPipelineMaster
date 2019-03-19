@@ -12,13 +12,13 @@
 # H508-2_S2_L001_R1_001.fastq.gz - Sample 2
 # H508-3_S1_L001_R1_001.fastq.gz - Sample 3
 ## Before running pipeline, rename these to:
-# H508-WT-01_REP1_L1_R1.fastq.gz
+# H508-WT-01_REP3_L1_R1.fastq.gz
 # H508-WT-01_REP2_L1_R1.fastq.gz
 # H508-WT-01_REP3_L1_R1.fastq.gz
 #
-#######################################################################################################################
-#### PIPELINE SPOOLING COMMANDS #######################################################################################
-#######################################################################################################################
+########################################################################################################################################
+#### PIPELINE SPOOLING COMMANDS ########################################################################################################
+########################################################################################################################################
 rule run_h508wt01:
     input:
         "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
@@ -28,6 +28,35 @@ rule run_ls1034wt01:
 rule run_snu61wt01:
     input:
         "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
+rule run_mdst8wt01:
+    input:
+        "mdst8/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
+rule run_h508wt02a:
+    input:
+        "h508/wt02a/preprocessing/logs/H508A-WT-02.preprocessing.cleaning.done.txt"
+rule run_h508wt02f:
+    input:
+        "h508/wt02f/preprocessing/logs/H508F-WT-02.preprocessing.cleaning.done.txt"
+########################################################################################################################################
+#### FOOTPRINTING COMMANDS #############################################################################################################
+########################################################################################################################################
+rule run_fp_coadmr_h508wt02a:
+    input:
+        "h508/wt02a/footprints/parsed/H508A-WT-02.CDX2.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.TCF7.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.HOXA3.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.MNX1.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.POU5F1B.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.OVOL1.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.ESRRA.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.ASCL2.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.HNF4A.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.GMEB2.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.ZSWIM1.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.CBFA2T2.parsed.done.txt"
+########################################################################################################################################
+#### CROSS SAMPLE CORRELATION COMMANDS #################################################################################################
+########################################################################################################################################
 rule run_xsample_corr_h508_snu61_ls1034:
     input:
         "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
@@ -60,7 +89,7 @@ rule PREP_builddirstructure:
 rule STEP1_simplifynames_gunzip:
     # params: -k keep original files, -c write to standard output
     input: 
-        a="{path}data/{sample}_L00{lane}_R{read}_001.fastq.gz",
+        a="{path}preprocessing/1gz/{sample}_L00{lane}_R{read}_001.fastq.gz",
         b="{path}preprocessing/logs/dirtree.built.done"
     output: 
         "{path}preprocessing/2fastq/{sample}_L{lane}_R{read}.fastq"
@@ -95,7 +124,7 @@ rule STEP3_mycoalign:
     log:
         "{path}preprocessing/logs/{sample}.mycoalign.txt"
     shell:
-        "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
+        "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
 rule STEP4_hg38align:
     # params:
     # -q fastq input
@@ -112,7 +141,7 @@ rule STEP4_hg38align:
     log:
         "{path}preprocessing/logs/{sample}.hg38align.txt"
     shell:
-        "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
+        "bowtie2 -q -p 20 -X1000 -x /home/ubuntu1/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
 rule STEP5_coordsort_sam:
     # coordinate sort the sam files to prepare for blacklist filtering
     input:
@@ -127,23 +156,9 @@ rule STEP6_blacklistfilter_bamconversion:
         "{path}preprocessing/5hg38align/{sample}.hg38.cs.sam"
     output:
         a="{path}preprocessing/6rawbam/{sample}.blacklist.bam",
-        b="{path}preprocessing/6rawbam/{sample}.blrm.bam"
+        b="{path}preprocessing/6rawbam/{sample}.bam"
     shell:
-        "samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
-rule STEP6_chrM_contamination:
-    # count and remove mitochondrial reads
-    input:
-        "{path}preprocessing/6rawbam/{sample}.blrm.bam"
-    output:
-        a="{path}preprocessing/6rawbam/{sample}.mitochondrial.bam",
-        b="{path}preprocessing/6rawbam/{sample}.bam",
-        c="{path}preprocessing/6rawbam/mitochondrial_reads.txt"
-    shell:
-        """
-        samtools view -c {input} chrM >> {output.c}
-        samtools view -c {input} >> {output.c}
-        samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}
-        """
+        "samtools view -b -h -o {output.a} -L /home/ubuntu1/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
 rule STEP7_addrgandcsbam:
     # note - proper specification of RG tags is critical
     # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
@@ -160,7 +175,7 @@ rule STEP7_addrgandcsbam:
     log:
         "{path}preprocessing/logs/{sample}.L{lane}.addrgandcsbam.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar AddOrReplaceReadGroups \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate \
@@ -179,7 +194,7 @@ rule STEP8_cleanbam:
     log:
         "{path}preprocessing/logs/{sample}.L{lane}.cleanbam.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar CleanSam \
         I={input} \
         O={output}"
 rule STEP9_mergelanes:
@@ -193,7 +208,7 @@ rule STEP9_mergelanes:
     log:
         "{path}preprocessing/logs/{sample}.mergelanes.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
         I={input.b} \
         I={input.c} \
@@ -214,7 +229,7 @@ rule STEP10_purgeduplicates:
     log:
         "{path}preprocessing/logs/{sample}.purgeduplicates.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
@@ -248,30 +263,20 @@ rule STEP12_buildindex:
     log:
         "{path}preprocessing/logs/{sample}.buildindex.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 rule STEP13_mergereplicates:
     # params:
     # -Xmx50g set java mem limit to X gb
     input:
-        a="{path}preprocessing/10unique/{sample}-REP1.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP2.u.bam",
-        c="{path}preprocessing/10unique/{sample}-REP3.u.bam"
+        "{path}preprocessing/10unique/{sample}.u.bam"
     output:
         "{path}preprocessing/12all/{sample}.all.bam"
     log:
         "{path}preprocessing/logs/{sample}.mergereplicates.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
-        I={input.a} \
-        I={input.b} \
-        I={input.c} \
-        O={output} \
-        SORT_ORDER=coordinate \
-        ASSUME_SORTED=true \
-        MERGE_SEQUENCE_DICTIONARIES=true \
-        USE_THREADING=true"
+        "cp {input} {output}"
 rule STEP14_indexmerged:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -282,7 +287,7 @@ rule STEP14_indexmerged:
     log:
         "{path}preprocessing/logs/{mergedsample}.indexmerged.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 rule STEP15_callpeaksmac2replicates:
@@ -358,18 +363,16 @@ rule STEP18_plotcorrspearman:
     # -p set the number of computing processors to use
     # -v verbose mode
     input:
-        a="{path}preprocessing/10unique/{sample}-REP1.u.bam",
+        a="{path}preprocessing/10unique/{sample}-REP3.u.bam",
         b="{path}preprocessing/10unique/{sample}-REP2.u.bam",
-        c="{path}preprocessing/10unique/{sample}-REP3.u.bam",
-        d="{path}preprocessing/10unique/{sample}-REP1.u.bai",
-        e="{path}preprocessing/10unique/{sample}-REP2.u.bai",
-        f="{path}preprocessing/10unique/{sample}-REP3.u.bai"
+        c="{path}preprocessing/10unique/{sample}-REP3.u.bai",
+        d="{path}preprocessing/10unique/{sample}-REP2.u.bai",
     output:
         "{path}preprocessing/14qcplots/{sample}.spearman.corrTest"
     log:
         "{path}preprocessing/logs/{sample}.plotcorrspearman.txt"
     shell:
-        "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
+        "multiBamSummary bins -b {input.a} {input.b} -o {output} -bs 10000 -p 20 -v"
 rule STEP19_makecorrheatmap:
     input:
         "{path}preprocessing/14qcplots/{sample}.spearman.corrTest"
@@ -425,7 +428,7 @@ rule STEP22_downsamplebam:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.downsamplebam.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar DownsampleSam \
         I={input} \
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
@@ -439,7 +442,7 @@ rule STEP23_sortdownsampled:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.sortdownampled.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar SortSam \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate"
@@ -454,7 +457,7 @@ rule STEP24_markdupdownsampled:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.markdupdownsampled.txt"
     shell:
-        "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+        "java -Xmx5g -jar /home/ubuntu1/programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
@@ -468,7 +471,7 @@ rule STEP25_indexdownsampled:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.indexdownsampled.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+        "java -jar /home/ubuntu1/programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 rule STEP26_callpeaksmacs2downsampled:
@@ -496,38 +499,35 @@ rule STEP26_callpeaksmacs2downsampled:
         "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 rule AGGREGATE_preprocessing:
     input:
-        "{path}preprocessing/10unique/{sample}-REP1.u.bai",
-        "{path}preprocessing/10unique/{sample}-REP2.u.bai",
-        "{path}preprocessing/10unique/{sample}-REP3.u.bai",
+        #"{path}preprocessing/10unique/{sample}-REP3.u.bai",
+        #"{path}preprocessing/10unique/{sample}-REP2.u.bai",
         "{path}preprocessing/12all/{sample}.all.bai",
-        "{path}preprocessing/11peaks/{sample}-REP1_peaks.xls",
-        "{path}preprocessing/11peaks/{sample}-REP2_peaks.xls",
-        "{path}preprocessing/11peaks/{sample}-REP3_peaks.xls",
+        #"{path}preprocessing/11peaks/{sample}-REP3_peaks.xls",
+        #"{path}preprocessing/11peaks/{sample}-REP2_peaks.xls",
         "{path}preprocessing/13allpeaks/{sample}.all_peaks.xls",
         "{path}preprocessing/13allpeaks/{sample}.localnorm.all_peaks.xls",
-        "{path}preprocessing/14qcplots/{sample}.spearman.heatmap.svg",
-        "{path}preprocessing/16bigwig/{sample}-REP1.u.bw",
-        "{path}preprocessing/16bigwig/{sample}-REP2.u.bw",
-        "{path}preprocessing/16bigwig/{sample}-REP3.u.bw",
-        "{path}preprocessing/16bigwig/{sample}.all.bw",
-        "{path}preprocessing/15downsample/complexity/{sample}.9.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.8.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.7.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.6.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.5.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.4.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.3.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.2.md.bai",
-        "{path}preprocessing/15downsample/complexity/{sample}.1.md.bai",
-        "{path}preprocessing/15downsample/peaks/{sample}.9_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.8_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.7_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.6_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.5_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.4_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.3_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.2_peaks.xls",
-        "{path}preprocessing/15downsample/peaks/{sample}.1_peaks.xls"
+        #"{path}preprocessing/14qcplots/{sample}.spearman.heatmap.svg",
+        #"{path}preprocessing/16bigwig/{sample}-REP3.u.bw",
+        #"{path}preprocessing/16bigwig/{sample}-REP2.u.bw",
+        "{path}preprocessing/16bigwig/{sample}.all.bw"
+        # "{path}preprocessing/15downsample/complexity/{sample}.9.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.8.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.7.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.6.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.5.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.4.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.3.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.2.md.bai",
+        # "{path}preprocessing/15downsample/complexity/{sample}.1.md.bai",
+        # "{path}preprocessing/15downsample/peaks/{sample}.9_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.8_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.7_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.6_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.5_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.4_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.3_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.2_peaks.xls",
+        # "{path}preprocessing/15downsample/peaks/{sample}.1_peaks.xls"
     output:
         "{path}preprocessing/logs/{sample}.preprocessing.done.txt"
     shell:
@@ -814,13 +814,13 @@ rule ninesample_plotcorrspearman:
     # -v verbose mode
     # For processing nine sample, restrict analysis to chr1, or computation will take forever
     input:
-        a="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
+        a="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP3.u.bam",
         b="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
         c="{sample1}/{wt1}{num1}/preprocessing/10unique/{s3}-REP3.u.bam",
-        d="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
+        d="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP3.u.bam",
         e="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
         f="{sample1}/{wt1}{num1}/preprocessing/10unique/{s3}-REP3.u.bam",
-        g="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP1.u.bam",
+        g="{sample1}/{wt1}{num1}/preprocessing/10unique/{s1}-REP3.u.bam",
         h="{sample1}/{wt1}{num1}/preprocessing/10unique/{s2}-REP2.u.bam",
         i="{sample1}/{wt1}{num1}/preprocessing/10unique/{s3}-REP3.u.bam"
     output:
