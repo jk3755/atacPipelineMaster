@@ -136,7 +136,7 @@ rule STEP3_mycoalign:
     log:
         "{path}preprocessing/logs/{sample}.mycoalign.txt"
     shell:
-        "bowtie2 -q -p 20 -X2000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
+        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
 
 rule STEP4_hg38align:
     # params:
@@ -154,7 +154,7 @@ rule STEP4_hg38align:
     log:
         "{path}preprocessing/logs/{sample}.hg38align.txt"
     shell:
-        "bowtie2 -q -p 20 -X2000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
+        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
 
 rule STEP5_coordsort_sam:
     # coordinate sort the sam files to prepare for blacklist filtering
@@ -173,7 +173,7 @@ rule STEP6_blacklistfilter_bamconversion:
         a="{path}preprocessing/6rawbam/{sample}.blacklist.bam",
         b="{path}preprocessing/6rawbam/{sample}.blrm.bam"
     shell:
-        "samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
 
 rule STEP7_chrM_contamination:
     # count and remove mitochondrial reads
@@ -187,7 +187,7 @@ rule STEP7_chrM_contamination:
         """
         samtools view -c {input} chrM >> {output.c}
         samtools view -c {input} >> {output.c}
-        samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}
+        samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}
         """
 
 rule STEP7_addrgandcsbam:
@@ -206,7 +206,7 @@ rule STEP7_addrgandcsbam:
     log:
         "{path}preprocessing/logs/{sample}.L{lane}.addrgandcsbam.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar AddOrReplaceReadGroups \
+        "java -jar programs/picard/picard.jar AddOrReplaceReadGroups \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate \
@@ -229,7 +229,7 @@ rule STEP8_cleansam:
     log:
         "{path}preprocessing/logs/{sample}.L{lane}.cleanbam.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
+        "java -jar programs/picard/picard.jar CleanSam \
         I={input} \
         O={output}"
 
@@ -244,7 +244,7 @@ rule STEP9_mergelanes:
     log:
         "{path}preprocessing/logs/{sample}.mergelanes.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+        "java -jar programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
         I={input.b} \
         I={input.c} \
@@ -266,7 +266,7 @@ rule STEP10_purgeduplicates:
     log:
         "{path}preprocessing/logs/{sample}.purgeduplicates.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+        "java -jar programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
@@ -302,7 +302,7 @@ rule STEP12_buildindex:
     log:
         "{path}preprocessing/logs/{sample}.buildindex.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+        "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 
@@ -318,7 +318,7 @@ rule STEP13_mergereplicates:
     log:
         "{path}preprocessing/logs/{sample}.mergereplicates.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar MergeSamFiles \
+        "java -jar programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
         I={input.b} \
         I={input.c} \
@@ -338,7 +338,7 @@ rule STEP14_indexmerged:
     log:
         "{path}preprocessing/logs/{mergedsample}.indexmerged.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+        "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 
@@ -489,7 +489,7 @@ rule STEP22_downsamplebam:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.downsamplebam.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar DownsampleSam \
+        "java -jar programs/picard/picard.jar DownsampleSam \
         I={input} \
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
@@ -504,7 +504,7 @@ rule STEP23_sortdownsampled:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.sortdownampled.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar SortSam \
+        "java -jar programs/picard/picard.jar SortSam \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate"
@@ -520,7 +520,7 @@ rule STEP24_markdupdownsampled:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.markdupdownsampled.txt"
     shell:
-        "java -Xmx5g -jar /home/ubuntu2/programs/picard/picard.jar MarkDuplicates \
+        "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
@@ -535,7 +535,7 @@ rule STEP25_indexdownsampled:
     log:
         "{path}preprocessing/logs/{sample}.{prob}.indexdownsampled.txt"
     shell:
-        "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
+        "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 
