@@ -84,9 +84,7 @@
 
 rule test:
     input:
-        "test01/preprocessing/12bigwig/test-repmerged.bw",
-        "test01/preprocessing/12bigwig/test-REP1of2.bw",
-        "test01/preprocessing/12bigwig/test-REP2of2.bw"
+        "test01/preprocessing/operations/test-preprocessing.done.txt"
 
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -431,7 +429,8 @@ rule STEP16_makebigwig_bamcov_individual:
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-rule STEP17_makebigwig_bamcov_merged:
+rule STEP17_makebigwig_bamcov_merged_1replicate:
+    # This rule will be used when only one replicate is present
     # params:
     # -b bam input
     # -o output file
@@ -442,12 +441,89 @@ rule STEP17_makebigwig_bamcov_merged:
     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
     input:
         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+        c="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam"
     output:
         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
+rule STEP17_makebigwig_bamcov_merged_2replicates:
+    # This rule will be used when two replicates are present
+    # params:
+    # -b bam input
+    # -o output file
+    # -of output format
+    # -bs binsize in bp
+    # -p number of processors to use
+    # -v verbose mode
+    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+    input:
+        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+        c="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
+        d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
+    output:
+        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+    shell:
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
+rule STEP17_makebigwig_bamcov_merged_3replicates:
+    # This rule will be used when three replicates are present
+    # params:
+    # -b bam input
+    # -o output file
+    # -of output format
+    # -bs binsize in bp
+    # -p number of processors to use
+    # -v verbose mode
+    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+    input:
+        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+        c="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
+        d="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
+        e="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai"
+    output:
+        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+    shell:
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
+rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
+    # gather and determine the various preprocessing metrics, record to output text file
+    # delete unnecessary intermediate preprocessing files
+    input:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
+    output:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+    shell:
+        """
+        rm {wildcards.path}preprocessing/2fastq/*.fastq
+        rm {wildcards.path}preprocessing/3goodfastq/*.fq
+        rm {wildcards.path}preprocessing/4mycoalign/*.sam
+        rm {wildcards.path}preprocessing/5hg38align/*.sam
+        rm {wildcards.path}preprocessing/6rawbam/*.bam
+        rm {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
+        rm {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
+        rm {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
+        rm {wildcards.path}preprocessing/7rgsort/*.bam
+        rm {wildcards.path}preprocessing/8merged/*.bam
+        rm {wildcards.path}preprocessing/9dedup/*.bam
+        touch {output}
+        """
+
+rule AGGREGATE_preprocessing_steps:
+    input:
+        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+    output:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
+    shell:
+        "touch {output}"
+
+
+########################################################################################################################################
+#### Peak Calling Rules ################################################################################################################
+########################################################################################################################################
 
 # rule STEP16_MACS2_peaks_individual_globalnormilization:
 #     # notes:
@@ -616,67 +692,9 @@ rule STEP17_makebigwig_bamcov_merged:
 #     shell:
 #         "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# rule AGGREGATE_preprocessing:
-#     input:
-#         "{path}preprocessing/10unique/{sample}-REP1.u.bai",
-#         "{path}preprocessing/10unique/{sample}-REP2.u.bai",
-#         "{path}preprocessing/10unique/{sample}-REP3.u.bai",
-#         "{path}preprocessing/12all/{sample}.all.bai",
-#         "{path}preprocessing/11peaks/{sample}-REP1_peaks.xls",
-#         "{path}preprocessing/11peaks/{sample}-REP2_peaks.xls",
-#         "{path}preprocessing/11peaks/{sample}-REP3_peaks.xls",
-#         "{path}preprocessing/13allpeaks/{sample}.all_peaks.xls",
-#         "{path}preprocessing/13allpeaks/{sample}.localnorm.all_peaks.xls",
-#         "{path}preprocessing/14qcplots/{sample}.spearman.heatmap.svg",
-#         "{path}preprocessing/16bigwig/{sample}-REP1.u.bw",
-#         "{path}preprocessing/16bigwig/{sample}-REP2.u.bw",
-#         "{path}preprocessing/16bigwig/{sample}-REP3.u.bw",
-#         "{path}preprocessing/16bigwig/{sample}.all.bw",
-#         "{path}preprocessing/15downsample/complexity/{sample}.9.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.8.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.7.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.6.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.5.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.4.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.3.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.2.md.bai",
-#         "{path}preprocessing/15downsample/complexity/{sample}.1.md.bai",
-#         "{path}preprocessing/15downsample/peaks/{sample}.9_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.8_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.7_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.6_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.5_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.4_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.3_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.2_peaks.xls",
-#         "{path}preprocessing/15downsample/peaks/{sample}.1_peaks.xls"
-#     output:
-#         "{path}preprocessing/logs/{sample}.preprocessing.done.txt"
-#     shell:
-#         "touch {wildcards.path}preprocessing/logs/{wildcards.sample}.preprocessing.done.txt"
 
-# rule gather metrics (write me):
-#               c="{path}preprocessing/6rawbam/mitochondrial_reads.txt"
-      #  samtools view -c {input} chrM >> {output.c}
-      #  samtools view -c {input} >> {output.c}
 
-# rule CLEAN_preprocessing:
-#     input:
-#         "{path}preprocessing/logs/{sample}.preprocessing.done.txt"
-#     output:
-#         "{path}preprocessing/logs/{sample}.preprocessing.cleaning.done.txt"
-#     shell:
-#         """
-#         rm {wildcards.path}preprocessing/2fastq/*.fastq
-#         rm {wildcards.path}preprocessing/3goodfastq/*.fq
-#         rm {wildcards.path}preprocessing/4mycoalign/*.sam
-#         rm {wildcards.path}preprocessing/5hg38align/*.sam
-#         rm {wildcards.path}preprocessing/6rawbam/*.bam
-#         rm {wildcards.path}preprocessing/7rgsort/*.bam
-#         rm {wildcards.path}preprocessing/8merged/*.bam
-#         rm {wildcards.path}preprocessing/9dedup/*.bam
-#         touch {output}
-#         """
+
 
 # ########################################################################################################################################
 # #### Library Complexity Saturation Analysis Rules ######################################################################################
