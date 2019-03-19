@@ -84,7 +84,9 @@
 
 rule test:
     input:
-        "test01/preprocessing/11repmerged/test-repmerged.bam"
+        "test01/preprocessing/12bigwig/test-repmerged.bw",
+        "test01/preprocessing/12bigwig/test-REP1of2.bw",
+        "test01/preprocessing/12bigwig/test-REP2of2.bw"
 
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -95,8 +97,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing
         mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
         mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
-        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11repmerged {wildcards.path}preprocessing/12peaks {wildcards.path}preprocessing/13allpeaks
-        mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15bigwig {wildcards.path}preprocessing/operations
+        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11repmerged {wildcards.path}preprocessing/12bigwig {wildcards.path}preprocessing/operations
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/complexity {wildcards.path}saturation/footprints {wildcards.path}saturation/peaks
@@ -105,6 +106,8 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/graphs {wildcards.path}footprints/heatmaps {wildcards.path}footprints/data
         mkdir -p -v {wildcards.path}footprints/data/merged {wildcards.path}footprints/data/motifmerge {wildcards.path}footprints/parsed {wildcards.path}footprints/bychr
+        mkdir -p -v {wildcards.path}peaks
+        mkdir -p -v {wildcards.path}peaks/genrich {wildcards.path}peaks/macs2 {wildcards.path}peaks/macs2/individual {wildcards.path}peaks/macs2/merged
         mkdir -p -v {wildcards.path}correlation
         mkdir -p -v {wildcards.path}metrics
         touch {output}
@@ -323,10 +326,11 @@ rule STEP12_mapqfilter:
         "samtools view -h -q 2 -b {input} > {output}"
 
 rule STEP13_buildindex:
-    # params:
     # creates a bai index for the bam files
     # this is required for many downstream operations
     # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
+    # I specifies the input bam file
+    # O specifies the output index file
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam"
     output:
@@ -369,8 +373,8 @@ rule STEP14_merge_2_replicates:
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
 
-rule STEP14_merge_2_replicates:
-    # This rule will be called when there are two input replicates
+rule STEP14_merge_3_replicates:
+    # This rule will be called when there are three input replicates
     # Merges the bam files from the infividual replicates
     # I specifies the input files for individual replicates
     # O specifies the merged output file
@@ -379,35 +383,73 @@ rule STEP14_merge_2_replicates:
     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
     # USE_THREADING allows multithreadded operation
     input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
+        c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam"
     output:
         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
     shell:
         "java -jar programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
         I={input.b} \
+        I={input.c} \
         O={output} \
         SORT_ORDER=coordinate \
         ASSUME_SORTED=true \
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
 
-# rule STEP15_indexmerged:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     input:
-#         "{path}preprocessing/12all/{mergedsample}.all.bam"
-#     output:
-#         "{path}preprocessing/12all/{mergedsample}.all.bai"
-#     log:
-#         "{path}preprocessing/logs/{mergedsample}.indexmerged.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar BuildBamIndex \
-#         I={input} \
-#         O={output}"
+rule STEP15_index_replicate_merged:
+    # creates a bai index for the bam files
+    # this is required for many downstream operations
+    # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
+    # I specifies the input bam file
+    # O specifies the output index file
+    input:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+    output:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    shell:
+        "java -jar programs/picard/picard.jar BuildBamIndex \
+        I={input} \
+        O={output}"
 
-# rule STEP16_callpeaksmac2replicates:
+rule STEP16_makebigwig_bamcov_individual:
+    # params:
+    # -b bam input
+    # -o output file
+    # -of output format
+    # -bs binsize in bp
+    # -p number of processors to use
+    # -v verbose mode
+    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+    input:
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bai"
+    output:
+        "{path}preprocessing/12bigwig/{sample}-REP{repnum}of{reptot}.bw"
+    shell:
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
+rule STEP17_makebigwig_bamcov_merged:
+    # params:
+    # -b bam input
+    # -o output file
+    # -of output format
+    # -bs binsize in bp
+    # -p number of processors to use
+    # -v verbose mode
+    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+    input:
+        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    output:
+        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+    shell:
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
+
+# rule STEP16_MACS2_peaks_individual_globalnormilization:
 #     # notes:
 #     # because we are going to use the TCGA data downstream likely as a reference point,
 #     # we will need to call the peaks in the exact same way as they did in this paper:
@@ -425,8 +467,8 @@ rule STEP14_merge_2_replicates:
 #     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
 #     # -p set the p-value cutoff for peak calling
 #     input:
-#         a="{path}preprocessing/10unique/{sample}-{REP}.u.bam",
-#         b="{path}preprocessing/10unique/{sample}-{REP}.u.bai"
+#         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+#         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
 #     output:
 #         "{path}preprocessing/11peaks/{sample}-{REP}_peaks.xls"
 #     shell:
@@ -496,39 +538,7 @@ rule STEP14_merge_2_replicates:
 #     shell:
 #         "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
 
-# rule STEP21_makebigwig_bamcov_individual:
-#     # params:
-#     # -b bam input
-#     # -o output file
-#     # -of output format
-#     # -bs binsize in bp
-#     # -p number of processors to use
-#     # -v verbose mode
-#     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-#     input:
-#         a="{path}preprocessing/10unique/{sample}.u.bam",
-#         b="{path}preprocessing/10unique/{sample}.u.bai"
-#     output:
-#         "{path}preprocessing/16bigwig/{sample}.u.bw"
-#     shell:
-#         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-# rule STEP22_makebigwig_bamcov_merged:
-#     # params:
-#     # -b bam input
-#     # -o output file
-#     # -of output format
-#     # -bs binsize in bp
-#     # -p number of processors to use
-#     # -v verbose mode
-#     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-#     input:
-#         a="{path}preprocessing/12all/{mergedsample}.all.bam",
-#         b="{path}preprocessing/12all/{mergedsample}.all.bai"
-#     output:
-#         "{path}preprocessing/16bigwig/{mergedsample}.all.bw"
-#     shell:
-#         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
 # rule STEP23_downsamplebam:
 #     # params:
