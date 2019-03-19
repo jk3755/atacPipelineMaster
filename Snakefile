@@ -95,7 +95,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/complexity {wildcards.path}saturation/footprints {wildcards.path}saturation/peaks {wildcards.path}saturation/downsampled
-        mkdir -p -v {wildcards.path}saturation/footprints/data
+        mkdir -p -v {wildcards.path}saturation/footprints/data {wildcards.path}saturation/footprints/graphs
         mkdir -p -v {wildcards.path}saturation/footprints/data/merged {wildcards.path}saturation/footprints/data/motifmerge {wildcards.path}saturation/footprints/data/parsed {wildcards.path}saturation/footprints/data/bychr
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/graphs {wildcards.path}footprints/heatmaps {wildcards.path}footprints/data
@@ -495,15 +495,15 @@ rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
         "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
     shell:
         """
-#       rm -f {wildcards.path}preprocessing/2fastq/*.fastq
-#       rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
-#        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
-#        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
-#        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
-#        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
-#        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
-#        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
-#        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
+        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
+        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
+        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
+        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
+        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
         touch {output}
         """
 
@@ -779,6 +779,41 @@ rule STEP29_analyze_complexity_downsampled:
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
         """
+    
+rule STEP30_MACS2_peaks_downsampled:
+    input:
+        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
+        b="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai"
+    output:
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.{prob}_global_normalization_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+rule STEP31_analyze_peak_saturation_downsampled:
+    input:
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.9_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.8_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.7_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.6_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.5_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.4_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.3_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.2_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.1_global_normalization_peaks.xls"
+    output:
+        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_numpeaks.txt"
+    shell:
+        "wl -l < {input} >> {output}"
+
+rule STEP32_make_footprint_by_chr_downsampled:
+    input:
+        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
+        b="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai",
+        "sites/{gene}.sites.Rdata"
+    output:
+        "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.{chr}.done.txt"
+    script:
+        "scripts/snakeMakeFPbyChrDownsampled.R"
 
 rule AGGREGATOR_saturation:
     input:
@@ -791,151 +826,89 @@ rule AGGREGATOR_saturation:
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.3.md.bai",
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.2.md.bai",
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.1.md.bai",
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt"
+        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt",
+        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_numpeaks.txt"
     output:
         "{path}operations/{mergedsample}-REP{repnum}of{reptot}-downsample.done.txt"
     shell:
         "touch {output}"
-        
 
 
 
-# rule STEP27_callpeaksmacs2downsampled:
-#     # notes:
-#     # because we are going to use the TCGA data downstream likely as a reference point,
-#     # we will need to call the peaks in the exact same way as they did in this paper:
-#     # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-#     # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-#     # params:
-#     # -t input bam file (treatment)
-#     # -n base name for output files
-#     # --outdir output directory
-#     # --shift find all tags in the bam, and shift them by 75 bp
-#     # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-#     # --nomodel do not use the macs2 function to determine shifting model
-#     # --call-summits call the peak summits, detect subpeaks within a peaks
-#     # --nolambda do not use local bias correction, use background nolambda
-#     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-#     # -p set the p-value cutoff for peak calling
-#     input:
-#         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
-#     output:
-#         "{path}preprocessing/15downsample/peaks/{sample}.{prob}_peaks.xls"
-#     shell:
-#         "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-#
+rule mergefpchr_downsampled:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr1.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr2.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr3.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr4.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr5.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr6.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr7.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr8.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr9.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr10.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr11.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr12.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr13.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr14.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr15.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr16.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr17.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr18.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr19.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr20.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr21.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr22.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chrY.done.txt",
+        "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chrX.done.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
+    script:
+        "scripts/snakeMergeFPbyChrDownsampled.R"
 
-#
-# rule analyzepeaksaturation:
-#     input:
-#         "{path}15downsample/peaks/{mergedsample}.9_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.8_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.7_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.6_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.5_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.4_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.3_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.2_peaks.xls",
-#         "{path}15downsample/peaks/{mergedsample}.1_peaks.xls"
-#     output:
-#         "{path}15downsample/peaks/{mergedsample}.downsampled_numpeaks.txt"
-#     shell:
-#         "wl -l < {input} >> {output}"
-#
-# rule AGGREGATE_saturationanalysis:
-#     input:
-#         "{path}logs/{mergedsample}.preprocessing.done.txt",
-#         "{path}15downsample/complexity/{mergedsample}.downsampled_lib_sizes.txt",
-#         "{path}15downsample/peaks/{mergedsample}.downsampled_numpeaks.txt"
-#     output:
-#         "{path}logs/{mergedsample}.saturation_analysis.done.txt"
-#     shell:
-#         "touch {output}"
-#         """
-# rule makefpbychr_downsampled:
-#     input:
-#         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bam",
-#         "{path}preprocessing/15downsample/complexity/{mergedsample}.{prob}.md.bai",
-#         "sites/{gene}.sites.Rdata"
-#     output:
-#         "{path}preprocessing/15downsample/footprints/chr/{mergedsample}.{prob}.{gene}.{chr}.done.txt"
-#     script:
-#         "scripts/snakeMakeFPbyChrDownsampled.R"
-#
-# rule mergefpchr_downsampled:
-#     input:
-#         "sites/{gene}.sites.Rdata",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr1.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr2.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr3.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr4.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr5.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr6.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr7.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr8.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr9.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr10.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr11.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr12.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr13.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr14.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr15.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr16.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr17.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr18.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr19.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr20.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr21.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chr22.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chrY.done.txt",
-#         "{path}preprocessing/15downsample/footprints/chr/{sample}.{prob}.{gene}.chrX.done.txt"
-#     output:
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
-#     script:
-#         "scripts/snakeMergeFPbyChrDownsampled.R"
-#
-# rule allprob_aggregator:
-#     input:
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.9.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.8.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.7.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.6.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.5.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.4.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.3.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.2.{gene}.done.merged.txt",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.1.{gene}.done.merged.txt"
-#     output:
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.allprob.{gene}.done.txt"
-#     shell:
-#         "touch {output}"
-#
-# rule makefpgraph_downsampled:
-#     input:
-#         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
-#         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
-#         "sites/{gene}.sites.Rdata",
-#         "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
-#     output:
-#         "{path}saturation/footprints/{sample}.{prob}.{gene}.graphs.done.txt"
-#     script:
-#         "scripts/snakeGenerateMergedFPGraphDownsampled.R"
+rule allprob_aggregator:
+    input:
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.9.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.8.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.7.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.6.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.5.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.4.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.3.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.2.{gene}.done.merged.txt",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.1.{gene}.done.merged.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.allprob.{gene}.done.txt"
+    shell:
+        "touch {output}"
 
-# rule allgraph_aggregator:
-#     input:
-#         "{path}saturation/footprints/{sample}.9.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.8.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.7.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.6.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.5.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.4.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.3.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.2.{gene}.graphs.done.txt",
-#         "{path}saturation/footprints/{sample}.1.{gene}.graphs.done.txt"
-#     output:
-#         "{path}preprocessing/15downsample/footprints/graphs/{sample}.allprob.{gene}.done.graphs.txt"
-#     shell:
-#         "touch {output}"
+rule makefpgraph_downsampled:
+    input:
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
+        "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai",
+        "sites/{gene}.sites.Rdata",
+        "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
+    output:
+        "{path}saturation/footprints/{sample}.{prob}.{gene}.graphs.done.txt"
+    script:
+        "scripts/snakeGenerateMergedFPGraphDownsampled.R"
+
+rule allgraph_aggregator:
+    input:
+        "{path}saturation/footprints/{sample}.9.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.8.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.7.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.6.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.5.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.4.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.3.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.2.{gene}.graphs.done.txt",
+        "{path}saturation/footprints/{sample}.1.{gene}.graphs.done.txt"
+    output:
+        "{path}preprocessing/15downsample/footprints/graphs/{sample}.allprob.{gene}.done.graphs.txt"
+    shell:
+        "touch {output}"
 #
 # ########################################################################################################################################
 # #### Footprint Analysis Rules ##########################################################################################################
