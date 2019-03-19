@@ -38,12 +38,11 @@ rule run_ls1034wt01:
 rule run_snu61wt01:
     input:
         "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
-rule run_xsample_corr_h508_snu61_ls1034:
+
+rule run_mdst8wt01:
     input:
-        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
-rule run_xsample_corr_replicates_h508_snu61_ls1034:
-    input:
-        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+        "mdst8/wt01/preprocessing/logs/MDST8-WT-01.preprocessing.cleaning.done.txt"
+
 
 ########################################################################################################################################
 #### SPOOL FOOTPRINTING ################################################################################################################
@@ -66,7 +65,13 @@ rule run_fp_coadmr_h508wt02a:
 ########################################################################################################################################
 #### SPOOL CROSS SAMPLE CORRELATION ####################################################################################################
 ########################################################################################################################################
+rule run_xsample_corr_h508_snu61_ls1034:
+    input:
+        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 
+rule run_xsample_corr_replicates_h508_snu61_ls1034:
+    input:
+        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -763,6 +768,64 @@ rule allgraph_aggregator:
 ########################################################################################################################################
 #### Footprint Analysis Rules ##########################################################################################################
 ########################################################################################################################################
+#rule run_fp_coadmr_mdst8_wt01:
+#    input:
+#        "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
+
+rule aggregate_coadmr_fp:
+	input:
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.CDX2.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.TCF7.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.HOXA3.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.MNX1.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.POU5F1B.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.OVOL1.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ESRRA.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ASCL2.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.HNF4A.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.GMEB2.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ZSWIM1.parsed.done.txt",
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.CBFA2T2.parsed.done.txt"
+	output:
+		"mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
+	shell:
+		"touch {output}"
+
+rule make_heatmaps:
+	input:
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif3.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CBFA2T2.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ZSWIM1.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.POU5F1B.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif3.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif9.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif6.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif5.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif6.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif4.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HOXA3.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif2.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif3.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif1.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif7.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif8.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif5.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif4.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif4.heatmap.svg",
+		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CDX2.motif1.heatmap.svg"
+
 rule makefp_by_chr:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
