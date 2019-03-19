@@ -84,15 +84,8 @@
 
 rule test:
     input:
-        "test01/preprocessing/7rgsort/test-REP1of2_L1.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP1of2_L2.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP1of2_L3.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP1of2_L4.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP2of2_L1.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP2of2_L2.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP2of2_L3.clean.bam",
-        "test01/preprocessing/7rgsort/test-REP2of2_L4.clean.bam"
-        
+        "test01/preprocessing/11repmerged/test-repmerged.bam"
+
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
@@ -102,7 +95,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing
         mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
         mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
-        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
+        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11repmerged {wildcards.path}preprocessing/12peaks {wildcards.path}preprocessing/13allpeaks
         mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15bigwig {wildcards.path}preprocessing/operations
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}saturation
@@ -199,10 +192,10 @@ rule STEP6_blacklistfilter_bamconversion:
     input:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.cs.sam"
     output:
-        a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blacklist.bam",
+        a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}of{reptot}_L{lane}.hg38blacklist.bam",
         b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
     shell:
-        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
 rule STEP7_chrM_contamination:
     # remove mitochondrial reads
@@ -214,10 +207,10 @@ rule STEP7_chrM_contamination:
     # -U output filepath for reads matching blacklist region
     # -@ number of threads to use
     input:
-        a="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
+        "{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
     output:
         a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}of{reptot}_L{lane}.mitochondrial.bam",
-        b="{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.bam"
+        b="{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.goodbam"
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
@@ -237,7 +230,7 @@ rule STEP8_addrgandcsbam:
     # I specifies the input file
     # O specifies the output file
     input:
-        "{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.bam"
+        "{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.goodbam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.rg.cs.bam"
     shell:
@@ -268,15 +261,20 @@ rule STEP9_cleansam:
         O={output}"
 
 rule STEP10_mergelanes:
+    # Merge files for individual lanes
+    # I specifies input files for each lane
+    # O specifies the output files
+    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation
     input:
-        a="{path}preprocessing/7rgsort/{sample}_L1.clean.bam",
-        b="{path}preprocessing/7rgsort/{sample}_L2.clean.bam",
-        c="{path}preprocessing/7rgsort/{sample}_L3.clean.bam",
-        d="{path}preprocessing/7rgsort/{sample}_L4.clean.bam"
+        a="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L1.clean.bam",
+        b="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L2.clean.bam",
+        c="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L3.clean.bam",
+        d="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L4.clean.bam"
     output:
-        "{path}preprocessing/8merged/{sample}.m.bam"
-    log:
-        "{path}preprocessing/logs/{sample}.mergelanes.txt"
+        "{path}preprocessing/8merged/{sample}-REP{repnum}of{reptot}.lanemerge.bam"
     shell:
         "java -jar programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
@@ -289,78 +287,111 @@ rule STEP10_mergelanes:
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
 
-# rule STEP11_purgeduplicates:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     input:
-#         "{path}preprocessing/8merged/{sample}.m.bam"
-#     output:
-#         a="{path}preprocessing/9dedup/{sample}.dp.bam",
-#         b="{path}preprocessing/9dedup/{sample}.metrics.txt"
-#     log:
-#         "{path}preprocessing/logs/{sample}.purgeduplicates.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar MarkDuplicates \
-#         I={input} \
-#         O={output.a} \
-#         M={output.b} \
-#         REMOVE_DUPLICATES=true \
-#         ASSUME_SORTED=true"
+rule STEP11_purgeduplicates:
+    # params:
+    # I specifies the input file
+    # O specifies the output file
+    # M specifies the duplication metrics output file
+    # REMOVE_DUPLICATES enables removal of duplicate reads from the output file
+    # ASSUME_SORTED indicates the input file is already sorted
+    input:
+        "{path}preprocessing/8merged/{sample}-REP{repnum}of{reptot}.lanemerge.bam"
+    output:
+        "{path}preprocessing/9dedup/{sample}-REP{repnum}of{reptot}.dp.bam"
+    shell:
+        "java -jar programs/picard/picard.jar MarkDuplicates \
+        I={input} \
+        O={output} \
+        M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}of{wildcards.reptot}.duplication.txt \
+        REMOVE_DUPLICATES=true \
+        ASSUME_SORTED=true"
 
-# rule STEP12_mapqfilter:
-#     # STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
-#     # Notes:
-#     # for an explanation of how bowtie2 calculates mapq scores:
-#     # http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
-#     # for bowtie2, mapq higher than 2 is a uniquely mapped read
-#     # params:
-#     # -h include the header in the output
-#     # -q only include reads with mapping quality X or higher
-#     # -b output as a bam file
-#     input:
-#         "{path}preprocessing/9dedup/{sample}.dp.bam"
-#     output:
-#         "{path}preprocessing/10unique/{sample}.u.bam"
-#     log:
-#         "{path}preprocessing/logs/{sample}.mapqfilter.txt"
-#     shell:
-#         "samtools view -h -q 2 -b {input} > {output}"
+rule STEP12_mapqfilter:
+    # Remove multimapping reads
+    # for an explanation of how bowtie2 calculates mapq scores:
+    # http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
+    # for bowtie2, mapq higher than 2 is a uniquely mapped read
+    # params:
+    # -h include the header in the output
+    # -q only include reads with mapping quality X or higher
+    # -b output as a bam file
+    input:
+        "{path}preprocessing/9dedup/{sample}-REP{repnum}of{reptot}.dp.bam"
+    output:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam"
+    shell:
+        "samtools view -h -q 2 -b {input} > {output}"
 
-# rule STEP13_buildindex:
-#     # params:
-#     # -XmxXg set java mem limit to X gb
-#     input:
-#         "{path}preprocessing/10unique/{sample}.u.bam"
-#     output:
-#         "{path}preprocessing/10unique/{sample}.u.bai"
-#     log:
-#         "{path}preprocessing/logs/{sample}.buildindex.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar BuildBamIndex \
-#         I={input} \
-#         O={output}"
+rule STEP13_buildindex:
+    # params:
+    # creates a bai index for the bam files
+    # this is required for many downstream operations
+    # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
+    input:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam"
+    output:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bai"
+    shell:
+        "java -jar programs/picard/picard.jar BuildBamIndex \
+        I={input} \
+        O={output}"
 
-# rule STEP14_mergereplicates:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     input:
-#         a="{path}preprocessing/10unique/{sample}-REP1.u.bam",
-#         b="{path}preprocessing/10unique/{sample}-REP2.u.bam",
-#         c="{path}preprocessing/10unique/{sample}-REP3.u.bam"
-#     output:
-#         "{path}preprocessing/12all/{sample}.all.bam"
-#     log:
-#         "{path}preprocessing/logs/{sample}.mergereplicates.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar MergeSamFiles \
-#         I={input.a} \
-#         I={input.b} \
-#         I={input.c} \
-#         O={output} \
-#         SORT_ORDER=coordinate \
-#         ASSUME_SORTED=true \
-#         MERGE_SEQUENCE_DICTIONARIES=true \
-#         USE_THREADING=true"
+rule STEP14_merge_1_replicate:
+    # If only one replicate is present, you can just copy the previous bam file to the next directory
+    input:
+        "{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam"
+    output:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+    shell:
+        "cp {input} {output}"
+
+rule STEP14_merge_2_replicates:
+    # This rule will be called when there are two input replicates
+    # Merges the bam files from the infividual replicates
+    # I specifies the input files for individual replicates
+    # O specifies the merged output file
+    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
+    output:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+    shell:
+        "java -jar programs/picard/picard.jar MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        SORT_ORDER=coordinate \
+        ASSUME_SORTED=true \
+        MERGE_SEQUENCE_DICTIONARIES=true \
+        USE_THREADING=true"
+
+rule STEP14_merge_2_replicates:
+    # This rule will be called when there are two input replicates
+    # Merges the bam files from the infividual replicates
+    # I specifies the input files for individual replicates
+    # O specifies the merged output file
+    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
+    output:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+    shell:
+        "java -jar programs/picard/picard.jar MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        SORT_ORDER=coordinate \
+        ASSUME_SORTED=true \
+        MERGE_SEQUENCE_DICTIONARIES=true \
+        USE_THREADING=true"
 
 # rule STEP15_indexmerged:
 #     # params:
