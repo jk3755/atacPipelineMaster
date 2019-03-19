@@ -84,7 +84,7 @@
 
 rule test:
     input:
-        "test01/preprocessing/operations/test-preprocessing.done.txt"
+        "test01/operations/test-peaks.done.txt"
 
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -442,7 +442,7 @@ rule STEP17_makebigwig_bamcov_merged_1replicate:
     input:
         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam"
+        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of1.bw"
     output:
         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
     shell:
@@ -461,8 +461,8 @@ rule STEP17_makebigwig_bamcov_merged_2replicates:
     input:
         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
+        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of2.bw",
+        d="{path}preprocessing/12bigwig/{mergedsample}-REP2of2.bw"
     output:
         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
     shell:
@@ -481,9 +481,9 @@ rule STEP17_makebigwig_bamcov_merged_3replicates:
     input:
         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
-        e="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai"
+        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of3.bw",
+        d="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw",
+        e="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw"
     output:
         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
     shell:
@@ -492,27 +492,28 @@ rule STEP17_makebigwig_bamcov_merged_3replicates:
 rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
     # gather and determine the various preprocessing metrics, record to output text file
     # delete unnecessary intermediate preprocessing files
+    # -f option will ignore nonexistent files
     input:
         "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
     output:
         "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
     shell:
         """
-        rm {wildcards.path}preprocessing/2fastq/*.fastq
-        rm {wildcards.path}preprocessing/3goodfastq/*.fq
-        rm {wildcards.path}preprocessing/4mycoalign/*.sam
-        rm {wildcards.path}preprocessing/5hg38align/*.sam
-        rm {wildcards.path}preprocessing/6rawbam/*.bam
-        rm {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
-        rm {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
-        rm {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
-        rm {wildcards.path}preprocessing/7rgsort/*.bam
-        rm {wildcards.path}preprocessing/8merged/*.bam
-        rm {wildcards.path}preprocessing/9dedup/*.bam
+        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
+        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
+        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
+        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
+        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
+        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        rm -f {wildcards.path}preprocessing/8merged/*.bam
+        rm -f {wildcards.path}preprocessing/9dedup/*.bam
         touch {output}
         """
 
-rule AGGREGATE_preprocessing_steps:
+rule AGGREGATOR_preprocessing_steps:
     input:
         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
     output:
@@ -520,71 +521,133 @@ rule AGGREGATE_preprocessing_steps:
     shell:
         "touch {output}"
 
-
 ########################################################################################################################################
 #### Peak Calling Rules ################################################################################################################
 ########################################################################################################################################
 
-# rule STEP16_MACS2_peaks_individual_globalnormilization:
-#     # notes:
-#     # because we are going to use the TCGA data downstream likely as a reference point,
-#     # we will need to call the peaks in the exact same way as they did in this paper:
-#     # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-#     # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-#     ## params:
-#     # -t input bam file (treatment)
-#     # -n base name for output files
-#     # --outdir output directory
-#     # --shift find all tags in the bam, and shift them by 75 bp
-#     # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-#     # --nomodel do not use the macs2 function to determine shifting model
-#     # --call-summits call the peak summits, detect subpeaks within a peaks
-#     # --nolambda do not use local bias correction, use background nolambda
-#     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-#     # -p set the p-value cutoff for peak calling
-#     input:
-#         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-#         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
-#     output:
-#         "{path}preprocessing/11peaks/{sample}-{REP}_peaks.xls"
-#     shell:
-#         "macs2 callpeak -t {input.a} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}preprocessing/11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+rule STEP19_MACS2_peaks_individual_global_normilization:
+    # notes:
+    # because we are going to use the TCGA data downstream likely as a reference point,
+    # we will need to call the peaks in the exact same way as they did in this paper:
+    # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+    # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+    ## params:
+    # -t input bam file (treatment)
+    # -n base name for output files
+    # --outdir output directory
+    # --shift find all tags in the bam, and shift them by 75 bp
+    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+    # --nomodel do not use the macs2 function to determine shifting model
+    # --call-summits call the peak summits, detect subpeaks within a peaks
+    # --nolambda do not use local bias correction, use background nolambda
+    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+    # -p set the p-value cutoff for peak calling
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai",
+        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+    output:
+        "{path}peaks/macs2/individual/{mergedsample}-REP{repnum}of{reptot}_global_normalization_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# rule STEP17_callpeaksmacs2merged:
-#     # notes:
-#     # because we are going to use the TCGA data downstream likely as a reference point,
-#     # we will need to call the peaks in the exact same way as they did in this paper:
-#     # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-#     # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-#     # params:
-#     # -t input bam file (treatment)
-#     # -n base name for output files
-#     # --outdir output directory
-#     # --shift find all tags in the bam, and shift them by 75 bp
-#     # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-#     # --nomodel do not use the macs2 function to determine shifting model
-#     # --call-summits call the peak summits, detect subpeaks within a peaks
-#     # --nolambda do not use local bias correction, use background nolambda
-#     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-#     # -p set the p-value cutoff for peak calling
-#     input:
-#         a="{path}preprocessing/12all/{sample}.all.bam",
-#         b="{path}preprocessing/12all/{sample}.all.bai"
-#     output:
-#         "{path}preprocessing/13allpeaks/{sample}.all_peaks.xls"
-#     shell:
-#         "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}preprocessing/13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+rule STEP20_MACS2_peaks_individual_local_normalization:
+    # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
+    # params:
+    # -t input bam file (treatment)
+    # -n base name for output files
+    # --outdir output directory
+    # --shift find all tags in the bam, and shift them by 75 bp
+    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+    # --nomodel do not use the macs2 function to determine shifting model
+    # --call-summits call the peak summits, detect subpeaks within a peaks
+    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+    # -p set the p-value cutoff for peak calling
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai",
+        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+    output:
+        "{path}peaks/macs2/individual/{mergedsample}-REP{repnum}of{reptot}_local_normalization_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}_local_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
-# rule STEP18_callpeaksmacs2merged_localnorm:
-#     # notes:
-#     # same as above, but with local background correction enabled
-#     input:
-#         a="{path}preprocessing/12all/{sample}.all.bam",
-#         b="{path}preprocessing/12all/{sample}.all.bai"
-#     output:
-#         "{path}preprocessing/13allpeaks/{sample}.localnorm.all_peaks.xls"
-#     shell:
-#         "macs2 callpeak -t {input.a} -n {wildcards.sample}.localnorm.all --outdir {wildcards.path}preprocessing/13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+rule STEP21_MACS2_peaks_merged_global_normilization_1replicate:
+    # see above for notes applicable to MACS2 peak calling
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bai",
+        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+        d="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        e="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    output:
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+rule STEP21_MACS2_peaks_merged_global_normilization_2replicates:
+    # see above for notes applicable to MACS2 peak calling
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
+        a="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
+        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+        d="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        e="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    output:
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
+    # see above for notes applicable to MACS2 peak calling
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
+        a="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
+        a="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai",
+        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+        d="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        e="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    output:
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+
+rule STEP22_MACS2_peaks_merged_local_normilization:
+    # see above for notes applicable to MACS2 peak calling
+    input:
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
+    output:
+        "{path}peaks/macs2/individual/{mergedsample}-REP{repnum}of{reptot}_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+rule AGGREGATOR_peaks:
+    input:
+        "{path}peaks/macs2/individual/{mergedsample}-REP{repnum}of{reptot}_peaks.xls"
+    output:
+        "{path}operations/{mergedsample}-peaks.done.txt"
+    shell:
+        "touch {output}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # rule STEP19_plotcorrspearman:
 #     # parameters:
