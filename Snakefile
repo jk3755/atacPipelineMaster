@@ -94,7 +94,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11repmerged {wildcards.path}preprocessing/12bigwig {wildcards.path}preprocessing/operations
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}saturation
-        mkdir -p -v {wildcards.path}saturation/complexity {wildcards.path}saturation/footprints {wildcards.path}saturation/peaks
+        mkdir -p -v {wildcards.path}saturation/complexity {wildcards.path}saturation/footprints {wildcards.path}saturation/peaks {wildcards.path}saturation/downsampled
         mkdir -p -v {wildcards.path}saturation/footprints/data
         mkdir -p -v {wildcards.path}saturation/footprints/data/merged {wildcards.path}saturation/footprints/data/motifmerge {wildcards.path}saturation/footprints/data/parsed {wildcards.path}saturation/footprints/data/bychr
         mkdir -p -v {wildcards.path}footprints
@@ -495,17 +495,15 @@ rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
         "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
-        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
-        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
-        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
-        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
-        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
-        rm -f {wildcards.path}preprocessing/8merged/*.bam
-        rm -f {wildcards.path}preprocessing/9dedup/*.bam
+#       rm -f {wildcards.path}preprocessing/2fastq/*.fastq
+#       rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
+#        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
+#        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
+#        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
+#        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
+#        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
+#        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
+#        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
         touch {output}
         """
 
@@ -657,12 +655,12 @@ rule STEP23_sample_correlation_spearman_2replicates:
     # -p set the number of computing processors to use
     # -v verbose mode
     input:
-        a="{path}preprocessing/10unique/{sample}-REP1of2.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP2of2.u.bam",
-        c="{path}preprocessing/10unique/{sample}-REP1of2.u.bai",
-        d="{path}preprocessing/10unique/{sample}-REP2of2.u.bai"
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
+        c="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
+        d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai"
     output:
-        "{path}correlation/{sample}.spearman.corrTest"
+        "{path}correlation/{mergedsample}.spearman.corrTest"
     shell:
         "multiBamSummary bins -b {input.a} {input.b} -o {output} -bs 10000 -p 20 -v"
 
@@ -675,14 +673,14 @@ rule STEP23_sample_correlation_spearman_3replicates:
     # -p set the number of computing processors to use
     # -v verbose mode
     input:
-        a="{path}preprocessing/10unique/{sample}-REP1of3.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP2of3.u.bam",
-        c="{path}preprocessing/10unique/{sample}-REP3of3.u.bam",
-        d="{path}preprocessing/10unique/{sample}-REP1of3.u.bai",
-        e="{path}preprocessing/10unique/{sample}-REP2of3.u.bai",
-        f="{path}preprocessing/10unique/{sample}-REP3of3.u.bai"
+        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
+        c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
+        d="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
+        e="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
+        f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai"
     output:
-        "{path}correlation/{sample}.spearman.corrTest"
+        "{path}correlation/{mergedsample}.spearman.corrTest"
     shell:
         "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
 
@@ -696,9 +694,9 @@ rule STEP24_makecorrheatmap:
 
 rule AGGREGATOR_correlation:
     input:
-        "{path}correlation/{sample}.spearman.heatmap.svg"
+        "{path}correlation/{mergedsample}.spearman.heatmap.svg"
     output:
-        "{path}operations/{sample}-correlation.done.txt"
+        "{path}operations/{mergedsample}-correlation.done.txt"
     shell:
         "touch {output}"
 
@@ -706,62 +704,101 @@ rule AGGREGATOR_correlation:
 #### Saturation Analysis Rules #########################################################################################################
 ########################################################################################################################################
 
-
 rule test:
     input:
-        "test01/operations/test-correlation.done.txt"
+        "test01/operations/test-REP1of2-downsample.done.txt",
+        "test01/operations/test-REP2of2-downsample.done.txt"
 
-# rule STEP23_downsamplebam:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     input:
-#         "{path}preprocessing/8merged/{sample}.m.bam"
-#     output:
-#         "{path}preprocessing/15downsample/raw/{sample}.{prob}.bam"
-#     shell:
-#         "java -jar programs/picard/picard.jar DownsampleSam \
-#         I={input} \
-#         O={output} \
-#         PROBABILITY=0.{wildcards.prob}"
+rule STEP25_downsample_bam:
+    input:
+        "{path}preprocessing/8merged/{mergedsample}-REP{repnum}of{reptot}.lanemerge.bam"
+    output:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.bam"
+    shell:
+        "java -jar programs/picard/picard.jar DownsampleSam \
+        I={input} \
+        O={output} \
+        PROBABILITY=0.{wildcards.prob}"
 
-# rule STEP24_sortdownsampled:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     input:
-#         "{path}preprocessing/15downsample/raw/{sample}.{prob}.bam"
-#     output:
-#         "{path}preprocessing/15downsample/raw/{sample}.{prob}.cs.bam"
-#     shell:
-#         "java -jar programs/picard/picard.jar SortSam \
-#         I={input} \
-#         O={output} \
-#         SORT_ORDER=coordinate"
+rule STEP26_sort_downsampled:
+    input:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.bam"
+    output:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.cs.bam"
+    shell:
+        "java -jar programs/picard/picard.jar SortSam \
+        I={input} \
+        O={output} \
+        SORT_ORDER=coordinate"
 
-# rule STEP25_markdupdownsampled:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     input:
-#         "{path}preprocessing/15downsample/raw/{sample}.{prob}.cs.bam"
-#     output:
-#         a="{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
-#         b="{path}preprocessing/15downsample/complexity/{sample}.{prob}.dupmetrics.txt",
-#     shell:
-#         "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
-#         I={input} \
-#         O={output.a} \
-#         M={output.b} \
-#         REMOVE_DUPLICATES=true \
-#         ASSUME_SORTED=true"
+rule STEP27_purge_duplicates_downsampled:
+    input:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.cs.bam"
+    output:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam"
+    shell:
+        "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
+        I={input} \
+        O={output} \
+        M={wildcards.path}metrics/{wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}.{wildcards.prob}.duplication-metrics.txt \
+        REMOVE_DUPLICATES=true \
+        ASSUME_SORTED=true"
 
-# rule STEP26_indexdownsampled:
-#     input:
-#         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
-#     output:
-#         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bai"
-#     shell:
-#         "java -jar programs/picard/picard.jar BuildBamIndex \
-#         I={input} \
-#         O={output}"
+rule STEP28_index_downsampled:
+    input:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam"
+    output:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai"
+    shell:
+        "java -jar programs/picard/picard.jar BuildBamIndex \
+        I={input} \
+        O={output}"
+
+rule STEP29_analyze_complexity_downsampled:
+    input:
+        a="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.9.duplication-metrics.txt",
+        b="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.8.duplication-metrics.txt",
+        c="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.7.duplication-metrics.txt",
+        d="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.6.duplication-metrics.txt",
+        e="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.5.duplication-metrics.txt",
+        f="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.4.duplication-metrics.txt",
+        g="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.3.duplication-metrics.txt",
+        h="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.2.duplication-metrics.txt",
+        i="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.1.duplication-metrics.txt"
+    output:
+        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt"
+    shell:
+        """
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.b} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.c} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.d} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.e} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.f} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.g} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
+        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
+        """
+
+rule AGGREGATOR_saturation:
+    input:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.9.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.8.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.7.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.6.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.5.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.4.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.3.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.2.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.1.md.bai",
+        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt"
+    output:
+        "{path}operations/{mergedsample}-REP{repnum}of{reptot}-downsample.done.txt"
+    shell:
+        "touch {output}"
+        
+
+
 
 # rule STEP27_callpeaksmacs2downsampled:
 #     # notes:
@@ -787,30 +824,7 @@ rule test:
 #     shell:
 #         "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 #
-# rule analyzecomplexitysaturation:
-#     input:
-#         a="{path}preprocessing/15downsample/complexity/{sample}.9.dupmetrics.txt",
-#         b="{path}preprocessing/15downsample/complexity/{sample}.8.dupmetrics.txt",
-#         c="{path}preprocessing/15downsample/complexity/{sample}.7.dupmetrics.txt",
-#         d="{path}preprocessing/15downsample/complexity/{sample}.6.dupmetrics.txt",
-#         e="{path}preprocessing/15downsample/complexity/{sample}.5.dupmetrics.txt",
-#         f="{path}preprocessing/15downsample/complexity/{sample}.4.dupmetrics.txt",
-#         g="{path}preprocessing/15downsample/complexity/{sample}.3.dupmetrics.txt",
-#         h="{path}preprocessing/15downsample/complexity/{sample}.2.dupmetrics.txt",
-#         i="{path}preprocessing/15downsample/complexity/{sample}.1.dupmetrics.txt"
-#     output:
-#         "{path}saturation/{sample}.downsampled_lib_sizes.txt"
-#     shell:
-#         """
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.b} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.c} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.d} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.e} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.f} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.g} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
-#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
+
 #
 # rule analyzepeaksaturation:
 #     input:
