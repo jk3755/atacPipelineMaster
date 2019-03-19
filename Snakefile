@@ -28,23 +28,41 @@
 #### SPOOL PREPROCESSING ###############################################################################################################
 ########################################################################################################################################
 
-# rule run_h508wt01:
-#     input:
-#         "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
-# rule run_ls1034wt01:
-#     input:
-#         "ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
-# rule run_snu61wt01:
-#     input:
-#         "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
+rule run_h508wt01:
+    input:
+        "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
 
-# rule run_mdst8wt01:
-#   input:
-#       "mdst8/wt01/preprocessing/logs/MDST8-WT-01.preprocessing.cleaning.done.txt"
+rule run_ls1034wt01:
+    input:
+        "ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
+
+rule run_snu61wt01:
+    input:
+        "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
+
+rule run_mdst8wt01:
+    input:
+        "mdst8/wt01/operations/MDST8-WT-01-pipeline.complete.txt"
+
+rule AGGREGATOR_pipeline:
+    input:
+        "{path}operations/{mergedsample}-correlation.done.txt",
+        "{path}operations/{mergedsample}-peaks.done.txt",
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+        "{path}operations/{mergedsample}-REP1of2-downsample.done.txt",
+        "{path}operations/{mergedsample}-REP2of2-downsample.done.txt",
+    output:
+        "{path}operations/{mergedsample}-pipeline.complete.txt"
+    shell:
+        "touch {output}"
 
 ########################################################################################################################################
 #### SPOOL FOOTPRINTING ################################################################################################################
 ########################################################################################################################################
+
+#rule run_fp_coadmr_mdst8_wt01:
+#    input:
+#        "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
 
 # rule run_fp_coadmr_h508wt02a:
 #     input:
@@ -72,11 +90,6 @@
 # rule run_xsample_corr_replicates_h508_snu61_ls1034:
 #     input:
 #         "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
-
-########################################################################################################################################
-#### RESET PIPELINE ####################################################################################################################
-########################################################################################################################################
-# Note - use these commands if you want to clear all the files associated with a specific processing run, if you plan to rerun it
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
@@ -516,7 +529,7 @@ rule AGGREGATOR_preprocessing_steps:
         "touch {output}"
 
 ########################################################################################################################################
-#### Peak Calling Rules ################################################################################################################
+#### PEAK CALLING RULES ################################################################################################################
 ########################################################################################################################################
 
 rule STEP19_MACS2_peaks_individual_global_normilization:
@@ -643,7 +656,7 @@ rule AGGREGATOR_peaks:
         "touch {output}"
 
 ########################################################################################################################################
-#### Sample Correlation Analysis Rules #################################################################################################
+#### SAMPLE CORRELATION ANALYSIS RULES #################################################################################################
 ########################################################################################################################################
 
 rule STEP23_sample_correlation_spearman_2replicates:
@@ -701,7 +714,7 @@ rule AGGREGATOR_correlation:
         "touch {output}"
 
 ########################################################################################################################################
-#### Saturation Analysis Rules #########################################################################################################
+#### SATURATION ANALYSIS RULES #########################################################################################################
 ########################################################################################################################################
 
 rule STEP25_downsample_bam:
@@ -730,12 +743,13 @@ rule STEP27_purge_duplicates_downsampled:
     input:
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.cs.bam"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam"
+        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
+        b="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.{prob}.duplication-metrics.txt",
     shell:
         "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
         I={input} \
-        O={output} \
-        M={wildcards.path}metrics/{wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}.{wildcards.prob}.duplication-metrics.txt \
+        O={output.a} \
+        M={output.b} \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
@@ -759,7 +773,16 @@ rule STEP29_analyze_complexity_downsampled:
         f="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.4.duplication-metrics.txt",
         g="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.3.duplication-metrics.txt",
         h="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.2.duplication-metrics.txt",
-        i="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.1.duplication-metrics.txt"
+        i="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.1.duplication-metrics.txt",
+        j="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.9.md.bai",
+        k="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.8.md.bai",
+        l="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.7.md.bai",
+        m="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.6.md.bai",
+        n="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.5.md.bai",
+        o="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.4.md.bai",
+        p="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.3.md.bai",
+        q="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.2.md.bai",
+        r="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.1.md.bai",
     output:
         "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt"
     shell:
@@ -800,6 +823,8 @@ rule STEP31_analyze_peak_saturation_downsampled:
     shell:
         "wc -l < {input} >> {output}"
 
+# FP selections can be added here, for example:
+#"{path}operations/{mergedsample}-REP{repnum}of{reptot}.allprob.MNX1.done.graphs.txt"
 rule AGGREGATOR_saturation:
     input:
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.9.md.bai",
@@ -812,13 +837,224 @@ rule AGGREGATOR_saturation:
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.2.md.bai",
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.1.md.bai",
         "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt",
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_numpeaks.txt"
+        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_numpeaks.txt"       
     output:
         "{path}operations/{mergedsample}-REP{repnum}of{reptot}-downsample.done.txt"
     shell:
         "touch {output}"
 
-rule test:
+# rule STEP32_make_footprint_by_chr_downsampled:
+#     input:
+#         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
+#         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai",
+#         "sites/{gene}.sites.Rdata"
+#     output:
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.{chr}.done.txt"
+#     script:
+#         "scripts/snakeMakeFPbyChrDownsampled.R"
+
+# rule STEP33_merge_footprint_by_chr_downsampled:
+#     input:
+#         "sites/{gene}.sites.Rdata",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr1.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr2.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr3.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr4.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr5.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr6.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr7.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr8.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr9.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr10.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr11.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr12.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr13.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr14.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr15.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr16.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr17.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr18.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr19.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr20.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr21.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chr22.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chrY.done.txt",
+#         "{path}saturation/footprints/data/bychr/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.chrX.done.txt"
+#     output:
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.done.merged.txt"
+#     script:
+#         "scripts/snakeMergeFPbyChrDownsampled.R"
+
+# rule STEP34_make_footprint_graph_downsampled:
+#     input:
+#         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
+#         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai",
+#         "sites/{gene}.sites.Rdata",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.done.merged.txt"
+#     output:
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.{prob}.{gene}.graphs.done.txt"
+#     script:
+#         "scripts/snakeGenerateMergedFPGraphDownsampled.R"
+
+# rule AGGREGATOR_saturation_footprint_graphs:
+#     input:
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.9.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.8.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.7.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.6.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.5.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.4.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.3.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.2.{gene}.graphs.done.txt",
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.1.{gene}.graphs.done.txt"
+#     output:
+#         "{path}operations/{mergedsample}-REP{repnum}of{reptot}.allprob.{gene}.done.graphs.txt"
+#     shell:
+#         "touch {output}"
+
+########################################################################################################################################
+#### FOOTPRINT ANALYSIS RULES ##########################################################################################################
+########################################################################################################################################
+
+rule aggregate_coadmr_fp:
     input:
-        "test01/operations/test-REP1of2-downsample.done.txt",
-        "test01/operations/test-REP2of2-downsample.done.txt"
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.CDX2.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.TCF7.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.HOXA3.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.MNX1.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.POU5F1B.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.OVOL1.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.ESRRA.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.ASCL2.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.HNF4A.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.GMEB2.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.ZSWIM1.parsed.done.txt",
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.CBFA2T2.parsed.done.txt"
+    output:
+        "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
+    shell:
+        "touch {output}"
+
+rule make_heatmaps:
+    input:
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif3.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CBFA2T2.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ZSWIM1.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.POU5F1B.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif3.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif9.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif6.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif5.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif6.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif4.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HOXA3.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif2.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif3.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif1.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif7.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif8.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif5.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif4.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif4.heatmap.svg",
+        "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CDX2.motif1.heatmap.svg"
+
+rule makefp_by_chr:
+    input:
+        "{path}preprocessing/12all/{mergedsample}.all.bam",
+        "{path}preprocessing/12all/{mergedsample}.all.bai",
+        "sites/{gene}.sites.Rdata"
+    output:
+        "{path}footprints/temp/{mergedsample}.{gene}.{chr}.done.txt"
+    script:
+        "scripts/snakeMakeFPbyChr.R"
+
+rule merge_chr:
+    input:
+        "sites/{gene}.sites.Rdata",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr1.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr2.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr3.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr4.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr5.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr6.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr7.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr8.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr9.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr10.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr11.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr12.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr13.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr14.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr15.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr16.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr17.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr18.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr19.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr20.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr21.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chr22.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chrX.done.txt",
+        "{path}footprints/temp/{mergedsample}.{gene}.chrY.done.txt"
+    output:
+        "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
+    script:
+        "scripts/snakeMergeFPbyChr.R"
+
+rule make_graphs:
+    input:
+        "{path}preprocessing/12all/{mergedsample}.all.bam",
+        "{path}preprocessing/12all/{mergedsample}.all.bai",
+        "sites/{gene}.sites.Rdata",
+        "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
+    output:
+        "{path}footprints/graphs/{mergedsample}.{gene}.graphs.done.txt"
+    script:
+        "scripts/snakeGenerateMergedFPGraph.R"
+
+rule parse_footprints:
+    input:
+        "{path}preprocessing/12all/{mergedsample}.all.bam",
+        "{path}preprocessing/12all/{mergedsample}.all.bai",
+        "sites/{gene}.sites.Rdata",
+        "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt",
+        "{path}preprocessing/13allpeaks/{mergedsample}.all_peaks.narrowPeak"
+    output:
+        "{path}footprints/parsed/{mergedsample}.{gene}.parsed.done.txt"
+    script:
+        "scripts/snakeParseFP.R"
+
+rule make_parsed_heatmaps:
+    input:
+        "{path}footprints/parsed/{mergedsample}.{gene}.motif{motif}.info.Rdata",
+    output:
+        "{path}footprints/heatmaps/{mergedsample}.{gene}.motif{motif}.heatmap.svg"
+    script:
+        "scripts/snakeFootprintHeatmaps.R"
+
+rule make_merged_motifs:
+    input:
+        "{path}parsed/{mergedsample}.{gene}.parsed.done.txt"
+    output:
+        "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
+    script:
+        "scripts/snakeMergeMotifs.R"
+
+rule make_aracne_overlap:
+    input:
+        "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
+    output:
+        "{path}aracne/{mergedsample}.{gene}.{nummotif}.{entrez}.aracne.Rdata"
+    script:
+        "scripts/snakeFindARACNeFootprintOverlap.R"
