@@ -39,8 +39,8 @@
 #         "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
 
 # rule run_mdst8wt01:
-# 	input:
-# 		"mdst8/wt01/preprocessing/logs/MDST8-WT-01.preprocessing.cleaning.done.txt"
+#   input:
+#       "mdst8/wt01/preprocessing/logs/MDST8-WT-01.preprocessing.cleaning.done.txt"
 
 ########################################################################################################################################
 #### SPOOL FOOTPRINTING ################################################################################################################
@@ -83,10 +83,16 @@
 ########################################################################################################################################
 
 rule test:
-	input:
-		"mdst8/wt01/preprocessing/3goodfastq/MDST8-WT-01-REP1of2_L1_R1.good.fq",
-		"mdst8/wt01/preprocessing/3goodfastq/MDST8-WT-01-REP1of2_L1_R2.good.fq"
-
+    input:
+        "test01/preprocessing/7rgsort/test-REP1of2_L1.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP1of2_L2.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP1of2_L3.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP1of2_L4.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP2of2_L1.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP2of2_L2.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP2of2_L3.clean.bam",
+        "test01/preprocessing/7rgsort/test-REP2of2_L4.clean.bam"
+        
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
@@ -98,6 +104,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
         mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11peaks {wildcards.path}preprocessing/12all {wildcards.path}preprocessing/13allpeaks
         mkdir -p -v {wildcards.path}preprocessing/14qcplots {wildcards.path}preprocessing/15bigwig {wildcards.path}preprocessing/operations
+        mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/complexity {wildcards.path}saturation/footprints {wildcards.path}saturation/peaks
         mkdir -p -v {wildcards.path}saturation/footprints/data
@@ -111,16 +118,16 @@ rule PREP_builddirstructure:
         """
 
 rule STEP1_gunzip:
-	# params:
-	# -k keep original files
-	# -c write to standard output
-	input:
-		a="{path}preprocessing/1gz/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq.gz",
-		b="{path}preprocessing/operations/dirtree.built.done"
-	output:
-		"{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq"
-	shell:
-		"gunzip -k -c {input} > {output}"
+    # params:
+    # -k keep original files
+    # -c write to standard output
+    input:
+        a="{path}preprocessing/1gz/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq.gz",
+        b="{path}preprocessing/operations/dirtree.built.done"
+    output:
+        c="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq"
+    shell:
+        "gunzip -k -c {input.a} > {output.c}"
 
 rule STEP2_afterqc_fastqfiltering:
     # params:
@@ -132,143 +139,155 @@ rule STEP2_afterqc_fastqfiltering:
     # -t -1 autodetects number of bases to trim at tail
     # -s is the shortest trimmed read length allowed past QC filter
     input:
-        a="{path}preprocessing/2fastq/{sample}_R1.fastq",
-        b="{path}preprocessing/2fastq/{sample}_R2.fastq"
+        a="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.fastq",
+        b="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.fastq"
     output:
-        c="{path}preprocessing/3goodfastq/{sample}_R1.good.fq",
-        d="{path}preprocessing/3goodfastq/{sample}_R2.good.fq"
+        c="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.good.fq",
+        d="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.good.fq"
     shell:
         "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -f -1 -t -1 -s 15"
 
-# rule STEP3_mycoalign:
-#     # params:
-#     # -q fastq input
-#     # -p num threads
-#     # -X1000 align to a maximum of 2000 bp frag length
-#     # -1/2 inputs
-#     # -S output
-#     input:
-#         a="{path}preprocessing/3goodfastq/{sample}_R1.good.fq",
-#         b="{path}preprocessing/3goodfastq/{sample}_R2.good.fq"
-#     output:
-#         "{path}preprocessing/4mycoalign/{sample}.myco.sam"
-#     shell:
-#         "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
+rule STEP3_mycoalign:
+    # params:
+    # -q fastq input file format
+    # -p num threads to use
+    # -X1000 align to a maximum of 2000 bp frag length
+    # -1 is read 1 input fastq file
+    # -2 is read 2 input fastq file
+    # -S output file path
+    # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
+    input:
+        a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.good.fq",
+        b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.good.fq"
+    output:
+        "{path}preprocessing/4mycoalign/{sample}-REP{repnum}of{reptot}_L{lane}.myco.sam"
+    shell:
+        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}of{wildcards.reptot}_L{wildcards.lane}.myco.alignment.txt"
 
-# rule STEP4_hg38align:
-#     # params:
-#     # -q fastq input
-#     # -p num threads
-#     # -X1000 align to a maximum of 2000 bp frag length
-#     # -1/2 inputs
-#     # -S output
-#     input:
-#         a="{path}preprocessing/3goodfastq/{sample}_R1.good.fq",
-#         b="{path}preprocessing/3goodfastq/{sample}_R2.good.fq",
-#         c="{path}preprocessing/4mycoalign/{sample}.myco.sam"
-#     output:
-#         "{path}preprocessing/5hg38align/{sample}.hg38.sam"
-#     shell:
-#         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
+rule STEP4_hg38align:
+    # params:
+    # -q fastq input file format
+    # -p num threads to use
+    # -X1000 align to a maximum of 2000 bp frag length
+    # -1 is read 1 input fastq file
+    # -2 is read 2 input fastq file
+    # -S output file path
+    # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
+    input:
+        a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.good.fq",
+        b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.good.fq",
+        c="{path}preprocessing/4mycoalign/{sample}-REP{repnum}of{reptot}_L{lane}.myco.sam"
+    output:
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.sam"
+    shell:
+        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}of{wildcards.reptot}_L{wildcards.lane}.hg38.alignment.txt"
 
-# rule STEP5_coordsort_sam:
-#     # coordinate sort the sam files to prepare for blacklist filtering
-#     input:
-#         "{path}preprocessing/5hg38align/{sample}.hg38.sam"
-#     output:
-#         "{path}preprocessing/5hg38align/{sample}.hg38.cs.sam"
-#     shell:
-#         "samtools sort {input} -o {output} -O sam"
+rule STEP5_coordsort_sam:
+    # coordinate sorting the sam files is required for blacklist filtering
+    # params:
+    # -o output file path
+    # -O output file format
+    input:
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.sam"
+    output:
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.cs.sam"
+    shell:
+        "samtools sort {input} -o {output} -O sam"
 
-# rule STEP6_blacklistfilter_bamconversion:
-#     # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
-#     input:
-#         "{path}preprocessing/5hg38align/{sample}.hg38.cs.sam"
-#     output:
-#         a="{path}preprocessing/6rawbam/{sample}.blacklist.bam",
-#         b="{path}preprocessing/6rawbam/{sample}.blrm.bam"
-#     shell:
-#         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
+rule STEP6_blacklistfilter_bamconversion:
+    # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
+    input:
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.cs.sam"
+    output:
+        a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blacklist.bam",
+        b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
+    shell:
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
 
-# rule STEP7_chrM_contamination:
-#     # count and remove mitochondrial reads
-#     input:
-#         "{path}preprocessing/6rawbam/{sample}.blrm.bam"
-#     output:
-#         a="{path}preprocessing/6rawbam/{sample}.mitochondrial.bam",
-#         b="{path}preprocessing/6rawbam/{sample}.bam",
-#         c="{path}preprocessing/6rawbam/mitochondrial_reads.txt"
-#     shell:
-#         """
-#         samtools view -c {input} chrM >> {output.c}
-#         samtools view -c {input} >> {output.c}
-#         samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}
-#         """
+rule STEP7_chrM_contamination:
+    # remove mitochondrial reads
+    # params:
+    # -b input file is in bam format
+    # -h keep the sam header. important downstream
+    # -o output filepath for reads NOT matching to blacklist region
+    # -L path to the blacklist BED file
+    # -U output filepath for reads matching blacklist region
+    # -@ number of threads to use
+    input:
+        a="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
+    output:
+        a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}of{reptot}_L{lane}.mitochondrial.bam",
+        b="{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.bam"
+    shell:
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
-# rule STEP8_addrgandcsbam:
-#     # note - proper specification of RG tags is critical
-#     # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
-#     # Required @RG parameter specifications:
-#     # RGID (read group ID) - this must be a globally unique string. for illumina data, use flowcell + lane
-#     # RGLB (read group library) - This is used by MarkDuplicates to collect reads from the same library on different lanes, so it must be common to all files from the same library
-#     # RGPL (read group platform) - ILLUMINA
-#     # RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
-#     # RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
-#     input:
-#         "{path}preprocessing/6rawbam/{sample}_L{lane}.bam"
-#     output:
-#         "{path}preprocessing/7rgsort/{sample}_L{lane}.rg.cs.bam"
-#     log:
-#         "{path}preprocessing/logs/{sample}.L{lane}.addrgandcsbam.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar AddOrReplaceReadGroups \
-#         I={input} \
-#         O={output} \
-#         SORT_ORDER=coordinate \
-#         RGID=H5YHHBGX3.{wildcards.lane} \
-#         RGLB={wildcards.sample} \
-#         RGPL=ILLUMINA \
-#         RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
-#         RGSM={wildcards.sample}"
+rule STEP8_addrgandcsbam:
+    # refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
+    # note - proper specification of RG tags is critical for downstream analysis and unique sample identification when submitting for publication
+    # specification of the lane allows optical duplicates to be detected(?)
+    # required by GATK standards
+    # also important for identifying batch effects/technical artifacts(?)
+    # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
+    # Required @RG parameter specifications:
+    # RGID (read group ID) - this must be a globally unique string. for illumina data, use flowcell + lane
+    # RGLB (read group library) - This is used by MarkDuplicates to collect reads from the same library on different lanes, so it must be common to all files from the same library
+    # RGPL (read group platform) - ILLUMINA
+    # RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
+    # RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
+    # I specifies the input file
+    # O specifies the output file
+    input:
+        "{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.bam"
+    output:
+        "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.rg.cs.bam"
+    shell:
+        "java -jar programs/picard/picard.jar AddOrReplaceReadGroups \
+        I={input} \
+        O={output} \
+        SORT_ORDER=coordinate \
+        RGID=H5YHHBGX3.{wildcards.lane} \
+        RGLB={wildcards.sample} \
+        RGPL=ILLUMINA \
+        RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
+        RGSM={wildcards.sample}"
 
-# rule STEP9_cleansam:
-#     # params:
-#     # -Xmx50g set java mem limit to X gb
-#     # soft-clips bases aligned past the end of the ref sequence
-#     # soft-clipping retains the bases in the SEQ string, but they are not displayed or used in downstream data analysis
-#     # sets MAPQ score to 0 for unmapped reads
-#     input:
-#         "{path}preprocessing/7rgsort/{sample}_L{lane}.rg.cs.bam"
-#     output:
-#         "{path}preprocessing/7rgsort/{sample}_L{lane}.clean.bam"
-#     log:
-#         "{path}preprocessing/logs/{sample}.L{lane}.cleanbam.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar CleanSam \
-#         I={input} \
-#         O={output}"
+rule STEP9_cleansam:
+    # params:
+    # soft-clips bases aligned past the end of the ref sequence
+    # soft-clipping retains the bases in the SEQ string, but they are not displayed or used in downstream data analysis
+    # sets MAPQ score to 0 for unmapped reads
+    # I specifies the input file
+    # O specifies the output file
+    input:
+        "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.rg.cs.bam"
+    output:
+        "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.clean.bam"
+    shell:
+        "java -jar programs/picard/picard.jar CleanSam \
+        I={input} \
+        O={output}"
 
-# rule STEP10_mergelanes:
-#     input:
-#         a="{path}preprocessing/7rgsort/{sample}_L1.clean.bam",
-#         b="{path}preprocessing/7rgsort/{sample}_L2.clean.bam",
-#         c="{path}preprocessing/7rgsort/{sample}_L3.clean.bam",
-#         d="{path}preprocessing/7rgsort/{sample}_L4.clean.bam"
-#     output:
-#         "{path}preprocessing/8merged/{sample}.m.bam"
-#     log:
-#         "{path}preprocessing/logs/{sample}.mergelanes.txt"
-#     shell:
-#         "java -jar programs/picard/picard.jar MergeSamFiles \
-#         I={input.a} \
-#         I={input.b} \
-#         I={input.c} \
-#         I={input.d} \
-#         O={output} \
-#         SORT_ORDER=coordinate \
-#         ASSUME_SORTED=true \
-#         MERGE_SEQUENCE_DICTIONARIES=true \
-#         USE_THREADING=true"
+rule STEP10_mergelanes:
+    input:
+        a="{path}preprocessing/7rgsort/{sample}_L1.clean.bam",
+        b="{path}preprocessing/7rgsort/{sample}_L2.clean.bam",
+        c="{path}preprocessing/7rgsort/{sample}_L3.clean.bam",
+        d="{path}preprocessing/7rgsort/{sample}_L4.clean.bam"
+    output:
+        "{path}preprocessing/8merged/{sample}.m.bam"
+    log:
+        "{path}preprocessing/logs/{sample}.mergelanes.txt"
+    shell:
+        "java -jar programs/picard/picard.jar MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        I={input.c} \
+        I={input.d} \
+        O={output} \
+        SORT_ORDER=coordinate \
+        ASSUME_SORTED=true \
+        MERGE_SEQUENCE_DICTIONARIES=true \
+        USE_THREADING=true"
 
 # rule STEP11_purgeduplicates:
 #     # params:
@@ -595,6 +614,11 @@ rule STEP2_afterqc_fastqfiltering:
 #     shell:
 #         "touch {wildcards.path}preprocessing/logs/{wildcards.sample}.preprocessing.done.txt"
 
+# rule gather metrics (write me):
+#               c="{path}preprocessing/6rawbam/mitochondrial_reads.txt"
+      #  samtools view -c {input} chrM >> {output.c}
+      #  samtools view -c {input} >> {output.c}
+
 # rule CLEAN_preprocessing:
 #     input:
 #         "{path}preprocessing/logs/{sample}.preprocessing.done.txt"
@@ -766,58 +790,58 @@ rule STEP2_afterqc_fastqfiltering:
 # #        "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
 
 # rule aggregate_coadmr_fp:
-# 	input:
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.CDX2.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.TCF7.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.HOXA3.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.MNX1.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.POU5F1B.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.OVOL1.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ESRRA.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ASCL2.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.HNF4A.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.GMEB2.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ZSWIM1.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.CBFA2T2.parsed.done.txt"
-# 	output:
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
-# 	shell:
-# 		"touch {output}"
+#   input:
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.CDX2.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.TCF7.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.HOXA3.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.MNX1.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.POU5F1B.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.OVOL1.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.ESRRA.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.ASCL2.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.HNF4A.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.GMEB2.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.ZSWIM1.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.CBFA2T2.parsed.done.txt"
+#   output:
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
+#   shell:
+#       "touch {output}"
 
 # rule make_heatmaps:
-# 	input:
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif3.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CBFA2T2.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ZSWIM1.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.POU5F1B.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif3.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif9.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif6.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif5.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif6.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif4.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HOXA3.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif3.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif7.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif8.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif5.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif4.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif4.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CDX2.motif1.heatmap.svg"
+#   input:
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif3.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CBFA2T2.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ZSWIM1.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.POU5F1B.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif3.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif9.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif6.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif5.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif6.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif4.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HOXA3.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif3.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif7.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif8.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif5.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif4.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif4.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CDX2.motif1.heatmap.svg"
 
 # rule makefp_by_chr:
 #     input:
