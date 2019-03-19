@@ -1,24 +1,34 @@
-###########################################################################################################################################
-################################ GENERAL INFO #############################################################################################
-###########################################################################################################################################
+########################################################################################################################################
+################################ GENERAL INFO ##########################################################################################
+########################################################################################################################################
 ## Snakemake execution guide
 # A dry run of the pipeline can be run with:
 # snakemake -np h508go
 # On one of the virtualization servers, run the pipeline with the following to allocate 20 threads and 90 gb max memory (to avoid crashing the process)
 # snakemake -j 20 h508go --resources mem_gb=90
-#
+# 
 ## Raw file info
 # H508-1_S3_L001_R1_001.fastq.gz - Sample 1
 # H508-2_S2_L001_R1_001.fastq.gz - Sample 2
 # H508-3_S1_L001_R1_001.fastq.gz - Sample 3
-## Before running pipeline, rename these to:
-# H508-WT-01_REP1_L1_R1.fastq.gz
-# H508-WT-01_REP2_L1_R1.fastq.gz
-# H508-WT-01_REP3_L1_R1.fastq.gz
+## Before running pipeline, if you have three replicates, rename these to:
+# H508-WT-01_REP1of3_L1_R1.fastq.gz
+# H508-WT-01_REP2of3_L1_R1.fastq.gz
+# H508-WT-01_REP3of3_L1_R1.fastq.gz
+## If you only have two reps, rename files to:
+# H508-WT-01_REP1of2_L1_R1.fastq.gz
+# H508-WT-01_REP2of2_L1_R1.fastq.gz
+## If you only have one replicate, rename files to:
+# H508-WT-01_REP1of1_L1_R1.fastq.gz
 #
-#######################################################################################################################
-#### PIPELINE SPOOLING COMMANDS #######################################################################################
-#######################################################################################################################
+########################################################################################################################################
+#### RESET PIPELINE ####################################################################################################################
+########################################################################################################################################
+# Note - use these commands if you want to clear all the files associated with a specific processing run, if you plan to rerun it
+
+########################################################################################################################################
+#### SPOOL PREPROCESSING ###############################################################################################################
+########################################################################################################################################
 rule run_h508wt01:
     input:
         "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
@@ -34,6 +44,29 @@ rule run_xsample_corr_h508_snu61_ls1034:
 rule run_xsample_corr_replicates_h508_snu61_ls1034:
     input:
         "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+
+########################################################################################################################################
+#### SPOOL FOOTPRINTING ################################################################################################################
+########################################################################################################################################
+rule run_fp_coadmr_h508wt02a:
+    input:
+        "h508/wt02a/footprints/parsed/H508A-WT-02.CDX2.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.TCF7.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.HOXA3.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.MNX1.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.POU5F1B.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.OVOL1.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.ESRRA.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.ASCL2.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.HNF4A.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.GMEB2.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.ZSWIM1.parsed.done.txt",
+        "h508/wt02a/footprints/parsed/H508A-WT-02.CBFA2T2.parsed.done.txt"
+
+########################################################################################################################################
+#### SPOOL CROSS SAMPLE CORRELATION ####################################################################################################
+########################################################################################################################################
+
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
@@ -55,9 +88,11 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/complexity {wildcards.path}saturation/footprints {wildcards.path}saturation/peaks
         mkdir -p -v {wildcards.path}correlation
+        mkdir -p -v {wildcards.path}metrics
+        mkdir -p -v {wildcards.path}log
         touch {output}
         """
-rule STEP1_simplifynames_gunzip:
+rule STEP1_gunzip:
     # params: -k keep original files, -c write to standard output
     input: 
         a="{path}data/{sample}_L00{lane}_R{read}_001.fastq.gz",
@@ -80,11 +115,12 @@ rule STEP2_afterqc_fastqfiltering:
         "{path}preprocessing/logs/{sample}.afterqc_fastqfiltering.txt"
     shell:
         "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -s 15"
+
 rule STEP3_mycoalign:
     # params:
     # -q fastq input
     # -p num threads
-    # -X1000 align to a maximum of 1000 bp frag length
+    # -X1000 align to a maximum of 2000 bp frag length
     # -1/2 inputs
     # -S output
     input:
@@ -95,12 +131,13 @@ rule STEP3_mycoalign:
     log:
         "{path}preprocessing/logs/{sample}.mycoalign.txt"
     shell:
-        "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
+        "bowtie2 -q -p 20 -X2000 -x /home/ubuntu2/genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/4mycoalign/{wildcards.sample}alignment_metrics.txt"
+
 rule STEP4_hg38align:
     # params:
     # -q fastq input
     # -p num threads
-    # -X1000 align to a maximum of 1000 bp frag length
+    # -X1000 align to a maximum of 2000 bp frag length
     # -1/2 inputs
     # -S output
     input:
@@ -112,7 +149,8 @@ rule STEP4_hg38align:
     log:
         "{path}preprocessing/logs/{sample}.hg38align.txt"
     shell:
-        "bowtie2 -q -p 20 -X1000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
+        "bowtie2 -q -p 20 -X2000 -x /home/ubuntu2/genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}preprocessing/5hg38align/{wildcards.sample}alignment_metrics.txt"
+
 rule STEP5_coordsort_sam:
     # coordinate sort the sam files to prepare for blacklist filtering
     input:
@@ -121,6 +159,7 @@ rule STEP5_coordsort_sam:
         "{path}preprocessing/5hg38align/{sample}.hg38.cs.sam"
     shell:
         "samtools sort {input} -o {output} -O sam"
+
 rule STEP6_blacklistfilter_bamconversion:
     # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
     input:
@@ -130,7 +169,8 @@ rule STEP6_blacklistfilter_bamconversion:
         b="{path}preprocessing/6rawbam/{sample}.blrm.bam"
     shell:
         "samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}"
-rule STEP6_chrM_contamination:
+
+rule STEP7_chrM_contamination:
     # count and remove mitochondrial reads
     input:
         "{path}preprocessing/6rawbam/{sample}.blrm.bam"
@@ -144,6 +184,7 @@ rule STEP6_chrM_contamination:
         samtools view -c {input} >> {output.c}
         samtools view -b -h -o {output.a} -L /home/ubuntu2/genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 10 {input}
         """
+
 rule STEP7_addrgandcsbam:
     # note - proper specification of RG tags is critical
     # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
@@ -169,9 +210,13 @@ rule STEP7_addrgandcsbam:
         RGPL=ILLUMINA \
         RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
         RGSM={wildcards.sample}"
-rule STEP8_cleanbam:
+
+rule STEP8_cleansam:
     # params:
     # -Xmx50g set java mem limit to X gb
+    # soft-clips bases aligned past the end of the ref sequence
+    # soft-clipping retains the bases in the SEQ string, but they are not displayed or used in downstream data analysis
+    # sets MAPQ score to 0 for unmapped reads
     input:
         "{path}preprocessing/7rgsort/{sample}_L{lane}.rg.cs.bam"
     output:
@@ -182,6 +227,7 @@ rule STEP8_cleanbam:
         "java -jar /home/ubuntu2/programs/picard/picard.jar CleanSam \
         I={input} \
         O={output}"
+
 rule STEP9_mergelanes:
     input:
         a="{path}preprocessing/7rgsort/{sample}_L1.clean.bam",
@@ -203,6 +249,7 @@ rule STEP9_mergelanes:
         ASSUME_SORTED=true \
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
+
 rule STEP10_purgeduplicates:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -220,6 +267,7 @@ rule STEP10_purgeduplicates:
         M={output.b} \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
+
 rule STEP11_mapqfilter:
     # STEP 10 - REMOVE MULTI MAPPING READS WITH SAMTOOLS
     # Notes:
@@ -238,6 +286,7 @@ rule STEP11_mapqfilter:
         "{path}preprocessing/logs/{sample}.mapqfilter.txt"
     shell:
         "samtools view -h -q 2 -b {input} > {output}"
+
 rule STEP12_buildindex:
     # params:
     # -XmxXg set java mem limit to X gb
@@ -251,6 +300,7 @@ rule STEP12_buildindex:
         "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
+
 rule STEP13_mergereplicates:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -272,6 +322,7 @@ rule STEP13_mergereplicates:
         ASSUME_SORTED=true \
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
+
 rule STEP14_indexmerged:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -285,6 +336,7 @@ rule STEP14_indexmerged:
         "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
+
 rule STEP15_callpeaksmac2replicates:
     # notes:
     # because we are going to use the TCGA data downstream likely as a reference point,
@@ -311,6 +363,7 @@ rule STEP15_callpeaksmac2replicates:
         "{path}preprocessing/logs/{sample}-{REP}.callpeaksmac2replicates.txt"
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-{wildcards.REP} --outdir {wildcards.path}preprocessing/11peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
 rule STEP16_callpeaksmacs2merged:
     # notes:
     # because we are going to use the TCGA data downstream likely as a reference point,
@@ -337,6 +390,7 @@ rule STEP16_callpeaksmacs2merged:
         "{path}preprocessing/logs/{sample}.callpeaksmac2merged.txt"
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}.all --outdir {wildcards.path}preprocessing/13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
 rule STEP17_callpeaksmacs2merged_localnorm:
     # notes:
     # same as above, but with local background correction enabled
@@ -349,6 +403,7 @@ rule STEP17_callpeaksmacs2merged_localnorm:
         "{path}preprocessing/logs/{sample}.callpeaksmac2merged.localnorm.txt"
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}.localnorm.all --outdir {wildcards.path}preprocessing/13allpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+
 rule STEP18_plotcorrspearman:
     # parameters:
     # -b input bam files
@@ -370,6 +425,7 @@ rule STEP18_plotcorrspearman:
         "{path}preprocessing/logs/{sample}.plotcorrspearman.txt"
     shell:
         "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
+
 rule STEP19_makecorrheatmap:
     input:
         "{path}preprocessing/14qcplots/{sample}.spearman.corrTest"
@@ -379,6 +435,7 @@ rule STEP19_makecorrheatmap:
         "{path}preprocessing/logs/{sample}.makecorrheatmap.txt"
     shell:
         "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
+
 rule STEP20_makebigwig_bamcov_individual:
     # params:
     # -b bam input
@@ -397,6 +454,7 @@ rule STEP20_makebigwig_bamcov_individual:
         "{path}preprocessing/logs/{sample}.makebigwig_bamcov_individual.txt"
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
 rule STEP21_makebigwig_bamcov_merged:
     # params:
     # -b bam input
@@ -415,6 +473,7 @@ rule STEP21_makebigwig_bamcov_merged:
         "{path}preprocessing/logs/{mergedsample}.makebigwig_bamcov_merged.txt"
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+
 rule STEP22_downsamplebam:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -429,6 +488,7 @@ rule STEP22_downsamplebam:
         I={input} \
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
+
 rule STEP23_sortdownsampled:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -443,6 +503,7 @@ rule STEP23_sortdownsampled:
         I={input} \
         O={output} \
         SORT_ORDER=coordinate"
+
 rule STEP24_markdupdownsampled:
     # params:
     # -Xmx50g set java mem limit to X gb
@@ -460,6 +521,7 @@ rule STEP24_markdupdownsampled:
         M={output.b} \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
+
 rule STEP25_indexdownsampled:
     input:
         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam"
@@ -471,6 +533,7 @@ rule STEP25_indexdownsampled:
         "java -jar /home/ubuntu2/programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
+
 rule STEP26_callpeaksmacs2downsampled:
     # notes:
     # because we are going to use the TCGA data downstream likely as a reference point,
@@ -494,6 +557,7 @@ rule STEP26_callpeaksmacs2downsampled:
         "{path}preprocessing/15downsample/peaks/{sample}.{prob}_peaks.xls"
     shell:
         "macs2 callpeak -t {input} -n {wildcards.sample}.{wildcards.prob} --outdir preprocessing/15downsample/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
 rule AGGREGATE_preprocessing:
     input:
         "{path}preprocessing/10unique/{sample}-REP1.u.bai",
@@ -532,6 +596,7 @@ rule AGGREGATE_preprocessing:
         "{path}preprocessing/logs/{sample}.preprocessing.done.txt"
     shell:
         "touch {wildcards.path}preprocessing/logs/{wildcards.sample}.preprocessing.done.txt"
+
 rule CLEAN_preprocessing:
     input:
         "{path}preprocessing/logs/{sample}.preprocessing.done.txt"
@@ -549,10 +614,6 @@ rule CLEAN_preprocessing:
         rm {wildcards.path}preprocessing/9dedup/*.bam
         touch {output}
         """
-
-rule test:
-    input:
-        "ls1034/wt01/saturation/LS1034-WT-01.downsampled_lib_sizes.txt"
 
 ########################################################################################################################################
 #### Library Complexity Saturation Analysis Rules ######################################################################################
@@ -600,6 +661,7 @@ rule analyzepeaksaturation:
         "{path}15downsample/peaks/{mergedsample}.downsampled_numpeaks.txt"
     shell:
         "wl -l < {input} >> {output}"
+
 rule AGGREGATE_saturationanalysis:
     input:
         "{path}logs/{mergedsample}.preprocessing.done.txt",
@@ -609,6 +671,7 @@ rule AGGREGATE_saturationanalysis:
         "{path}logs/{mergedsample}.saturation_analysis.done.txt"
     shell:
         "touch {output}"
+
 ########################################################################################################################################
 #### Footprints Saturation Analysis Rules ##############################################################################################
 ########################################################################################################################################
@@ -621,6 +684,7 @@ rule makefpbychr_downsampled:
         "{path}preprocessing/15downsample/footprints/chr/{mergedsample}.{prob}.{gene}.{chr}.done.txt"
     script:
         "scripts/snakeMakeFPbyChrDownsampled.R"
+
 rule mergefpchr_downsampled:
     input:
         "sites/{gene}.sites.Rdata",
@@ -652,6 +716,7 @@ rule mergefpchr_downsampled:
         "{path}preprocessing/15downsample/footprints/merged/{sample}.{prob}.{gene}.done.merged.txt"
     script:
         "scripts/snakeMergeFPbyChrDownsampled.R"
+
 rule allprob_aggregator:
     input:
         "{path}preprocessing/15downsample/footprints/merged/{sample}.9.{gene}.done.merged.txt",
@@ -667,6 +732,7 @@ rule allprob_aggregator:
         "{path}preprocessing/15downsample/footprints/merged/{sample}.allprob.{gene}.done.txt"
     shell:
         "touch {output}"
+
 rule makefpgraph_downsampled:
     input:
         "{path}preprocessing/15downsample/complexity/{sample}.{prob}.md.bam",
@@ -677,6 +743,7 @@ rule makefpgraph_downsampled:
         "{path}saturation/footprints/{sample}.{prob}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraphDownsampled.R"
+
 rule allgraph_aggregator:
     input:
         "{path}saturation/footprints/{sample}.9.{gene}.graphs.done.txt",
@@ -692,6 +759,7 @@ rule allgraph_aggregator:
         "{path}preprocessing/15downsample/footprints/graphs/{sample}.allprob.{gene}.done.graphs.txt"
     shell:
         "touch {output}"
+
 ########################################################################################################################################
 #### Footprint Analysis Rules ##########################################################################################################
 ########################################################################################################################################
@@ -704,6 +772,7 @@ rule makefp_by_chr:
         "{path}footprints/temp/{mergedsample}.{gene}.{chr}.done.txt"
     script:
         "scripts/snakeMakeFPbyChr.R"
+
 rule merge_chr:
     input:
         "sites/{gene}.sites.Rdata",
@@ -735,6 +804,7 @@ rule merge_chr:
         "{path}footprints/merged/{mergedsample}.{gene}.merged.done.txt"
     script:
         "scripts/snakeMergeFPbyChr.R"
+
 rule make_graphs:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -745,6 +815,7 @@ rule make_graphs:
         "{path}footprints/graphs/{mergedsample}.{gene}.graphs.done.txt"
     script:
         "scripts/snakeGenerateMergedFPGraph.R"
+
 rule parse_footprints:
     input:
         "{path}preprocessing/12all/{mergedsample}.all.bam",
@@ -756,6 +827,7 @@ rule parse_footprints:
         "{path}footprints/parsed/{mergedsample}.{gene}.parsed.done.txt"
     script:
         "scripts/snakeParseFP.R"
+
 rule make_parsed_heatmaps:
     input:
         "{path}footprints/parsed/{mergedsample}.{gene}.motif{motif}.info.Rdata",
@@ -763,6 +835,7 @@ rule make_parsed_heatmaps:
         "{path}footprints/heatmaps/{mergedsample}.{gene}.motif{motif}.heatmap.svg"
     script:
         "scripts/snakeFootprintHeatmaps.R"
+
 rule make_merged_motifs:
     input:
         "{path}parsed/{mergedsample}.{gene}.parsed.done.txt"
@@ -770,6 +843,7 @@ rule make_merged_motifs:
         "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
     script:
         "scripts/snakeMergeMotifs.R"
+
 rule make_aracne_overlap:
     input:
         "{path}merged_motifs/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
@@ -797,6 +871,7 @@ rule threesample_plotcorrspearman:
         "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
     shell:
         "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
+
 rule threesample_makecorrheatmap:
     input:
         "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.corrTest"
@@ -804,6 +879,7 @@ rule threesample_makecorrheatmap:
         "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.spearman.heatmap.svg"
     shell:
         "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
+
 rule ninesample_plotcorrspearman:
     # parameters:
     # -b input bam files
@@ -827,6 +903,7 @@ rule ninesample_plotcorrspearman:
         "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.REPS.spearman.corrTest"
     shell:
         "multiBamSummary bins -b {input.a} {input.b} {input.c} {input.d} {input.e} {input.f} {input.g} {input.h} {input.i} -o {output} -bs 10000 -p 20 -v -r chr1"
+
 rule ninesample_makecorrheatmap:
     input:
         "xsample_analysis/correlation/{sample1}-{wt1}-{num1}.{sample2}-{wt2}-{num2}.{sample3}-{wt3}-{num3}.REPS.spearman.corrTest"
