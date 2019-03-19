@@ -39,8 +39,8 @@
 #         "snu61/wt01/preprocessing/logs/SNU61-WT-01.preprocessing.cleaning.done.txt"
 
 # rule run_mdst8wt01:
-# 	input:
-# 		"mdst8/wt01/preprocessing/logs/MDST8-WT-01.preprocessing.cleaning.done.txt"
+#   input:
+#       "mdst8/wt01/preprocessing/logs/MDST8-WT-01.preprocessing.cleaning.done.txt"
 
 ########################################################################################################################################
 #### SPOOL FOOTPRINTING ################################################################################################################
@@ -108,16 +108,16 @@ rule PREP_builddirstructure:
         """
 
 rule STEP1_gunzip:
-	# params:
-	# -k keep original files
-	# -c write to standard output
-	input:
-		a="{path}preprocessing/1gz/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq.gz",
-		b="{path}preprocessing/operations/dirtree.built.done"
-	output:
-		c="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq"
-	shell:
-		"gunzip -k -c {input.a} > {output.c}"
+    # params:
+    # -k keep original files
+    # -c write to standard output
+    input:
+        a="{path}preprocessing/1gz/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq.gz",
+        b="{path}preprocessing/operations/dirtree.built.done"
+    output:
+        c="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq"
+    shell:
+        "gunzip -k -c {input.a} > {output.c}"
 
 rule STEP2_afterqc_fastqfiltering:
     # params:
@@ -212,7 +212,7 @@ rule STEP7_chrM_contamination:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
 rule STEP8_addrgandcsbam:
-	# refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
+    # refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
     # note - proper specification of RG tags is critical for downstream analysis and unique sample identification when submitting for publication
     # specification of the lane allows optical duplicates to be detected(?)
     # required by GATK standards
@@ -258,20 +258,20 @@ rule STEP9_cleansam:
         O={output}"
 
 rule STEP10_mergelanes:
-	# Merge files for individual lanes
-	# I specifies input files for each lane
-	# O specifies the output files
-	# SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-	# MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-	# a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-	# USE_THREADING allows multithreadded operation
+    # Merge files for individual lanes
+    # I specifies input files for each lane
+    # O specifies the output files
+    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation
     input:
         a="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L1.clean.bam",
         b="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L2.clean.bam",
         c="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L3.clean.bam",
         d="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L4.clean.bam"
     output:
-    	"{path}preprocessing/8merged/{sample}-REP{repnum}of{reptot}.lanemerge.bam"
+        "{path}preprocessing/8merged/{sample}-REP{repnum}of{reptot}.lanemerge.bam"
     shell:
         "java -jar programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
@@ -304,7 +304,7 @@ rule STEP11_purgeduplicates:
         ASSUME_SORTED=true"
 
 rule STEP12_mapqfilter:
-	# Remove multimapping reads
+    # Remove multimapping reads
     # for an explanation of how bowtie2 calculates mapq scores:
     # http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
     # for bowtie2, mapq higher than 2 is a uniquely mapped read
@@ -349,9 +349,9 @@ rule STEP14_merge_2_replicates:
     # I specifies the input files for individual replicates
     # O specifies the merged output file
     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-	# MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-	# a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-	# USE_THREADING allows multithreadded operation
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation
     input:
         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
         b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
@@ -373,9 +373,9 @@ rule STEP14_merge_3_replicates:
     # I specifies the input files for individual replicates
     # O specifies the merged output file
     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-	# MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-	# a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-	# USE_THREADING allows multithreadded operation
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation
     input:
         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
         b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
@@ -423,10 +423,10 @@ rule STEP16_makebigwig_bamcov_individual:
     output:
         "{path}preprocessing/12bigwig/{sample}-REP{repnum}of{reptot}.bw"
     shell:
-    	"bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
 rule STEP17_makebigwig_bamcov_merged_1replicate:
-	# This rule will be used when only one replicate is present
+    # This rule will be used when only one replicate is present
     # params:
     # -b bam input
     # -o output file
@@ -445,7 +445,7 @@ rule STEP17_makebigwig_bamcov_merged_1replicate:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
 rule STEP17_makebigwig_bamcov_merged_2replicates:
-	# This rule will be used when two replicates are present
+    # This rule will be used when two replicates are present
     # params:
     # -b bam input
     # -o output file
@@ -465,7 +465,7 @@ rule STEP17_makebigwig_bamcov_merged_2replicates:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
 rule STEP17_makebigwig_bamcov_merged_3replicates:
-	# This rule will be used when three replicates are present
+    # This rule will be used when three replicates are present
     # params:
     # -b bam input
     # -o output file
@@ -486,15 +486,15 @@ rule STEP17_makebigwig_bamcov_merged_3replicates:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
 rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
-	# gather and determine the various preprocessing metrics, record to output text file
-	# delete unnecessary intermediate preprocessing files
-	# -f option will ignore nonexistent files
-	input:
-		"{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
-	output:
-		"{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
-	shell:
-		"""
+    # gather and determine the various preprocessing metrics, record to output text file
+    # delete unnecessary intermediate preprocessing files
+    # -f option will ignore nonexistent files
+    input:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
+    output:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+    shell:
+        """
         rm -f {wildcards.path}preprocessing/2fastq/*.fastq
         rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
         rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
@@ -522,8 +522,8 @@ rule AGGREGATOR_preprocessing_steps:
 ########################################################################################################################################
 
 rule test:
-	input:
-		"test01/operations/test-peaks.done.txt"
+    input:
+        "test01/operations/test-peaks.done.txt"
 
 rule STEP19_MACS2_peaks_individual_global_normilization:
     # notes:
@@ -552,7 +552,7 @@ rule STEP19_MACS2_peaks_individual_global_normilization:
         "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 rule STEP20_MACS2_peaks_individual_local_normalization:
-	# call peaks with MACS2 local normalization (+/- 1000 bp) enabled
+    # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
     # params:
     # -t input bam file (treatment)
     # -n base name for output files
@@ -585,7 +585,7 @@ rule STEP21_MACS2_peaks_merged_global_normilization_1replicate:
     output:
         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
     shell:
-        "macs2 callpeak -t {input.d} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.d} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 rule STEP21_MACS2_peaks_merged_global_normilization_2replicates:
     # see above for notes applicable to MACS2 peak calling
@@ -604,7 +604,7 @@ rule STEP21_MACS2_peaks_merged_global_normilization_2replicates:
     output:
         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
     shell:
-        "macs2 callpeak -t {input.f} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.f} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
     # see above for notes applicable to MACS2 peak calling
@@ -632,19 +632,21 @@ rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
 rule STEP22_MACS2_peaks_merged_local_normilization:
     # see above for notes applicable to MACS2 peak calling
     input:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls"
+        a="{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.xls",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        c="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
     output:
         "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.xls"
     shell:
-        "macs2 callpeak -t {input} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.b} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 rule AGGREGATOR_peaks:
-	input:
-		"{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.xls"
-	output:
-		"{path}operations/{mergedsample}-peaks.done.txt"
-	shell:
-		"touch {output}"
+    input:
+        "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.xls"
+    output:
+        "{path}operations/{mergedsample}-peaks.done.txt"
+    shell:
+        "touch {output}"
 
 ########################################################################################################################################
 #### Sample Correlation Analysis Rules #################################################################################################
@@ -959,58 +961,58 @@ rule AGGREGATOR_peaks:
 # #        "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
 #
 # rule aggregate_coadmr_fp:
-# 	input:
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.CDX2.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.TCF7.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.HOXA3.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.MNX1.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.POU5F1B.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.OVOL1.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ESRRA.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ASCL2.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.HNF4A.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.GMEB2.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.ZSWIM1.parsed.done.txt",
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.CBFA2T2.parsed.done.txt"
-# 	output:
-# 		"mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
-# 	shell:
-# 		"touch {output}"
+#   input:
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.CDX2.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.TCF7.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.HOXA3.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.MNX1.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.POU5F1B.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.OVOL1.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.ESRRA.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.ASCL2.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.HNF4A.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.GMEB2.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.ZSWIM1.parsed.done.txt",
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.CBFA2T2.parsed.done.txt"
+#   output:
+#       "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
+#   shell:
+#       "touch {output}"
 
 # rule make_heatmaps:
-# 	input:
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif3.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CBFA2T2.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ZSWIM1.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.POU5F1B.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif3.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif9.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif6.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif5.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif6.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif4.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HOXA3.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif2.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif3.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif1.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif7.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif8.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif5.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif4.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif4.heatmap.svg",
-# 		"mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CDX2.motif1.heatmap.svg"
+#   input:
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif3.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CBFA2T2.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ZSWIM1.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.POU5F1B.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif3.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif9.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.OVOL1.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif6.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif5.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif6.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif4.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HOXA3.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ASCL2.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif2.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.MNX1.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.TCF7.motif3.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.HNF4A.motif1.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif7.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif8.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif5.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.ESRRA.motif4.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.GMEB2.motif4.heatmap.svg",
+#       "mdst8/wt01/footprints/heatmaps/MDST8-WT-01.CDX2.motif1.heatmap.svg"
 
 # rule makefp_by_chr:
 #     input:
