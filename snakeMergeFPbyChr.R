@@ -40,7 +40,7 @@ cat("Found ", num_motifs, " motifs", "\n")
 
 for (x in 1:num_motifs){
   
-  signalpath <- paste0(dirpath, "footprints/merged/", sample, ".", gene, ".", "motif", x, ".merged.Rdata")
+  signalpath <- paste0(dirpath, "footprints/data/merged/", sample, ".", gene, ".", "motif", x, ".merged.Rdata")
   cat("Output path for signal object: ", signalpath, "\n")
   
   if (file.exists(signalpath) == TRUE){
@@ -48,12 +48,12 @@ for (x in 1:num_motifs){
     cat("Merged file already exists, skipping...", "\n")
     next
     
-    } else {
-      
+  } else {
+    
     cat("Merged file not found, processing...", "\n")
     
     ## Load each chromosome
-    ## Note that, because some chromosomes may have been skipped due to finding too few binding sites (<5)
+    ## Note that, because some chromosomes may have been skipped due to finding to errors
     ## Will need to check that the file exists before loading it and run an error catching loop
     cat("Loading data by chromosome...", "\n")
     chr_names <- paste0("chr", c(1:22, "X", "Y"))
@@ -63,8 +63,13 @@ for (x in 1:num_motifs){
     for (b in chr_names){
       
       cat("Checking for file for", b, "\n")
-      com <- paste0(b, "_in <- gsub('", b, ".done.txt', paste0('motif', x, '.", b ,".Rdata'), ", b, "_input)")
+      
+      com <- paste0(b, "_in <- gsub('", b, ".done.bychr.txt', paste0('motif', x, '.", b ,".Rdata'), ", b, "_input)")
       eval(parse(text = com))
+      
+      com <- paste0(b, "_in <- gsub('operations', 'data/bychr', ", b, "_in)")
+      eval(parse(text = com))
+      
       com <- paste0("curfile <- '", b, "_in'")
       eval(parse(text = com))
       
@@ -74,7 +79,7 @@ for (x in 1:num_motifs){
         cat("No file found for", b, "skipping", "\n")
         next
         
-        } else {
+      } else {
         
         #
         cat("Found file for", b, "loading...", "\n")
@@ -84,7 +89,7 @@ for (x in 1:num_motifs){
         com <- paste0("sigs_", b, " <- sigs")
         eval(parse(text = com))
         
-        } # if (file.exists(get(curfile)) == FALSE)
+      } # if (file.exists(get(curfile)) == FALSE)
     } # end for (b in chr_names)
     
     cat("Chromosome files found: ", found_chr, "\n")
@@ -99,7 +104,7 @@ for (x in 1:num_motifs){
     
     nplus <- gsub((paste0(merge_names_plus[length(merge_names_plus)], ",")), paste0("sigs_", found_chr[(length(merge_names_plus))], "[['signal']][['+']])"), mplus)
     nminus <- gsub((paste0(merge_names_minus[length(merge_names_minus)], ",")), paste0("sigs_", found_chr[(length(merge_names_minus))], "[['signal']][['+']])"), mminus)
-  
+    
     com <- paste0("merged_signal$'+' <- rbind(", nplus, ")")
     eval(parse(text = com))
     com <- paste0("merged_signal$'-' <- rbind(", nminus, ")")
@@ -128,7 +133,7 @@ cat("Finished merging!", "\n")
 file.create(output)
 
 
-  
+
 
 
 
