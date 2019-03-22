@@ -53,40 +53,40 @@ for (a in 1:num_motif){ # An iterator for each unique motif for this gene
     cat("File already exists, skipping...", "\n")
     next
   } else {
-    
-    #
-    cat("File not found, proceeding...", "\n")
-    PWM <- bindingSites[[a]][["PWM"]]
-    sites <- bindingSites[[a]][["sites"]]
-    #
-    
-    cat("Pruning sites 1...", "\n")
-    sites <- keepStandardChromosomes(sites, pruning.mode="coarse")
-    #
-    cat("Pruning sites 2...", "\n")
-    sites <- keepSeqlevels(sites, scope, pruning.mode="coarse")
-    
-    cat("Generating signal for ", genename, "motif", a, "chromosome ", current_chr, "\n")
-    
-    func <- tryCatch({
-      sigs <- suppressWarnings(factorFootprints(bamfiles = bampath,
-                                                index = baipath,
-                                                bindingSites = sites,
-                                                pfm = PWM,
-                                                genome = genome,
-                                                min.score = motif_score,
-                                                seqlev = scope,
-                                                upstream = upstream,
-                                                downstream = downstream))
-      cat("Saving signals data...", "\n")
-      save(sigs, file = signalpath)
-    },
-    error=function(cond){
-      message(cond)
-      return(NA)
-    },
-    finally={})
-    
+  
+  #
+  cat("File not found, proceeding...", "\n")
+  PWM <- bindingSites[[a]][["PWM"]]
+  sites <- bindingSites[[a]][["sites"]]
+  #
+  
+  cat("Pruning sites 1...", "\n")
+  sites <- keepStandardChromosomes(sites, pruning.mode="coarse")
+  #
+  cat("Pruning sites 2...", "\n")
+  sites <- keepSeqlevels(sites, scope, pruning.mode="coarse")
+  
+  cat("Generating signal for ", genename, "motif", a, "chromosome ", current_chr, "\n")
+  
+  func <- tryCatch({
+	sigs <- suppressWarnings(factorFootprints(bamfiles = bampath,
+                           index = baipath,
+                           bindingSites = sites,
+                           pfm = PWM,
+                           genome = genome,
+                           min.score = motif_score,
+                           seqlev = scope,
+                           upstream = upstream,
+                           downstream = downstream))
+  cat("Saving signals data...", "\n")
+  save(sigs, file = signalpath)
+	},
+	error=function(cond){
+	message(cond)
+	return(NA)
+	},
+	finally={})
+	
   } # end if (file.exists(signalpath))
 } # end for (a in 1:num_motif)
 

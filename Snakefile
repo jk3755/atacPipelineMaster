@@ -969,27 +969,20 @@ rule STEP37_make_raw_footprint_graphs:
     script:
         "scripts/snakeGenerateMergedFPGraph.R"
 
-rule STEP38_parse_footprint_signals:
+rule STEP38_parse_footprint_signals_and_generate_graphs:
     input:
         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
         "sites/{gene}.sites.Rdata",
         "{path}footprints/operations/{mergedsample}.{gene}.merged.done.txt",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
+        "{path}footprints/operations/{mergedsample}.{gene}.graphs.done.txt"
     output:
         "{path}footprints/operations/{mergedsample}.{gene}.parsed.done.txt"
     script:
         "scripts/snakeParseFP.R"
 
-rule STEP39_make_parsed_footprint_heatmaps:
-    input:
-        "{path}footprints/parsed/{mergedsample}.{gene}.motif{motif}.info.Rdata",
-    output:
-        "{path}footprints/heatmaps/{mergedsample}.{gene}.motif{motif}.heatmap.svg"
-    script:
-        "scripts/snakeFootprintHeatmaps.R"
-
-rule STEP40_merge_footprint_signal_motifs:
+rule STEP39_merge_footprint_signal_motifs:
     input:
         "{path}footprints/operations/{mergedsample}.{gene}.parsed.done.txt"
     output:

@@ -134,7 +134,7 @@ eval(parse(text = com))
 cat("Generating heatmap...", "\n")
 heatmappath <- paste0(dirpath, "merged_motifs/", samplename, ".", genename, ".merged.heatmap.svg")
 svg(file = heatmappath)
-ChIPpeakAnno::featureAlignedHeatmap(sig,
+ChIPpeakAnno::featureAlignedHeatmap(sigs,
                                     feature.gr=reCenterPeaks(mergedsites,width=totalbp), 
                                     annoMcols="rowtotals",
                                     sortBy="rowtotals",

@@ -28,18 +28,23 @@ entrezid <- snakemake@wildcards[["entrez"]]
 ## load file
 load(inputfile)
 
+## get binding sites of merged signals
+sites <- mergedMotifs[["sites"]]
 
-# ESRRA - 2101
-################### ENTER ENTREZ ID AND RUN TO GET TARGETS ##############################
 ## get the ARACNe interactome
 coad_interactome <- aracne.networks::reguloncoad
+
 ## get the targets
 com <- paste0("targets <- names(coad_interactome[['", entrezid, "']][['tfmode']])")
 eval(parse(text = com))
+
+
 ## Retrieve info for the network targets
 target_list <- list()
 for (a in 1:length(targets)){
   target_list[a] <- mygene::getGene(geneid = targets[a], fields = "all")}
+
+
 ## count the number of gene locations we have
 loc_count <- 0
 for (a in 1:length(targets)){
@@ -48,14 +53,20 @@ for (a in 1:length(targets)){
       loc_count <- (loc_count + length(target_list[[a]][["genomic_pos"]]))
     } else {
       loc_count <- (loc_count + 1)}}}
+
+
 ## Retrieve the genomic coordinates of all network targets
+## retrieve all genomic coords here, can later trim non standard ones more easily with GRanges functions
 target_locations <- matrix(data = NA, nrow = loc_count, ncol = 4)
 colnames(target_locations) <- c("gene", "chr", "start", "end")
 idx <- 1
 #
 for (a in 1:length(target_list)){
+  
   if (is.null(target_list[[a]][["genomic_pos"]])){next} else {
+    
     if (is.list(target_list[[a]][["genomic_pos"]][[1]])){
+      
       for (b in 1:length(target_list[[a]][["genomic_pos"]])){
         target_locations[idx,1] <- target_list[[a]][["symbol"]]
         target_locations[idx,2] <- paste0("chr", target_list[[a]][["genomic_pos"]][[b]][["chr"]])
@@ -63,12 +74,16 @@ for (a in 1:length(target_list)){
         target_locations[idx,4] <- target_list[[a]][["genomic_pos"]][[b]][["end"]]
         idx <- (idx+1)
       } # end for (b in 1:length(target_list[[a]][["genomic_pos"]]))
+      
     } else {
+      
       target_locations[idx,1] <- target_list[[a]][["symbol"]]
       target_locations[idx,2] <- paste0("chr", target_list[[a]][["genomic_pos"]][["chr"]])
       target_locations[idx,3] <- target_list[[a]][["genomic_pos"]][["start"]]
       target_locations[idx,4] <- target_list[[a]][["genomic_pos"]][["end"]]
       idx <- (idx+1)}}}
+
+
 ## Convert the genomic locations of the targets into GRanges
 gr <- GRanges(
   seqnames = target_locations[,2],
@@ -76,26 +91,22 @@ gr <- GRanges(
 #strand = c(rep("+", times = num_names)),
 #seqinfo = Seqinfo(genome="hg38"),
 #score = c(rep(1, times = num_names)))
+
 ## prune to standard xsomes
 gr <- keepStandardChromosomes(gr, pruning.mode="coarse")
-##
+
 gr1 <- gr
 gr2 <- gr
-##
+#
 start(gr1) <- (start(gr1) - 2000)
 width(gr1) <- (width(gr1) + 2000)
-##
+#
 start(gr2) <- (start(gr2) - 50000)
 width(gr2) <- (width(gr2) + 50000)
-#################################################################################################################
 
-#### PARSED SITES ####
-parsed_overlap1 <- length(info[["overlap1"]]@from)
-parsed_overlap2 <- length(info[["overlap1"]]@from)
 
-## get binding sites of merged signals
-sites <- mergedMotifs[["sites"]]
-
+##
+#intersection <- intersect(gr, wg_sites)
 
 ## Find overlaps
 ## YOU WILL WANT TO FIND THE OVERLAPS FOR A RANGE OF EXTENDED VALUES PAST THE TARGETS, GRAPH IT
@@ -107,27 +118,6 @@ info$overlap1 <- overlaps1
 info$overlap2 <- overlaps2
 
 save(info, file = outputfile)
-
-
-## Fishers test
-o1 <- length(info[["overlap1"]]@from)
-o2 <- length(info[["overlap2"]]@from)
-numtargets <- info[["overlap1"]]@nLnode
-numsites <- info[["overlap1"]]@nRnode
-
-percent1 <- (o1/numsites*100)
-
-#
-motif1sites <- parsedSitesInfo[["bfPassPeakSites"]]
-overlap3 <- findOverlaps(gr1, sites)
-o3 <- length(overlap3@from)
-overlap4 <- findOverlaps(gr2, sites)
-o4 <- length(overlap4@from)
-
-
-
-
-
 
 
 

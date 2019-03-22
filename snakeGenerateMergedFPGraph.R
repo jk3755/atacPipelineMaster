@@ -25,7 +25,7 @@ cat("Found ", num_motifs, " motifs", "\n")
 
 for (x in 1:num_motifs){
   
-  graphpath <- paste0(dirpath, "footprints/temp/", samplename, ".", genename, ".", "motif", x, ".svg")
+  graphpath <- paste0(dirpath, "footprints/graphs/", samplename, ".", genename, ".", "motif", x, ".svg")
   cat("Output path for signal object: ", graphpath, "\n")
   
   if (file.exists(graphpath) == TRUE){
@@ -36,7 +36,7 @@ for (x in 1:num_motifs){
     
     ##
     cat("Setting parameters...", "\n")
-    motif_score <- "99%"
+    motif_score <- "95%"
     upstream <- 100
     downstream <- 100
     genome <- Hsapiens
@@ -45,9 +45,11 @@ for (x in 1:num_motifs){
     ##
     cat("Loading data...", "\n")
     mergein <- gsub("merged.done.txt", paste0("motif", x, ".merged.Rdata"), mergedpath)
+    mergein <- gsub("operations", "data/merged", mergein)
+
     load(mergein)
     sigs <- merged_signals[["signal"]]
-    
+
     ##
     PWM <- bindingSites[[x]][["PWM"]]
     wid <- length(PWM[1,])

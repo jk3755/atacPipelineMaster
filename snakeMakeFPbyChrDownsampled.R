@@ -40,58 +40,58 @@ load(sitespath)
 num_motif <- length(bindingSites)
 
 ## Only do motif 1
-a <- 1
-#
-signalpath <- paste0(sample_path, "saturation/footprints/data/bychr/", samplename, "-REP", repnum, "of", reptot, ".", current_prob, ".", genename, ".", current_chr, ".Rdata")
-cat("Output path for signal object: ", signalpath, "\n")
-
-#
-if (file.exists(signalpath) == TRUE){
-  cat("File already exists, skipping...", "\n")
-  next
-} else {
+  a <- 1
+  #
+  signalpath <- paste0(sample_path, "saturation/footprints/data/bychr/", samplename, "-REP", repnum, "of", reptot, ".", current_prob, ".", genename, ".", current_chr, ".Rdata")
+  cat("Output path for signal object: ", signalpath, "\n")
   
   #
-  cat("File not found, proceeding...", "\n")
-  PWM <- bindingSites[[a]][["PWM"]]
-  sites <- bindingSites[[a]][["sites"]]
-  #
-  
-  cat("Pruning sites 1...", "\n")
-  sites <- keepStandardChromosomes(sites, pruning.mode="coarse")
-  #
-  cat("Pruning sites 2...", "\n")
-  sites <- keepSeqlevels(sites, scope, pruning.mode="coarse")
-  
-  ## error handling
-  # if current sites object has < 5 sites, the pipeline will crash
-  
-  #
-  cat("Generating signal for ", genename, "motif", a, "chromosome ", current_chr, "\n")
-  # generate signal
-  sigs <- tryCatch(
-    {
-      factorFootprints(bamfiles = bampath,
-                       index = baipath,
-                       bindingSites = sites,
-                       pfm = PWM,
-                       genome = genome,
-                       min.score = motif_score,
-                       seqlev = scope,
-                       upstream = upstream,
-                       downstream = downstream)
+  if (file.exists(signalpath) == TRUE){
+    cat("File already exists, skipping...", "\n")
+    next
+  } else {
+    
+    #
+    cat("File not found, proceeding...", "\n")
+    PWM <- bindingSites[[a]][["PWM"]]
+    sites <- bindingSites[[a]][["sites"]]
+    #
+    
+    cat("Pruning sites 1...", "\n")
+    sites <- keepStandardChromosomes(sites, pruning.mode="coarse")
+    #
+    cat("Pruning sites 2...", "\n")
+    sites <- keepSeqlevels(sites, scope, pruning.mode="coarse")
+    
+    ## error handling
+    # if current sites object has < 5 sites, the pipeline will crash
+    
+      #
+      cat("Generating signal for ", genename, "motif", a, "chromosome ", current_chr, "\n")
+      # generate signal
+      sigs <- tryCatch(
+        {
+          factorFootprints(bamfiles = bampath,
+                               index = baipath,
+                               bindingSites = sites,
+                               pfm = PWM,
+                               genome = genome,
+                               min.score = motif_score,
+                               seqlev = scope,
+                               upstream = upstream,
+                               downstream = downstream)
       
       # Save the data
       cat("Saving signals data...", "\n")
       save(sigs, file = signalpath)
-    },
-    error=function(cond){
-      message(cond)
-      return(NA)
-    },
-    finally={
-    })
-} # end if (file.exists(signalpath))
+        },
+      error=function(cond){
+        message(cond)
+        return(NA)
+      },
+      finally={
+      })
+  } # end if (file.exists(signalpath))
 
 #
 cat("Finished...", "\n")
