@@ -4,7 +4,7 @@
 ## Install libraries, if necessary
 #install.packages("BiocManager")
 #library(BiocManager)
-#iocManager::install("ChIPseeker")
+#BiocManager::install("ChIPseeker")
 #BiocManager::install("genomation")
 #BiocManager::install("GenomicRanges")
 #BiocManager::install("clusterProfiler")
@@ -13,6 +13,7 @@
 #BiocManager::install("ReactomePA")
 
 ##
+cat("Loading libraries...", "\n")
 library(ChIPseeker)
 library(genomation)
 library(GenomicRanges)
@@ -20,55 +21,92 @@ library(clusterProfiler)
 library(org.Hs.eg.db)
 library(ReactomePA)
 library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+#
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
+##
+cat("Setting snakemake vars...", "\n")
+bedFile <- snakemake@input[[1]]
+outputPath <- snakemake@output[[1]]
+sampleName <- snakemake@wildcards[["mergedsample"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
 
 ## Data import
-cat("Importing peaks file...", "\n")
-bedFile <- "C:\\Users\\jsk33\\Documents\\atac\\atac1\\mdst8\\wt01\\peaks\\macs2\\merged\\MDST8-WT-01-merged_local_normalization_peaks.narrowPeak"
+cat("Input peak file path:", bedFile, "\n")
 narrowPeaks <- ChIPseeker::readPeakFile(bedFile)
 ## Subset to standard xsomes
 narrowPeaks <- keepStandardChromosomes(narrowPeaks, pruning.mode="coarse")
 
 
 ## Coverage plots make plot of genome wide peak coverage
-covplot(narrowPeaks, weightCol="X9.11849")
-
-
-## More detailed cov plots
-covplot(peak, weightCol="V5", chrs=c("chr17", "chr18"), xlim=c(4.5e7, 5e7))
+covplotPath <- gsub("annotations.done.txt", "repmerged.peakgenomecov.svg", outputPath)
+covplotPath <- gsub("operations", "metrics", covplotPath)
+cat("Output path for peak genomve coverage plot:", covplotPath, "\n")
+##
+cat("Generating genome-wide peak coverage plot...", "\n")
+svg(file = outputSVG) # set the filepath for saving the svg figure
+##
+covplot(narrowPeaks, weightCol="X486")
+## Turn off svg device 
+dev.off()
 
 
 ## Profile of peaks in TSS regions
-#promoter <- getPromoters(TxDb=txdb, upstream=3000, downstream=3000)
-#tagMatrix <- getTagMatrix(bedFile, windows=promoter)
-## heatmap of binding to TSS regions
-#tagHeatmap(tagMatrix, xlim=c(-3000, 3000), color="red")
-
+TSSprofilePath <- gsub("peakgenomecov", "peakTSSprofile", covplotPath)
+cat("Output path for peak TSS profile plot:", TSSprofilePath, "\n")
 ## One step function to generate TSS heatmap from a BED file
+cat("Generating peak TSS profile plot...", "\n")
+svg(file = TSSprofilePath) # set the filepath for saving the svg figure
+##
 peakHeatmap(bedFile, TxDb=txdb, upstream=3000, downstream=3000, color="red")
+## Turn off svg device 
+dev.off()
 
 
 ## Average profile of ChIP peaks binding to TSS region
-#plotAvgProf(tagMatrix, xlim=c(-3000, 3000), xlab="Genomic Region (5'->3')", ylab = "Read Count Frequency")
-
-
+AvgPeakProfileTSS <- gsub("peakgenomecov", "avgPeakTSSprofile", covplotPath)
+cat("Output path for average peak TSS profile plot:", AvgPeakProfileTSS, "\n")
 ## One step function of above from a BED file
-plotAvgProf2(bedFile, TxDb=txdb, upstream=3000, downstream=3000,
-             xlab="Genomic Region (5'->3')", ylab = "Read Count Frequency")
+cat("Generating average peak TSS profile plot...", "\n")
+svg(file = AvgPeakProfileTSS) # set the filepath for saving the svg figure
+##
+plotAvgProf2(bedFile, TxDb=txdb, upstream=3000, downstream=3000, xlab="Genomic Region (5'->3')", ylab = "Read Count Frequency")
+## Turn off svg device 
+dev.off()
+
 
 ## With confidence interval estimate and bootstrap methods
-plotAvgProf(tagMatrix, xlim=c(-3000, 3000), conf = 0.95, resample = 1000)
+#plotAvgProf(tagMatrix, xlim=c(-3000, 3000), conf = 0.95, resample = 1000)
 
 
-## Peak annotation
+## Peak annotations
+cat("Generating peak annotations...", "\n")
 peakAnno <- annotatePeak(bedFile, tssRegion=c(-3000, 3000), TxDb=txdb, annoDb="org.Hs.eg.db")
 ## Plot it
+annoPlot1 <- gsub("peakgenomecov", "annoplot1", covplotPath)
+annoPlot2 <- gsub("peakgenomecov", "annoplot1", covplotPath)
+annoPlot3 <- gsub("peakgenomecov", "annoplot1", covplotPath)
+annoPlot4 <- gsub("peakgenomecov", "annoplot1", covplotPath)
+#annoPlot5 <- gsub("peakgenomecov", "annoplot1", covplotPath)
+##
+svg(file = annoPlot1) # set the filepath for saving the svg figure
 plotAnnoPie(peakAnno)
+dev.off()
+##
+svg(file = annoPlot2) # set the filepath for saving the svg figure
 plotAnnoBar(peakAnno)
+dev.off()
+##
+svg(file = annoPlot3) # set the filepath for saving the svg figure
 vennpie(peakAnno)
+dev.off()
+##
+svg(file = annoPlot4) # set the filepath for saving the svg figure
 upsetplot(peakAnno)
-upsetplot(peakAnno, vennpie=TRUE)
+dev.off()
+##
+#svg(file = annoPlot5) # set the filepath for saving the svg figure
+#upsetplot(peakAnno, vennpie=TRUE)
 
 ## Distribution of TF-binding loci relative to TSS
 plotDistToTSS(peakAnno, title="Distribution of transcription factor-binding loci\nrelative to TSS")
