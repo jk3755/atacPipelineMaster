@@ -44,9 +44,10 @@ covplotPath <- gsub("operations", "metrics", covplotPath)
 cat("Output path for peak genomve coverage plot:", covplotPath, "\n")
 ##
 cat("Generating genome-wide peak coverage plot...", "\n")
-svg(file = outputSVG) # set the filepath for saving the svg figure
+svg(file = covplotPath) # set the filepath for saving the svg figure
 ##
-covplot(narrowPeaks, weightCol="X486")
+weightname <- names(narrowPeaks@elementMetadata@listData[2])
+covplot(narrowPeaks, weightCol=weightname)
 ## Turn off svg device 
 dev.off()
 
@@ -84,9 +85,9 @@ cat("Generating peak annotations...", "\n")
 peakAnno <- annotatePeak(bedFile, tssRegion=c(-3000, 3000), TxDb=txdb, annoDb="org.Hs.eg.db")
 ## Plot it
 annoPlot1 <- gsub("peakgenomecov", "annoplot1", covplotPath)
-annoPlot2 <- gsub("peakgenomecov", "annoplot1", covplotPath)
-annoPlot3 <- gsub("peakgenomecov", "annoplot1", covplotPath)
-annoPlot4 <- gsub("peakgenomecov", "annoplot1", covplotPath)
+annoPlot2 <- gsub("peakgenomecov", "annoplot2", covplotPath)
+annoPlot3 <- gsub("peakgenomecov", "annoplot3", covplotPath)
+annoPlot4 <- gsub("peakgenomecov", "annoplot4", covplotPath)
 #annoPlot5 <- gsub("peakgenomecov", "annoplot1", covplotPath)
 ##
 svg(file = annoPlot1) # set the filepath for saving the svg figure

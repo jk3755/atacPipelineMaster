@@ -5,7 +5,7 @@
 # A dry run of the pipeline can be run with:
 # snakemake -np h508go
 # On one of the virtualization servers, run the pipeline with the following to allocate 20 threads and 90 gb max memory (to avoid crashing the process)
-# snakemake -j 20 h508go --resources hg38align=1 fp_by_chr=10 raw_fp_graph=2 parse_fp=2 make_bigwig=1
+# snakemake -j 20 h508go --resources hg38align=1 fp_by_chr=5 raw_fp_graph=2 parse_fp=2 make_bigwig=1
 #
 ## To initiate the pipeline, you must create a directory called "preprocessing" with a subdirectory called "1gz" containing the fastq.gz files
 ## Rename the files as described below before spooling the pipeline
@@ -36,13 +36,9 @@ rule run_h508wt02a:
     input:
         "h508/wt02a/operations/H508A-WT-02-pipeline.complete.txt"
 
-rule run_h508wt02f:
-    input:
-        "h508/wt02f/operations/H508F-WT-02-pipeline.complete.txt"
-
 rule run_ls1034wt01:
     input:
-        "ls1034/wt01/preprocessing/logs/LS1034-WT-01.preprocessing.cleaning.done.txt"
+        "ls1034/wt01/operations/LS1034-WT-01-pipeline.complete.txt"
 
 rule run_snu61wt01:
     input:
@@ -58,7 +54,8 @@ rule AGGREGATOR_pipeline:
 		"{path}operations/{mergedsample}-peaks.done.txt",
 		"{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt",
 		"{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-		"{path}operations/{mergedsample}-downsample.final.txt"
+		"{path}operations/{mergedsample}-downsample.final.txt",
+		"{path}operations/{mergedsample}.metrics.annotations.done.txt"
 	output:
 		"{path}operations/{mergedsample}-pipeline.complete.txt"
 	shell:
@@ -360,19 +357,11 @@ rule STEP13_buildindex:
 rule STEP14_merge_1_replicate:
     # If only one replicate is present, you can just copy the previous bam file to the next directory
     input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam"
+        "{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam"
     output:
         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-    priority:
-    	50
     shell:
-        "java -jar programs/picard/picard.jar MergeSamFiles \
-        I={input.a} \
-        O={output} \
-        SORT_ORDER=coordinate \
-        ASSUME_SORTED=true \
-        MERGE_SEQUENCE_DICTIONARIES=true \
-        USE_THREADING=true"
+        "cp {input} {output}"
 
 rule STEP14_merge_2_replicates:
     # This rule will be called when there are two input replicates
@@ -476,8 +465,6 @@ rule STEP17_makebigwig_bamcov_merged_1replicate:
         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
     resources:
     	make_bigwig=1
-    priority:
-    	50
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
@@ -664,56 +651,16 @@ rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
     shell:
         "macs2 callpeak -t {input.h} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP22_MACS2_peaks_merged_local_normilization_1replicate:
+rule STEP22_MACS2_peaks_merged_local_normilization:
     # see above for notes applicable to MACS2 peak calling
     input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bai",
-        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        d="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        e="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        f="{path}peaks/macs2/individual/{mergedsample}-REP1of1_global_normalization_peaks.narrowPeak",
-        g="{path}peaks/macs2/individual/{mergedsample}-REP1of1_local_normalization_peaks.narrowPeak"
+        a="{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        c="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
     output:
         "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
     shell:
-        "macs2 callpeak -t {input.d} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
-
-rule STEP22_MACS2_peaks_merged_local_normilization_2replicates:
-    # see above for notes applicable to MACS2 peak calling
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
-        e="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        f="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        g="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        h="{path}peaks/macs2/individual/{mergedsample}-REP1of1_global_normalization_peaks.narrowPeak",
-        i="{path}peaks/macs2/individual/{mergedsample}-REP1of1_local_normalization_peaks.narrowPeak"
-    output:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.f} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
-
-rule STEP22_MACS2_peaks_merged_local_normilization_3replicates:
-    # see above for notes applicable to MACS2 peak calling
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
-        e="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
-        f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai",
-        g="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        h="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        i="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        j="{path}peaks/macs2/individual/{mergedsample}-REP1of1_global_normalization_peaks.narrowPeak",
-        k="{path}peaks/macs2/individual/{mergedsample}-REP1of1_local_normalization_peaks.narrowPeak"
-    output:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.h} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.b} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 rule AGGREGATOR_peaks:
 	input:
@@ -726,30 +673,6 @@ rule AGGREGATOR_peaks:
 ########################################################################################################################################
 #### SAMPLE CORRELATION ANALYSIS RULES #################################################################################################
 ########################################################################################################################################
-
-rule STEP23_sample_correlation_spearman_1replicate:
-    # parameters:
-    # -b input bam files
-    # -o output file name
-    # -bs set the bin size used for comparison, default is 10000 bp
-    # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-    # -p set the number of computing processors to use
-    # -v verbose mode
-    input:
-    	a="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam",
-    	b="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bai"
-    output:
-        "{path}correlation/{mergedsample}.1replicate.spearman.corrTest"
-    shell:
-        "touch {output}"
-
-rule STEP24_makecorrheatmap_1replicate:
-    input:
-        "{path}correlation/{sample}.1replicate.spearman.corrTest"
-    output:
-        "{path}correlation/{sample}.spearman.heatmap.svg"
-    shell:
-        "touch {output}"
 
 rule STEP23_sample_correlation_spearman_2replicates:
     # parameters:
@@ -1133,6 +1056,78 @@ rule AGGREGATOR_COADMR_footprinting:
 		"{path}footprints/operations/{mergedsample}.CBFA2T2.parsed.done.txt"
 	output:
 		"{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt"
+	shell:
+		"touch {output}"
+
+
+########################################################################################################################################
+#### METRICS AND ANNOTATIONS RULES #####################################################################################################
+########################################################################################################################################
+rule METRICS_percent_peak_genome_coverage:
+	# returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
+	# parameters:
+	# --echo output will be at least a three-column bed file
+	# --bases-uniq the number of distinct bases from ref covered by overlap bed file
+	# --delim change output delimeter from '|' to <delim>, e.g. '\t'
+	input:
+		a="{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
+		b="genomes/hg38/hg38.extents.bed"
+	output:
+		"{path}metrics/{mergedsample}.peak.genome.coverage.txt"
+	shell:
+		"bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
+
+rule METRICS_fragment_size_distributions:
+	input:
+		a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
+		b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai"
+	output:
+		"{path}metrics/{mergedsample}-REP{repnum}of{reptot}.u.fragsizes.svg"
+	script:
+		"scripts/snakeFragSizeDist.R"
+
+rule AGGREGATOR_fragsize_1rep:
+	input:
+		"{path}metrics/{mergedsample}-REP1of1.u.fragsizes.svg"
+	output:
+		"{path}operations/{mergedsample}.fragsizes.done.txt"
+	shell:
+		"touch {output}"
+
+rule AGGREGATOR_fragsize_2reps:
+	input:
+		"{path}metrics/{mergedsample}-REP1of2.u.fragsizes.svg",
+		"{path}metrics/{mergedsample}-REP2of2.u.fragsizes.svg"
+	output:
+		"{path}operations/{mergedsample}.fragsizes.done.txt"
+	shell:
+		"touch {output}"
+
+rule AGGREGATOR_fragsize_3reps:
+	input:
+		"{path}metrics/{mergedsample}-REP1of3.u.fragsizes.svg",
+		"{path}metrics/{mergedsample}-REP2of3.u.fragsizes.svg",
+		"{path}metrics/{mergedsample}-REP3of3.u.fragsizes.svg"
+	output:
+		"{path}operations/{mergedsample}.fragsizes.done.txt"
+	shell:
+		"touch {output}"
+
+rule METRICS_annotate_peaks_merged:
+	input:
+		"{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+	output:
+		"{path}operations/{mergedsample}.mergedpeak.annotations.done.txt"
+	script:
+		"scripts/snakeAnnotateATAC.R"
+
+rule AGGREGATOR_metrics_and_annotations:
+	input:
+		"{path}metrics/{mergedsample}.peak.genome.coverage.txt",
+		"{path}operations/{mergedsample}.fragsizes.done.txt",
+		"{path}operations/{mergedsample}.mergedpeak.annotations.done.txt"
+	output:
+		"{path}operations/{mergedsample}.metrics.annotations.done.txt"
 	shell:
 		"touch {output}"
 
