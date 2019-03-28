@@ -1,27 +1,239 @@
----
-  title: "atac_data_for_som"
-author: "Jordan S. Kesner"
-date: "12/28/2018"
-output: html_document
-editor_options: 
-  chunk_output_type: inline
----
+## Install libraries if necessary
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("stringi", suppressUpdates = TRUE)
+#biocLite("GenomicRanges", suppressUpdates = TRUE)
+#biocLite("ensembldb", suppressUpdates = TRUE)
+#biocLite("EnsDb.Hsapiens.v86", suppressUpdates = TRUE)
+#biocLite("S4Vectors", suppressUpdates = TRUE)
+#biocLite("Repitools", suppressUpdates = TRUE)
+#biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene", suppressUpdates = TRUE)
+#biocLite("genomation", suppressUpdates = TRUE)
+#install.packages("ggplot2")
+
+## Load libraries
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+library(genomation)
+library(ensembldb)
+library(EnsDb.Hsapiens.v86)
+library(GenomicRanges)
+library(S4Vectors)
+library(Repitools)
+library(ggplot2)
+library(crayon)
+library(Rsamtools)
+
+
+## Shorten variable name for TxDb database
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+
+
+#### The input files
+
+## First file is provided by Jeremy, contains RNAseq data
+inputFile <- "C:\\Users\\jsk33\\Documents\\lab\\atac\\snu61_tfc"
+expData <- read.table(inputFile, header=TRUE, sep = ',')
+
+## Second file is called peaks from ATACseq data, in .bed format
+bedFile <- "C:\\Users\\jsk33\\Documents\\lab\\atac\\atac\\snu61\\wt01\\peaks\\macs2\\merged\\SNU61-WT-01-merged_global_normalization_peaks.narrowPeak"
+## Read in the .bed peaks file
+snu61Peaks <- readBed(bedFile, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
+## Keep standard ranges only
+snu61Peaks <- keepStandardChromosomes(snu61Peaks, pruning.mode="coarse")
+
+## The input bam files, for calculating raw signals
+inputBam <- "C:\\Users\\jsk33\\Documents\\lab\\atac\\atac\\snu61\\wt01\\preprocessing\\11repmerged\\SNU61-WT-01-repmerged.bam"
+
+
+#### Retrieve gene information from TxDb
+## Make a gene ID based key for retrieving data for genes of interest from Jeremy data
+geneKey <- c(as.character(expData[,3]))
+## Use the select method to get mapping between tx_name (UCSC) and gene_id (ENTREZ)
+annotData <- select(txdb, keys = geneKey, columns = "TXNAME", keytype = "GENEID")
+## Make a vector with the tx_names
+txNames <- c(annotData[,2])
+## Get promoter regions, -200 bp from TSS (can be adjusted) for all transcripts from TxDb
+promoters <- promoters(txdb, upstream = 200, downstream = 0)
+## Trim the GRanges object to keep standard entries only
+promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
+## Subset the promoters GRanges object using the generated index
+## Note that with multiple transcript variants, this number will be much higher than the gene_id list
+promoterData <- promoters[promoters$tx_name %in% txNames]
+
+
+#### Each hit may refer to multiple transcript variants. Subset based on the first hit for a given gene only
+newGeneID <- c()
+newTxName <- promoterData@elementMetadata@listData[["tx_name"]]
+for (a in 1:length(newTxName)){
+  idx <- which(newTxName[a] == annotData[,2])
+  newGeneID[a] <- annotData[idx,1]}
+## Check how many unique genes there are now
+length(unique(newGeneID))
+## Add the GeneIDs to the promoters GRanges
+promoterData@elementMetadata@listData[["gene_id"]] <- c(newGeneID)
+
+
+#### There may be duplicate entries for gene IDs in the promoterData Granges, so lets keep only one for each
+unIdx <- c()
+for (b in 1:length(geneKey)){
+  tempIdx <- c(which(promoterData@elementMetadata@listData[["gene_id"]] == geneKey[b]))
+  unIdx[b] <- tempIdx[1]}
+
+## As a sanity check
+length(unique(unIdx))
+## Remove NAs
+unIdx <- unIdx[which(is.na(unIdx) == FALSE)]
+## Remove duplicate IDS
+unIdx <- unique(unIdx)
+## As a sanity check
+length(unique(unIdx))
+
+
+## Subset for unique only
+uniquePromoters <- promoterData[unIdx]
+## Check number of entries
+length(unique(uniquePromoters@elementMetadata@listData[["gene_id"]]))
+
+
+#### Find which gene promoters are accessible (have a peak) using the ATACseq data
+overlaps <- findOverlaps(snu61Peaks, uniquePromoters)
+## How many of the overlaps referend unique annotated promoters?
+idxuq <- unique(overlaps@to)
+## Get a GRanges of the genes that have a peak
+genePeaks <- uniquePromoters[idxuq]
+## How many of these are unique GeneIDs? 
+length(unique(genePeaks@elementMetadata@listData[["gene_id"]]))
+## Get the list of ENTREZ IDs for genes in this set with active promoters
+activeGenePromoters <- unique(genePeaks@elementMetadata@listData[["gene_id"]])
+
+
+#### Annotate all unique genes as having a peak ("RED") or not ("BLACK")
+idx2 <- which(expData[,3] %in% activeGenePromoters)
+expData$peak <- "BLACK"
+expData$peak[idx2] <- "RED"
+## Change -inf values to -11
+idx3 <- which(expData[,6] == "-Inf")
+expData[idx3,6] <- -11
+
+
+#### Sort and plot the data
+sortedExpData <- expData[order(expData$SNU61_LARGE_INTESTINE_log2, decreasing = FALSE),]
+##
+plot(sortedExpData[,6], col = sortedExpData$peak)
+##
+hist(sortedExpData[,6], breaks = 40)
+
+
+#### Make bins of the genes based on log2 expression
+## Plot a histogram/dotplot overlay of the percentage of genes in that bin with/without peak
+binData <- list()
+binData$"-11"$data <- sortedExpData[which(sortedExpData[,6] <= -10),]
+binData$"-10"$data <- sortedExpData[which(sortedExpData[,6] <= -9 & sortedExpData[,6] > -10),]
+binData$"-9"$data <- sortedExpData[which(sortedExpData[,6] <= -8 & sortedExpData[,6] > -9),]
+binData$"-8"$data <- sortedExpData[which(sortedExpData[,6] <= -7 & sortedExpData[,6] > -8),]
+binData$"-7"$data <- sortedExpData[which(sortedExpData[,6] <= -6 & sortedExpData[,6] > -7),]
+binData$"-6"$data <- sortedExpData[which(sortedExpData[,6] <= -5 & sortedExpData[,6] > -6),]
+binData$"-5"$data <- sortedExpData[which(sortedExpData[,6] <= -4 & sortedExpData[,6] > -5),]
+binData$"-4"$data <- sortedExpData[which(sortedExpData[,6] <= -3 & sortedExpData[,6] > -4),]
+binData$"-3"$data <- sortedExpData[which(sortedExpData[,6] <= -2 & sortedExpData[,6] > -3),]
+binData$"-2"$data <- sortedExpData[which(sortedExpData[,6] <= -1 & sortedExpData[,6] > -2),]
+binData$"-1"$data <- sortedExpData[which(sortedExpData[,6] <= 0 & sortedExpData[,6] > -1),]
+binData$"0"$data <- sortedExpData[which(sortedExpData[,6] <= 1 & sortedExpData[,6] > 0),]
+binData$"1"$data <- sortedExpData[which(sortedExpData[,6] <= 2 & sortedExpData[,6] > 1),]
+binData$"2"$data <- sortedExpData[which(sortedExpData[,6] <= 3 & sortedExpData[,6] > 2),]
+binData$"3"$data <- sortedExpData[which(sortedExpData[,6] <= 4 & sortedExpData[,6] > 3),]
+binData$"4"$data <- sortedExpData[which(sortedExpData[,6] <= 5 & sortedExpData[,6] > 4),]
+binData$"5"$data <- sortedExpData[which(sortedExpData[,6] <= 6 & sortedExpData[,6] > 5),]
+binData$"6"$data <- sortedExpData[which(sortedExpData[,6] <= 7 & sortedExpData[,6] > 6),]
+binData$"7"$data <- sortedExpData[which(sortedExpData[,6] <= 8 & sortedExpData[,6] > 7),]
+binData$"8"$data <- sortedExpData[which(sortedExpData[,6] <= 9 & sortedExpData[,6] > 8),]
+binData$"9"$data <- sortedExpData[which(sortedExpData[,6] <= 10 & sortedExpData[,6] > 9),]
+## Calculate the ratio
+binData$"-11"$ratio <- (length(which(binData[["-11"]][["data"]][["peak"]] == "RED")) / length(binData[["-11"]][["data"]][["X"]]))*100
+binData$"-10"$ratio <- (length(which(binData[["-10"]][["data"]][["peak"]] == "RED")) / length(binData[["-10"]][["data"]][["X"]]))*100
+binData$"-9"$ratio <- (length(which(binData[["-9"]][["data"]][["peak"]] == "RED")) / length(binData[["-9"]][["data"]][["X"]]))*100
+binData$"-8"$ratio <- (length(which(binData[["-8"]][["data"]][["peak"]] == "RED")) / length(binData[["-8"]][["data"]][["X"]]))*100
+binData$"-7"$ratio <- (length(which(binData[["-7"]][["data"]][["peak"]] == "RED")) / length(binData[["-7"]][["data"]][["X"]]))*100
+binData$"-6"$ratio <- (length(which(binData[["-6"]][["data"]][["peak"]] == "RED")) / length(binData[["-6"]][["data"]][["X"]]))*100
+binData$"-5"$ratio <- (length(which(binData[["-5"]][["data"]][["peak"]] == "RED")) / length(binData[["-5"]][["data"]][["X"]]))*100
+binData$"-4"$ratio <- (length(which(binData[["-4"]][["data"]][["peak"]] == "RED")) / length(binData[["-4"]][["data"]][["X"]]))*100
+binData$"-3"$ratio <- (length(which(binData[["-3"]][["data"]][["peak"]] == "RED")) / length(binData[["-3"]][["data"]][["X"]]))*100
+binData$"-2"$ratio <- (length(which(binData[["-2"]][["data"]][["peak"]] == "RED")) / length(binData[["-2"]][["data"]][["X"]]))*100
+binData$"-1"$ratio <- (length(which(binData[["-1"]][["data"]][["peak"]] == "RED")) / length(binData[["-1"]][["data"]][["X"]]))*100
+binData$"0"$ratio <- (length(which(binData[["0"]][["data"]][["peak"]] == "RED")) / length(binData[["0"]][["data"]][["X"]]))*100
+binData$"1"$ratio <- (length(which(binData[["1"]][["data"]][["peak"]] == "RED")) / length(binData[["1"]][["data"]][["X"]]))*100
+binData$"2"$ratio <- (length(which(binData[["2"]][["data"]][["peak"]] == "RED")) / length(binData[["2"]][["data"]][["X"]]))*100
+binData$"3"$ratio <- (length(which(binData[["3"]][["data"]][["peak"]] == "RED")) / length(binData[["3"]][["data"]][["X"]]))*100
+binData$"4"$ratio <- (length(which(binData[["4"]][["data"]][["peak"]] == "RED")) / length(binData[["4"]][["data"]][["X"]]))*100
+binData$"5"$ratio <- (length(which(binData[["5"]][["data"]][["peak"]] == "RED")) / length(binData[["5"]][["data"]][["X"]]))*100
+binData$"6"$ratio <- (length(which(binData[["6"]][["data"]][["peak"]] == "RED")) / length(binData[["6"]][["data"]][["X"]]))*100
+binData$"7"$ratio <- (length(which(binData[["7"]][["data"]][["peak"]] == "RED")) / length(binData[["7"]][["data"]][["X"]]))*100
+binData$"8"$ratio <- (length(which(binData[["8"]][["data"]][["peak"]] == "RED")) / length(binData[["8"]][["data"]][["X"]]))*100
+binData$"9"$ratio <- (length(which(binData[["9"]][["data"]][["peak"]] == "RED")) / length(binData[["9"]][["data"]][["X"]]))*100
+##
+ratios <- c(binData$"-11"$ratio, binData$"-10"$ratio, binData$"-9"$ratio, binData$"-8"$ratio, binData$"-7"$ratio, binData$"-6"$ratio,
+            binData$"-5"$ratio, binData$"-4"$ratio, binData$"-3"$ratio, binData$"-2"$ratio, binData$"-1"$ratio, binData$"0"$ratio,
+            binData$"1"$ratio, binData$"2"$ratio, binData$"3"$ratio, binData$"4"$ratio, binData$"5"$ratio, binData$"6"$ratio,
+            binData$"7"$ratio, binData$"8"$ratio, binData$"9"$ratio)
+
+##
+plot(ratios)
+
+
+#### Generate data to plot signal intensity (area under peak) against log2 gene expression
+## Create the required annotation file to run Rsubread
+uniquePromoters@elementMetadata$id <- uniquePromoters@elementMetadata@listData[["gene_id"]]
+annotUP <- createAnnotationFile(uniquePromoters)
+## Get raw counts for each range
+uniquePromoterCounts <- featureCounts(files = inputBam, nthreads = 20, annot.ext = annotUP)
+
+
+#### FIX THIS LATER ####
+expData <- expData[-1114,]
+expData <- expData[-1882,]
+expData <- expData[-1909,]
+expData <- expData[-2478,]
+#### FIX THIS LATER ####
+
+
+## Pull the required log2exp values
+log2Matrix <- matrix(data = NA, nrow = length(uniquePromoters@elementMetadata@listData[["gene_id"]]), ncol = 2)
+colnames(log2Matrix) <- c("ID", "log2exp")
+##
+for (x in 1:length(uniquePromoters@elementMetadata@listData[["gene_id"]])){
   
-  This script will be used to calculate ATAC-seq signals at all human genes from hg38
-it will scan windows including:
-  
-  1) total signal in 200 bp region upstream of genes
-2) total signal in 2000 bp region upstream of genes
-3) total signal in 200 bp upstream + gene
-4) total signal in 2000 bp upstream + gene
-5) total signal in gene only
+  genetemp <- uniquePromoters@elementMetadata@listData[["gene_id"]][[x]]
+  ##
+  log2Matrix[x,1] <- genetemp
+  log2Matrix[x,2] <- expData[idxtemp,6]}
 
-For each of these categories, it will then rank the genes by total signal
 
-This script references: https://biodatascience.github.io/compbio/bioc/ranges.html
+## Create a matrix to hold the log2 expression and ATACseq signal of the genes
+## Rownames are geneID
+plotMatrix <- matrix(data = NA, nrow = length(uniquePromoters@ranges@start), ncol = 2)
+colnames(plotMatrix) <- c("log2exp", "accessibility")
+##
+plotMatrix[,1] <- log2Matrix[,2]
+## Check that two matrices are in same order and aligned
+for (l in 1:2435){
+  if (log2Matrix[l,1] != uniquePromoterCounts[["annotation"]][["GeneID"]][[l]]){cat("MISMATCH")}}
 
-Install and load libraries
-```{r, echo=FALSE}
+## Add the ATACseq signals
+plotMatrix[,2] <- uniquePromoterCounts[["counts"]]
+
+#### Sort and plot the data
+sortedplotMatrix <- plotMatrix[order(plotMatrix[,1], decreasing = FALSE),]
+
+##
+plot(sortedplotMatrix[,1], sortedplotMatrix[,2])
+plot(sortedplotMatrix[,2], sortedplotMatrix[,1])
+
+################ above is code i wrote for Jeremy ##########################################################################################################
+
+
+
+# This script references: https://biodatascience.github.io/compbio/bioc/ranges.html
+
+##
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("stringi", suppressUpdates = TRUE)
 #biocLite("GenomicRanges", suppressUpdates = TRUE)
@@ -32,6 +244,8 @@ Install and load libraries
 #biocLite("Repitools", suppressUpdates = TRUE)
 #install.packages("ggplot2")
 #devtools::install_github("r-lib/crayon")
+
+##
 library(ensembldb)
 library(EnsDb.Hsapiens.v86)
 library(GenomicRanges)
@@ -41,10 +255,9 @@ library(Repitools)
 library(ggplot2)
 library(crayon)
 library(Rsamtools)
-```
 
-From unmodified genes list, normalize data and compare
-```{r, echo=FALSE}
+
+# From unmodified genes list, normalize data and compare
 
 # specify input files
 input_files <- list()
@@ -199,12 +412,10 @@ mr_counts <- signal_matrix[ind,]
 #
 
 
-```
 
-Visualizations
-Decide on colors for cell lines here
-Violin plots
-```{r}
+# Visualizations
+# Decide on colors for cell lines here
+# Violin plots
 
 # Violin plots
 # prep data
@@ -221,10 +432,10 @@ p<-ggplot(ToothGrowth, aes(x=dose, y=len, fill=dose)) +
   geom_violin(trim=FALSE)
 p
 
-```
 
-Violin for all genes
-```{r}
+
+# Violin for all genes
+
 
 # Violin plots
 # prep data
@@ -235,11 +446,9 @@ violin_plot <- ggplot(violin_data_all, aes(x=Sample, y=Signal, fill=Sample)) +
   geom_violin()
 violin_plot
 
-```
 
+# Heatmaps of the master regulators
 
-Heatmaps of the master regulators
-```{r}
 mr_names <- rownames(mr_counts)
 heatmap_data <- data.frame("Signal" = c(mr_counts[,1],mr_counts[,2],mr_counts[,3]),
                            "Sample" = c(rep("snu61", times=29), rep("ls1034",times=29),rep("h508",times=29)),
@@ -252,12 +461,10 @@ heatmap.plot <- ggplot(data = heatmap_data, aes(x = Sample, y = Gene)) +
 
 # Preview the heatmap
 print(heatmap.plot)
-```
 
 
+# Heatmaps for individual replicates
 
-Heatmaps for individual replicates
-```{r}
 
 #
 mr_all_reps <- matrix(data=NA, nrow=29, ncol=9)
@@ -289,22 +496,17 @@ print(heatmap.plot.reps)
 
 
 
-```
+#### Copy gene info from ensembl database and convert to Granges
 
-
-
-Copy gene info from ensembl database and convert to Granges
-```{r, echo=FALSE}
 edb <- EnsDb.Hsapiens.v86
 genes <- genes(edb)
 rm(edb)
+
 # subset to only the standard chromosomes
 genes <- keepStandardChromosomes(genes, pruning.mode="coarse")
-```
 
+## Create the modified subsets of annotated genes
 
-Create the modified subsets of annotated genes
-```{r}
 #### initialize the modified granges objects ####
 granges_list <- list()
 genes_200up <- genes
@@ -353,12 +555,6 @@ granges_list$genes_200up_gene <- genes_200up_gene
 granges_list$genes_2000up_gene <- genes_2000up_gene
 rm(genes_200up, genes_2000up, genes_200up_gene, genes_2000up_gene)
 
-```
-
-Sanity checks
-```{r, echo=FALSE}
-
-sanityChecks <- c()
 
 #### Positive strand ####
 # Get the first instance of a positive and negative strand gene from the original list
@@ -477,17 +673,9 @@ if(firstName == name2000gene){sanityChecks[22] = TRUE}else{sanityChecks[22] = FA
 if(firstStart == start2000gene){sanityChecks[23] = TRUE}else{sanityChecks[23] = FALSE}
 if(width2000gene == (2000+firstWidth)){sanityChecks[24] = TRUE}else{sanityChecks[24] = FALSE}
 
-# Report sanity checks
-for (m in 1:length(sanityChecks)){
-  if (sanityChecks[m] == TRUE){
-    cat(green$bold("PASS","\n"))
-  } else {
-    cat(red$bold("FAIL","\n"))}}
 
-```
+# Trim out of bounds ranges
 
-Trim out of bounds ranges
-```{r}
 
 idx <- GenomicRanges:::get_out_of_bound_index(genes)
 if (length(idx) != 0L)
@@ -509,28 +697,28 @@ idx <- GenomicRanges:::get_out_of_bound_index(genes_2000up_gene)
 if (length(idx) != 0L)
   genes_2000up_gene <- genes_2000up_gene[-idx]
 
-```
 
-Granges must contain gene id in metadata column to create annotation files
-```{r}
+
+# Granges must contain gene id in metadata column to create annotation files
+
 genes@elementMetadata$id <- genes@elementMetadata@listData[["symbol"]]
 genes_200up@elementMetadata$id <- genes_200up@elementMetadata@listData[["symbol"]]
 genes_2000up@elementMetadata$id <- genes_2000up@elementMetadata@listData[["symbol"]]
 genes_200up_gene@elementMetadata$id <- genes_200up_gene@elementMetadata@listData[["symbol"]]
 genes_2000up_gene@elementMetadata$id <- genes_2000up_gene@elementMetadata@listData[["symbol"]]
-```
 
-Create annotation file from Granges object for counting reads
-```{r}
+
+## Create annotation file from Granges object for counting reads
+
 annot_gene <- createAnnotationFile(genes)
 annot_200up <- createAnnotationFile(genes_200up)
 annot_2000up <- createAnnotationFile(genes_2000up)
 annot_gene_200up <- createAnnotationFile(genes_200up_gene)
 annot_gene_2000up <- createAnnotationFile(genes_2000up_gene)
-```
 
-Make sure all annotation files are the same size
-```{r}
+
+# Make sure all annotation files are the same size
+
 # use annot 2000 up as the base index
 
 idx <- c(annot_2000up[["GeneID"]])
@@ -541,11 +729,10 @@ annot_200up <- annot_200up[idx2,]
 annot_gene <- annot_gene[idx2,]
 annot_gene_200up <- annot_gene_200up[idx2,]
 
-```
 
-run featureCounts to count up Tn5 insertions in each interval, for all replicates
-SNU61 WT 01
-```{r}
+
+# run featureCounts to count up Tn5 insertions in each interval, for all replicates
+
 snu_bam1 <- "/home/ubuntu1/atac/snu61/wt01/dp_bam/SNU61-WT-01-S1_S6.lanemerge.dp.bam"
 snu_bam2 <- "/home/ubuntu1/atac/snu61/wt01/dp_bam/SNU61-WT-01-S2_S4.lanemerge.dp.bam"
 snu_bam3 <- "/home/ubuntu1/atac/snu61/wt01/dp_bam/SNU61-WT-01-S3_S1.lanemerge.dp.bam"
@@ -802,10 +989,10 @@ h508_r3_counts_gene_2000up <- featureCounts(
   files=h508_bam3,
   nthreads=20,
   annot.ext=annot_gene_2000up)
-```
 
-Copy the data to a matrix
-```{r}
+
+## Copy the data to a matrix
+
 
 one <- paste0("snu61",c("gene_r1","gene_r2","gene_r3","200up_r1","200up_r2","200up_r3","2000up_r1","2000up_r2","2000up_r3","gene+200up_r1","gene+200up_r2","gene+200up_r3","gene+2000up_r1","gene+2000up_r2","gene+2000up_r3"))
 two <- paste0("ls1034",c("gene_r1","gene_r2","gene_r3","200up_r1","200up_r2","200up_r3","2000up_r1","2000up_r2","2000up_r3","gene+200up_r1","gene+200up_r2","gene+200up_r3","gene+2000up_r1","gene+2000up_r2","gene+2000up_r3"))
@@ -836,11 +1023,7 @@ colnames(signal_matrix) <- colnames
 rownames(signal_matrix) <- c(annot_gene[["GeneID"]])
 
 
-
-```
-
-Copy signals to matrix
-```{r}
+# Copy signals to matrix
 
 for (c in 1:items){
   
@@ -947,10 +1130,10 @@ for (c in 1:items){
   signal_matrix[[c,74]] <- abs(signal_matrix[[c,60]]-signal_matrix[[c,58]])
   signal_matrix[[c,75]] <- abs(signal_matrix[[c,59]]-signal_matrix[[c,58]])
 }
-```
 
-Convert values of interest to dataframe to make descriptive plots
-```{r}
+
+# Convert values of interest to dataframe to make descriptive plots
+
 # snu61, ls1034, h508
 df <- data.frame(
   "snu61_gene"=signal_matrix[,46],
@@ -974,10 +1157,10 @@ df <- data.frame(
   "h508_2000_gene"=signal_matrix[,60]
 )
 
-```
 
-Make descriptive statistics and plots from data
-```{r}
+
+# Make descriptive statistics and plots from data
+
 options(scipen=999)  # turn-off scientific notation like 1e+4
 
 
@@ -1049,17 +1232,19 @@ hist(df[["snu61_200_gene"]], breaks = 50, col="blue", main="snu61 200 gene")
 hist(df[["snu61_2000_gene"]], breaks = 50, col="blue", main="snu61 2000 gene")
 
 
-```
 
-** archived code (for now) subset granges for specific targets only (like from a text file) **
-  ```{r}
+
+## archived code (for now) subset granges for specific targets only (like from a text file) **
+
 textfile <- "/home/rstudio1/atac/h508/smad4_entrez_targets.txt"
 con <- file(description=textfile, open="r")
+
 ## Copy list of ENTREZ target IDS from text file
 smad4_targets <- c()
 for (i in 1:7897){
   smad4_targets[i] <- scan(file=con, nlines=1, quiet=TRUE)
 }
+
 #### end ####
 close.connection(con=con)
 #### Subset the granges object for specific targets ####
@@ -1069,17 +1254,6 @@ g_smad4 <- g
 g_smad4@elementMetadata$id <- g_smad4@elementMetadata@listData[["gene_name"]]
 #### end ####
 
-```
-
-
-
-
-
-
-
-
-
-```{r}
 
 reg_200up_counts <- list()
 #
@@ -1107,13 +1281,6 @@ reg_2000up_counts$h508_r2 <- h508_r2_counts_2000up
 reg_2000up_counts$h508_r3 <- h508_r3_counts_2000up
 
 
-
-
-```
-
-
-
-```{r}
 num_genes <- length(reg_200up_counts[["snu61_r1"]][["counts"]])
 gene_names <- reg_200up_counts[["snu61_r1"]][["annotation"]][["GeneID"]]
 #
@@ -1178,12 +1345,6 @@ violin_plot_reg200 <- ggplot(violin_data_reg200, aes(x=Sample, y=Signal, fill=Sa
 violin_plot_reg200
 
 
-```
-
-
-
-```{r}
-
 heatmap_data_reg200 <- data.frame("Signal" = c(reg200_mr_counts[,1],reg200_mr_counts[,2],reg200_mr_counts[,3]),
                                   "Sample" = c(rep("snu61", times=29), rep("ls1034",times=29),rep("h508",times=29)),
                                   "Gene" = rep(mr_names))
@@ -1195,13 +1356,6 @@ heatmap.plot.reg200 <- ggplot(data = heatmap_data_reg200, aes(x = Sample, y = Ge
 
 # Preview the heatmap
 print(heatmap.plot.reg200)
-```
-
-
-
-
-
-```{r}
 
 #
 mr_all_reps_reg200 <- matrix(data=NA, nrow=29, ncol=9)
@@ -1232,238 +1386,6 @@ heatmap.plot.reps.reg200 <- ggplot(data = heatmap_data_reps_reg200, aes(x = Samp
 print(heatmap.plot.reps.reg200)
 
 
-
-```
-
-
-
-
-
-## Install/load required libraries
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("stringi", suppressUpdates = TRUE)
-#biocLite("GenomicRanges", suppressUpdates = TRUE)
-#biocLite("ensembldb", suppressUpdates = TRUE)
-#biocLite("EnsDb.Hsapiens.v86", suppressUpdates = TRUE)
-#biocLite("S4Vectors", suppressUpdates = TRUE)
-#biocLite("Rsubread", suppressUpdates = TRUE)
-#biocLite("Repitools", suppressUpdates = TRUE)
-#biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene", suppressUpdates = TRUE)
-#biocLite("genomation", suppressUpdates = TRUE)
-#install.packages("ggplot2")
-##
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
-library(genomation)
-library(ensembldb)
-library(EnsDb.Hsapiens.v86)
-library(GenomicRanges)
-library(S4Vectors)
-library(Rsubread)
-library(Repitools)
-library(ggplot2)
-library(crayon)
-library(Rsamtools)
-
-
-## Shorten variable name for TxDb database
-txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
-
-
-#### The input files
-## First file is provided by Jeremy, contains RNAseq data
-inputFile <- "/home/ubuntu1/atac/jeremy/snu61_tfc"
-expData <- read.table(inputFile, header=TRUE, sep = ',')
-## Second file is called peaks from ATACseq data, in .bed format
-bedFile <- "/home/ubuntu1/atac/snu61/wt01/preprocessing/13allpeaks/SNU61-WT-01.all_peaks.narrowPeak" # is it better to use narrowPeak or summits here?
-snu61Peaks <- readBed(bedFile, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
-## Keep standard ranges only
-snu61Peaks <- keepStandardChromosomes(snu61Peaks, pruning.mode="coarse")
-## The input bam files, for calculating raw signals
-inputBam <- "/home/ubuntu1/atac/snu61/wt01/preprocessing/12all/SNU61-WT-01.all.bam"
-
-
-#### Retrieve gene information from TxDb
-## Make a gene ID based key for retrieving data for genes of interest from Jeremy data
-geneKey <- c(as.character(expData[,3]))
-## Use the select method to get mapping between tx_name (UCSC) and gene_id (ENTREZ)
-annotData <- select(txdb, keys = geneKey, columns = "TXNAME", keytype = "GENEID")
-## Make a vector with the tx_names
-txNames <- c(annotData[,2])
-## Get promoter regions, -200 bp from TSS (can be adjusted) for all transcripts from TxDb
-promoters <- promoters(txdb, upstream = 200, downstream = 0)
-## Trim the GRanges object to keep standard entries only
-promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
-## Subset the promoters GRanges object using the generated index
-## Note that with multiple transcript variants, this number will be much higher than the gene_id list
-promoterData <- promoters[promoters$tx_name %in% txNames]
-
-
-#### Each hit may refer to multiple transcript variants. Subset based on the first hit for a given gene only
-newGeneID <- c()
-newTxName <- promoterData@elementMetadata@listData[["tx_name"]]
-for (a in 1:length(newTxName)){
-  idx <- which(newTxName[a] == annotData[,2])
-  newGeneID[a] <- annotData[idx,1]}
-## Check how many unique genes there are now
-length(unique(newGeneID))
-## Add the GeneIDs to the promoters GRanges
-promoterData@elementMetadata@listData[["gene_id"]] <- c(newGeneID)
-
-
-#### There may be duplicate entries for gene IDs in the promoterData Granges, so lets keep only one for each
-unIdx <- c()
-for (b in 1:length(geneKey)){
-  tempIdx <- c(which(promoterData@elementMetadata@listData[["gene_id"]] == geneKey[b]))
-  unIdx[b] <- tempIdx[1]}
-
-## As a sanity check
-length(unique(unIdx))
-## Remove NAs
-unIdx <- unIdx[which(is.na(unIdx) == FALSE)]
-## Remove duplicate IDS
-unIdx <- unique(unIdx)
-## As a sanity check
-length(unique(unIdx))
-
-
-## Subset for unique only
-uniquePromoters <- promoterData[unIdx]
-## Check number of entries
-length(unique(uniquePromoters@elementMetadata@listData[["gene_id"]]))
-
-
-#### Find which gene promoters are accessible (have a peak) using the ATACseq data
-overlaps <- findOverlaps(snu61Peaks, uniquePromoters)
-## How many of the overlaps referend unique annotated promoters?
-idxuq <- unique(overlaps@to)
-## Get a GRanges of the genes that have a peak
-genePeaks <- uniquePromoters[idxuq]
-## How many of these are unique GeneIDs? 
-length(unique(genePeaks@elementMetadata@listData[["gene_id"]]))
-## Get the list of ENTREZ IDs for genes in this set with active promoters
-activeGenePromoters <- unique(genePeaks@elementMetadata@listData[["gene_id"]])
-
-
-#### Annotate all unique genes as having a peak ("RED") or not ("BLACK")
-idx2 <- which(expData[,3] %in% activeGenePromoters)
-expData$peak <- "BLACK"
-expData$peak[idx2] <- "RED"
-## Change -inf values to -11
-idx3 <- which(expData[,6] == "-Inf")
-expData[idx3,6] <- -11
-
-
-#### Sort and plot the data
-sortedExpData <- expData[order(expData$SNU61_LARGE_INTESTINE_log2, decreasing = FALSE),]
-##
-plot(sortedExpData[,6], col = sortedExpData$peak)
-##
-hist(sortedExpData[,6], breaks = 40)
-
-
-#### Make bins of the genes based on log2 expression
-## Plot a histogram/dotplot overlay of the percentage of genes in that bin with/without peak
-binData <- list()
-binData$"-11"$data <- sortedExpData[which(sortedExpData[,6] <= -10),]
-binData$"-10"$data <- sortedExpData[which(sortedExpData[,6] <= -9 & sortedExpData[,6] > -10),]
-binData$"-9"$data <- sortedExpData[which(sortedExpData[,6] <= -8 & sortedExpData[,6] > -9),]
-binData$"-8"$data <- sortedExpData[which(sortedExpData[,6] <= -7 & sortedExpData[,6] > -8),]
-binData$"-7"$data <- sortedExpData[which(sortedExpData[,6] <= -6 & sortedExpData[,6] > -7),]
-binData$"-6"$data <- sortedExpData[which(sortedExpData[,6] <= -5 & sortedExpData[,6] > -6),]
-binData$"-5"$data <- sortedExpData[which(sortedExpData[,6] <= -4 & sortedExpData[,6] > -5),]
-binData$"-4"$data <- sortedExpData[which(sortedExpData[,6] <= -3 & sortedExpData[,6] > -4),]
-binData$"-3"$data <- sortedExpData[which(sortedExpData[,6] <= -2 & sortedExpData[,6] > -3),]
-binData$"-2"$data <- sortedExpData[which(sortedExpData[,6] <= -1 & sortedExpData[,6] > -2),]
-binData$"-1"$data <- sortedExpData[which(sortedExpData[,6] <= 0 & sortedExpData[,6] > -1),]
-binData$"0"$data <- sortedExpData[which(sortedExpData[,6] <= 1 & sortedExpData[,6] > 0),]
-binData$"1"$data <- sortedExpData[which(sortedExpData[,6] <= 2 & sortedExpData[,6] > 1),]
-binData$"2"$data <- sortedExpData[which(sortedExpData[,6] <= 3 & sortedExpData[,6] > 2),]
-binData$"3"$data <- sortedExpData[which(sortedExpData[,6] <= 4 & sortedExpData[,6] > 3),]
-binData$"4"$data <- sortedExpData[which(sortedExpData[,6] <= 5 & sortedExpData[,6] > 4),]
-binData$"5"$data <- sortedExpData[which(sortedExpData[,6] <= 6 & sortedExpData[,6] > 5),]
-binData$"6"$data <- sortedExpData[which(sortedExpData[,6] <= 7 & sortedExpData[,6] > 6),]
-binData$"7"$data <- sortedExpData[which(sortedExpData[,6] <= 8 & sortedExpData[,6] > 7),]
-binData$"8"$data <- sortedExpData[which(sortedExpData[,6] <= 9 & sortedExpData[,6] > 8),]
-binData$"9"$data <- sortedExpData[which(sortedExpData[,6] <= 10 & sortedExpData[,6] > 9),]
-## Calculate the ratio
-binData$"-11"$ratio <- (length(which(binData[["-11"]][["data"]][["peak"]] == "RED")) / length(binData[["-11"]][["data"]][["X"]]))*100
-binData$"-10"$ratio <- (length(which(binData[["-10"]][["data"]][["peak"]] == "RED")) / length(binData[["-10"]][["data"]][["X"]]))*100
-binData$"-9"$ratio <- (length(which(binData[["-9"]][["data"]][["peak"]] == "RED")) / length(binData[["-9"]][["data"]][["X"]]))*100
-binData$"-8"$ratio <- (length(which(binData[["-8"]][["data"]][["peak"]] == "RED")) / length(binData[["-8"]][["data"]][["X"]]))*100
-binData$"-7"$ratio <- (length(which(binData[["-7"]][["data"]][["peak"]] == "RED")) / length(binData[["-7"]][["data"]][["X"]]))*100
-binData$"-6"$ratio <- (length(which(binData[["-6"]][["data"]][["peak"]] == "RED")) / length(binData[["-6"]][["data"]][["X"]]))*100
-binData$"-5"$ratio <- (length(which(binData[["-5"]][["data"]][["peak"]] == "RED")) / length(binData[["-5"]][["data"]][["X"]]))*100
-binData$"-4"$ratio <- (length(which(binData[["-4"]][["data"]][["peak"]] == "RED")) / length(binData[["-4"]][["data"]][["X"]]))*100
-binData$"-3"$ratio <- (length(which(binData[["-3"]][["data"]][["peak"]] == "RED")) / length(binData[["-3"]][["data"]][["X"]]))*100
-binData$"-2"$ratio <- (length(which(binData[["-2"]][["data"]][["peak"]] == "RED")) / length(binData[["-2"]][["data"]][["X"]]))*100
-binData$"-1"$ratio <- (length(which(binData[["-1"]][["data"]][["peak"]] == "RED")) / length(binData[["-1"]][["data"]][["X"]]))*100
-binData$"0"$ratio <- (length(which(binData[["0"]][["data"]][["peak"]] == "RED")) / length(binData[["0"]][["data"]][["X"]]))*100
-binData$"1"$ratio <- (length(which(binData[["1"]][["data"]][["peak"]] == "RED")) / length(binData[["1"]][["data"]][["X"]]))*100
-binData$"2"$ratio <- (length(which(binData[["2"]][["data"]][["peak"]] == "RED")) / length(binData[["2"]][["data"]][["X"]]))*100
-binData$"3"$ratio <- (length(which(binData[["3"]][["data"]][["peak"]] == "RED")) / length(binData[["3"]][["data"]][["X"]]))*100
-binData$"4"$ratio <- (length(which(binData[["4"]][["data"]][["peak"]] == "RED")) / length(binData[["4"]][["data"]][["X"]]))*100
-binData$"5"$ratio <- (length(which(binData[["5"]][["data"]][["peak"]] == "RED")) / length(binData[["5"]][["data"]][["X"]]))*100
-binData$"6"$ratio <- (length(which(binData[["6"]][["data"]][["peak"]] == "RED")) / length(binData[["6"]][["data"]][["X"]]))*100
-binData$"7"$ratio <- (length(which(binData[["7"]][["data"]][["peak"]] == "RED")) / length(binData[["7"]][["data"]][["X"]]))*100
-binData$"8"$ratio <- (length(which(binData[["8"]][["data"]][["peak"]] == "RED")) / length(binData[["8"]][["data"]][["X"]]))*100
-binData$"9"$ratio <- (length(which(binData[["9"]][["data"]][["peak"]] == "RED")) / length(binData[["9"]][["data"]][["X"]]))*100
-##
-ratios <- c(binData$"-11"$ratio, binData$"-10"$ratio, binData$"-9"$ratio, binData$"-8"$ratio, binData$"-7"$ratio, binData$"-6"$ratio,
-            binData$"-5"$ratio, binData$"-4"$ratio, binData$"-3"$ratio, binData$"-2"$ratio, binData$"-1"$ratio, binData$"0"$ratio,
-            binData$"1"$ratio, binData$"2"$ratio, binData$"3"$ratio, binData$"4"$ratio, binData$"5"$ratio, binData$"6"$ratio,
-            binData$"7"$ratio, binData$"8"$ratio, binData$"9"$ratio)
-
-##
-plot(ratios)
-
-
-#### Generate data to plot signal intensity (area under peak) against log2 gene expression
-## Create the required annotation file to run Rsubread
-uniquePromoters@elementMetadata$id <- uniquePromoters@elementMetadata@listData[["gene_id"]]
-annotUP <- createAnnotationFile(uniquePromoters)
-## Get raw counts for each range
-uniquePromoterCounts <- featureCounts(files = inputBam, nthreads = 20, annot.ext = annotUP)
-
-
-#### FIX THIS LATER ####
-expData <- expData[-1114,]
-expData <- expData[-1882,]
-expData <- expData[-1909,]
-expData <- expData[-2478,]
-#### FIX THIS LATER ####
-
-
-## Pull the required log2exp values
-log2Matrix <- matrix(data = NA, nrow = length(uniquePromoters@elementMetadata@listData[["gene_id"]]), ncol = 2)
-colnames(log2Matrix) <- c("ID", "log2exp")
-##
-for (x in 1:length(uniquePromoters@elementMetadata@listData[["gene_id"]])){
-  
-  genetemp <- uniquePromoters@elementMetadata@listData[["gene_id"]][[x]]
-  ##
-  log2Matrix[x,1] <- genetemp
-  log2Matrix[x,2] <- expData[idxtemp,6]}
-
-
-## Create a matrix to hold the log2 expression and ATACseq signal of the genes
-## Rownames are geneID
-plotMatrix <- matrix(data = NA, nrow = length(uniquePromoters@ranges@start), ncol = 2)
-colnames(plotMatrix) <- c("log2exp", "accessibility")
-##
-plotMatrix[,1] <- log2Matrix[,2]
-## Check that two matrices are in same order and aligned
-for (l in 1:2435){
-  if (log2Matrix[l,1] != uniquePromoterCounts[["annotation"]][["GeneID"]][[l]]){cat("MISMATCH")}}
-
-## Add the ATACseq signals
-plotMatrix[,2] <- uniquePromoterCounts[["counts"]]
-
-#### Sort and plot the data
-sortedplotMatrix <- plotMatrix[order(plotMatrix[,1], decreasing = FALSE),]
-
-##
-plot(sortedplotMatrix[,1], sortedplotMatrix[,2])
-plot(sortedplotMatrix[,2], sortedplotMatrix[,1])
 
 
 
