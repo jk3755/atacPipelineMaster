@@ -19,6 +19,8 @@ samplename <- snakemake@wildcards[["mergedsample"]]
 genename <- snakemake@wildcards[["gene"]]
 dirpath <- snakemake@wildcards[["path"]]
 sampleProb <- snakemake@wildcards[["prob"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
+repTot <- snakemake@wildcards[["reptot"]]
 
 ##
 cat("Importing peaks file...", "\n")
@@ -198,7 +200,7 @@ cat("Found ", num_motifs, " motifs", "\n")
 
 for (x in 1:num_motifs){
   
-  info_path <- paste0(dirpath, "saturation/footprints/data/parsed/", samplename, ".", sampleProb, ".", genename, ".", "motif", x, ".info.Rdata")
+  info_path <- paste0(dirpath, "saturation/footprints/data/parsed/", samplename, "-REP", sampleRep, "of", repTot, "." sampleProb, ".", genename, ".", "motif", x, ".info.Rdata")
   cat("Output path for parsed binding sites object: ", info_path, "\n")
   
   if (file.exists(info_path) == TRUE){
