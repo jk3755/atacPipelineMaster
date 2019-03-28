@@ -1,0 +1,244 @@
+---
+  title: "customPWM"
+author: "Jordan S. Kesner"
+date: "December 7, 2018"
+output: html_document
+---
+  
+  Install and load packages
+```{r}
+source("https://bioconductor.org/biocLite.R")
+biocLite("PWMEnrich", suppressUpdates = TRUE)
+library(PWMEnrich)
+library(seqLogo)
+```
+
+PFM matrix structure
+```{r}
+num_nt <- 5 # integer, set the number of NT in the motif sequence
+PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(PFM) <- c("A", "C", "T", "G")
+```
+
+ADNP_motif1_fire (COAD MR)
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+ADNP_motif1_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(ADNP_motif1_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+ADNP_motif1_fire_PFM[1,] <- c(1/3,0,0.5,0,0,0,0,0,0,0) # A
+ADNP_motif1_fire_PFM[2,] <- c(0,1,0.5,1,0,0,1,0,0.5,1/3) # C
+ADNP_motif1_fire_PFM[3,] <- c(1/3,0,0,0,0.5,0,0,0,0.5,1/3) # T
+ADNP_motif1_fire_PFM[4,] <- c(1/3,0,0,0,0.5,1,0,1,0,1/3) # G
+cat(sum(ADNP_motif1_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(ADNP_motif1_fire_PFM[2,]), "\n")
+cat(sum(ADNP_motif1_fire_PFM[3,]), "\n")
+cat(sum(ADNP_motif1_fire_PFM[4,]), "\n")
+cat(sum(ADNP_motif1_fire_PFM[,1:10])) # Check the column sums all equal 1
+ADNP_motif1_fire_PWM <- toPWM(ADNP_motif1_fire_PFM)
+```
+
+ZMYND8_motif1_fire (COAD MR)
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+ZMYND8_motif1_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(ZMYND8_motif1_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+ZMYND8_motif1_fire_PFM[1,] <- c(0.5,0,0,1,1,0,0,0.5,0,0.25) # A
+ZMYND8_motif1_fire_PFM[2,] <- c(0.5,0.5,0,0,0,0,1,0,0.5,0.25) # C
+ZMYND8_motif1_fire_PFM[3,] <- c(0,0.5,1,0,0,1,0,0,0.5,0.25) # T
+ZMYND8_motif1_fire_PFM[4,] <- c(0,0,0,0,0,0,0,0.5,0,0.25) # G
+cat(sum(ZMYND8_motif1_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(ZMYND8_motif1_fire_PFM[2,]), "\n")
+cat(sum(ZMYND8_motif1_fire_PFM[3,]), "\n")
+cat(sum(ZMYND8_motif1_fire_PFM[4,]), "\n")
+cat(sum(ZMYND8_motif1_fire_PFM[,1:10])) # Check the column sums all equal 1
+ZMYND8_motif1_fire_PWM <- toPWM(ZMYND8_motif1_fire_PFM)
+```
+
+TAF4_motif1_fire
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+TAF4_motif1_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(TAF4_motif1_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+TAF4_motif1_fire_PFM[1,] <- c(0.25,0,1,0,0,0,0.5,0.25,0,0.25) # A
+TAF4_motif1_fire_PFM[2,] <- c(0.25,0,0,0,1,0,0.5,0.25,1,0.25) # C
+TAF4_motif1_fire_PFM[3,] <- c(0.25,1,0,0,0,0,0,0.25,0,0.25) # T
+TAF4_motif1_fire_PFM[4,] <- c(0.25,0,0,1,0,1,0,0.25,0,0.25) # G
+cat(sum(TAF4_motif1_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(TAF4_motif1_fire_PFM[2,]), "\n")
+cat(sum(TAF4_motif1_fire_PFM[3,]), "\n")
+cat(sum(TAF4_motif1_fire_PFM[4,]), "\n")
+cat(sum(TAF4_motif1_fire_PFM[,1:10])) # Check the column sums all equal 1
+TAF4_motif1_fire_PWM <- toPWM(TAF4_motif1_fire_PFM)
+```
+
+TAF4_motif2_fire
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+TAF4_motif2_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(TAF4_motif2_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+TAF4_motif2_fire_PFM[1,] <- c(1/3,0,0,0,0,0,0,0,0,0.25) # A
+TAF4_motif2_fire_PFM[2,] <- c(1/3,0,0,1,1,0,1,1,1,0.25) # C
+TAF4_motif2_fire_PFM[3,] <- c(1/3,0,0,0,0,1,0,0,0,0.25) # T
+TAF4_motif2_fire_PFM[4,] <- c(0,1,1,0,0,0,0,0,0,0.25) # G
+cat(sum(TAF4_motif2_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(TAF4_motif2_fire_PFM[2,]), "\n")
+cat(sum(TAF4_motif2_fire_PFM[3,]), "\n")
+cat(sum(TAF4_motif2_fire_PFM[4,]), "\n")
+cat(sum(TAF4_motif2_fire_PFM[,1:10])) # Check the column sums all equal 1
+TAF4_motif2_fire_PWM <- toPWM(TAF4_motif2_fire_PFM)
+```
+
+ZNF696_motif1_fire
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+ZNF696_motif1_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(ZNF696_motif1_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+ZNF696_motif1_fire_PFM[1,] <- c(0.25,1,0,0,0,0,0,1/3,0,1/3) # A
+ZNF696_motif1_fire_PFM[2,] <- c(0.25,0,0.5,1,0,0.5,0,1/3,1,1/3) # C
+ZNF696_motif1_fire_PFM[3,] <- c(0.25,0,0.5,0,0,0,0,0,0,1/3) # T
+ZNF696_motif1_fire_PFM[4,] <- c(0.25,0,0,0,1,0.5,1,1/3,0,0) # G
+cat(sum(ZNF696_motif1_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(ZNF696_motif1_fire_PFM[2,]), "\n")
+cat(sum(ZNF696_motif1_fire_PFM[3,]), "\n")
+cat(sum(ZNF696_motif1_fire_PFM[4,]), "\n")
+cat(sum(ZNF696_motif1_fire_PFM[,1:10])) # Check the column sums all equal 1
+ZNF696_motif1_fire_PWM <- toPWM(ZNF696_motif1_fire_PFM)
+```
+
+ZNF696_motif2_fire
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+ZNF696_motif2_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(ZNF696_motif2_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+ZNF696_motif2_fire_PFM[1,] <- c(0.25,1,0,0,0,0,0,0,1,1/3) # A
+ZNF696_motif2_fire_PFM[2,] <- c(0.25,0,0,0,0,1,0,0,0,1/3) # C
+ZNF696_motif2_fire_PFM[3,] <- c(0.25,0,0,1,0,0,1,0.5,0,0) # T
+ZNF696_motif2_fire_PFM[4,] <- c(0.25,0,1,0,1,0,0,0.5,0,1/3) # G
+cat(sum(ZNF696_motif2_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(ZNF696_motif2_fire_PFM[2,]), "\n")
+cat(sum(ZNF696_motif2_fire_PFM[3,]), "\n")
+cat(sum(ZNF696_motif2_fire_PFM[4,]), "\n")
+cat(sum(ZNF696_motif2_fire_PFM[,1:10])) # Check the column sums all equal 1
+ZNF696_motif2_fire_PWM <- toPWM(ZNF696_motif2_fire_PFM)
+```
+
+ZNF696_motif3_fire
+```{r}
+# Assuming background frequencies .25/.25/.25/.25
+num_nt <- 10 # integer, set the number of NT in the motif sequence
+ZNF696_motif3_fire_PFM <- matrix(data = NA, ncol = num_nt, nrow = 4);rownames(ZNF696_motif3_fire_PFM) <- c("A", "C", "T", "G") # initialize the PFM matrix
+# Populate the matrix
+ZNF696_motif3_fire_PFM[1,] <- c(1/3,1,0,0,0,0,0,1,0,0.25) # A
+ZNF696_motif3_fire_PFM[2,] <- c(1/3,0,0,0,1,1,1,0,0,0.25) # C
+ZNF696_motif3_fire_PFM[3,] <- c(0,0,1,1,0,0,0,0,0,0.25) # T
+ZNF696_motif3_fire_PFM[4,] <- c(1/3,0,0,0,0,0,0,0,1,0.25) # G
+cat(sum(ZNF696_motif3_fire_PFM[1,]), "\n") # check row sums equal to excel sheet
+cat(sum(ZNF696_motif3_fire_PFM[2,]), "\n")
+cat(sum(ZNF696_motif3_fire_PFM[3,]), "\n")
+cat(sum(ZNF696_motif3_fire_PFM[4,]), "\n")
+cat(sum(ZNF696_motif3_fire_PFM[,1:10])) # Check the column sums all equal 1
+ZNF696_motif3_fire_PWM <- toPWM(ZNF696_motif3_fire_PFM)
+```
+
+
+Export
+```{r}
+COAD_FIRE_PFM <- list()
+COAD_FIRE_PFM$ADNP_motif1_fire_PFM <- ADNP_motif1_fire_PFM
+COAD_FIRE_PFM$TAF4_motif1_fire_PFM <- TAF4_motif1_fire_PFM
+COAD_FIRE_PFM$TAF4_motif2_fire_PFM <- TAF4_motif2_fire_PFM
+COAD_FIRE_PFM$ZMYND8_motif1_fire_PFM <- ZMYND8_motif1_fire_PFM
+COAD_FIRE_PFM$ZNF696_motif1_fire_PFM <- ZNF696_motif1_fire_PFM
+COAD_FIRE_PFM$ZNF696_motif2_fire_PFM <- ZNF696_motif2_fire_PFM
+COAD_FIRE_PFM$ZNF696_motif3_fire_PFM <- ZNF696_motif3_fire_PFM
+#
+COAD_FIRE_PWM <- list()
+COAD_FIRE_PWM$ADNP_motif1_fire_PWM <- ADNP_motif1_fire_PWM
+COAD_FIRE_PWM$TAF4_motif1_fire_PWM <- TAF4_motif1_fire_PWM
+COAD_FIRE_PWM$TAF4_motif2_fire_PWM <- TAF4_motif2_fire_PWM
+COAD_FIRE_PWM$ZMYND8_motif1_fire_PWM <- ZMYND8_motif1_fire_PWM
+COAD_FIRE_PWM$ZNF696_motif1_fire_PWM <- ZNF696_motif1_fire_PWM
+COAD_FIRE_PWM$ZNF696_motif2_fire_PWM <- ZNF696_motif2_fire_PWM
+COAD_FIRE_PWM$ZNF696_motif3_fire_PWM <- ZNF696_motif3_fire_PWM
+```
+
+
+---
+  title: "atacManual"
+author: "Jordan S. Kesner"
+date: "December 8, 2018"
+output: html_document
+---
+  
+  Run the analysis components of the pipeline one at a time manually
+
+
+Run a single footprint
+```{r}
+
+bampath <- "/home/rstudio2/atac/h508/bam/h508_all_dedup.bam"
+baipath <- "/home/rstudio2/atac/h508/bam/h508_all_dedup.bam.bai"
+motif_score <- "90%"
+upstream <- 100
+downstream <- 100
+scope <- paste0("chr", c(1:22, "X", "Y"))
+genome <- Hsapiens
+
+
+symbol <- "TCF7"
+
+organism_rows = grep('Hsapiens', values(MotifDb)$organism, ignore.case = TRUE)
+gene_symbol_rows = grep(symbol, values(MotifDb)$geneSymbol, ignore.case = TRUE)
+human_gene_rows = intersect(gene_symbol_rows, organism_rows)
+gene_motifs <- as.list(MotifDb[human_gene_rows])
+unique_gene_motifs <- unique(gene_motifs)
+
+PWM <- unique_gene_motifs[[1]]
+
+savefile <- "/home/rstudio2/atac/h508/graphs/tcf7_motif1.png"
+png(filename = savefile)
+
+# generate signal
+signal <- factorFootprints(
+  # bam file input
+  bamfiles = bampath,
+  # bai index input
+  index = baipath,
+  # PWM input
+  pfm = PWM,
+  # reference genome
+  genome = genome,
+  # minimum motif matching score
+  min.score = motif_score,
+  # scope of analysis
+  seqlev = scope,
+  # bp upstream of motif to analyze
+  upstream = upstream,
+  # bp downstream of motif to analyze
+  downstream = downstream
+)
+# turn off, important
+dev.off()
+
+
+```
+
+
+Make a single heatmap (ChipPeakAnno) library
+```{r}
+
+featureAlignedHeatmap(signal$signal, 
+                      feature.gr=reCenterPeaks(signal$bindingSites,
+                                               width=200+width(signal$bindingSites[1])), 
+                      annoMcols="score",
+                      sortBy="score",
+                      n.tile=ncol(signal$signal[[1]]))
+
+```
+
+
