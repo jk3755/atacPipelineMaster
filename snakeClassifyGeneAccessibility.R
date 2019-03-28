@@ -26,6 +26,9 @@ library(Rsamtools)
 ## Shorten variable name for TxDb database
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 
+## Define the scope
+scope <- paste0("chr", c(1:22, "X", "Y"))
+
 
 #### The input files
 
@@ -39,22 +42,29 @@ bedFile <- "C:\\Users\\jsk33\\Documents\\lab\\atac\\atac\\snu61\\wt01\\peaks\\ma
 snu61Peaks <- readBed(bedFile, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
 ## Keep standard ranges only
 snu61Peaks <- keepStandardChromosomes(snu61Peaks, pruning.mode="coarse")
+snu61Peaks <- keepSeqlevels(snu61Peaks, scope, pruning.mode="coarse")
 
 ## The input bam files, for calculating raw signals
 inputBam <- "C:\\Users\\jsk33\\Documents\\lab\\atac\\atac\\snu61\\wt01\\preprocessing\\11repmerged\\SNU61-WT-01-repmerged.bam"
 
 
 #### Retrieve gene information from TxDb
-## Make a gene ID based key for retrieving data for genes of interest from Jeremy data
+
+## Make a gene ID based key for retrieving data for genes of interest from expression matrix
 geneKey <- c(as.character(expData[,3]))
+
 ## Use the select method to get mapping between tx_name (UCSC) and gene_id (ENTREZ)
 annotData <- select(txdb, keys = geneKey, columns = "TXNAME", keytype = "GENEID")
+
 ## Make a vector with the tx_names
 txNames <- c(annotData[,2])
+
 ## Get promoter regions, -200 bp from TSS (can be adjusted) for all transcripts from TxDb
 promoters <- promoters(txdb, upstream = 200, downstream = 0)
 ## Trim the GRanges object to keep standard entries only
 promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
+promoters <- keepSeqlevels(promoters, scope, pruning.mode="coarse")
+
 ## Subset the promoters GRanges object using the generated index
 ## Note that with multiple transcript variants, this number will be much higher than the gene_id list
 promoterData <- promoters[promoters$tx_name %in% txNames]
