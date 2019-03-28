@@ -32,6 +32,8 @@ sample <- snakemake@wildcards[["mergedsample"]]
 gene <- snakemake@wildcards[["gene"]]
 dirpath <- snakemake@wildcards[["path"]]
 sampleProb <- snakemake@wildcards[["prob"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
+repTot <- snakemake@wildcards[["reptot"]]
 
 ##
 cat("Determining number of motifs...", "\n")
@@ -41,7 +43,7 @@ cat("Found ", num_motifs, " motifs", "\n")
 
 for (x in 1:num_motifs){
   
-  signalpath <- paste0(dirpath, "saturation/footprints/data/merged/", sample, ".", sampleProb, ".", gene, ".", "motif", x, ".merged.Rdata")
+  signalpath <- paste0(dirpath, "saturation/footprints/data/merged/", sample, "-REP", sampleRep, "of", repTot, ".",  sampleProb, ".", gene, ".", "motif", x, ".merged.Rdata")
   cat("Output path for signal object: ", signalpath, "\n")
   
   if (file.exists(signalpath) == TRUE){
