@@ -71,6 +71,9 @@ while (a <= 1273){
 
 write.table(strings, file = outfilePath1, quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
 
+#################################################
+
+
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("MotifDb", suppressUpdates = TRUE)
 library(MotifDb)
@@ -107,28 +110,28 @@ while (a <= 1273){
   u <- a+18
   v <- a+19
   
-  tmp1 <- paste0("'h508/H508-WT-01.", names[c], ".done.txt", "', ")
-  tmp2 <- paste0("'h508/H508-WT-01.", names[d], ".done.txt", "', ")
-  tmp3 <- paste0("'h508/H508-WT-01.", names[e], ".done.txt", "', ")
-  tmp4 <- paste0("'h508/H508-WT-01.", names[f], ".done.txt", "', ")
-  tmp5 <- paste0("'h508/H508-WT-01.", names[g], ".done.txt", "', ")
-  tmp6 <- paste0("'h508/H508-WT-01.", names[h], ".done.txt", "', ")
-  tmp7 <- paste0("'h508/H508-WT-01.", names[i], ".done.txt", "', ")
-  tmp8 <- paste0("'h508/H508-WT-01.", names[j], ".done.txt", "', ")
-  tmp9 <- paste0("'h508/H508-WT-01.", names[k], ".done.txt", "', ")
-  tmp10 <- paste0("'h508/H508-WT-01.", names[l], ".done.txt", "', ")
-  tmp11 <- paste0("'h508/H508-WT-01.", names[c], ".done.txt", "', ")
-  tmp12 <- paste0("'h508/H508-WT-01.", names[d], ".done.txt", "', ")
-  tmp13 <- paste0("'h508/H508-WT-01.", names[e], ".done.txt", "', ")
-  tmp14 <- paste0("'h508/H508-WT-01.", names[f], ".done.txt", "', ")
-  tmp15 <- paste0("'h508/H508-WT-01.", names[g], ".done.txt", "', ")
-  tmp16 <- paste0("'h508/H508-WT-01.", names[h], ".done.txt", "', ")
-  tmp17 <- paste0("'h508/H508-WT-01.", names[i], ".done.txt", "', ")
-  tmp18 <- paste0("'h508/H508-WT-01.", names[j], ".done.txt", "', ")
-  tmp19 <- paste0("'h508/H508-WT-01.", names[k], ".done.txt", "', ")
-  tmp20 <- paste0("'h508/H508-WT-01.", names[l], ".done.txt", "'")
+  tmp1 <- paste0("'{path}pantf/operations/{mergedsample}.", names[c], ".parsed.pantf.done.txt", "', ")
+  tmp2 <- paste0("'{path}pantf/operations/{mergedsample}.", names[d], ".parsed.pantf.done.txt", "', ")
+  tmp3 <- paste0("'{path}pantf/operations/{mergedsample}.", names[e], ".parsed.pantf.done.txt", "', ")
+  tmp4 <- paste0("'{path}pantf/operations/{mergedsample}.", names[f], ".parsed.pantf.done.txt", "', ")
+  tmp5 <- paste0("'{path}pantf/operations/{mergedsample}.", names[g], ".parsed.pantf.done.txt", "', ")
+  tmp6 <- paste0("'{path}pantf/operations/{mergedsample}.", names[h], ".parsed.pantf.done.txt", "', ")
+  tmp7 <- paste0("'{path}pantf/operations/{mergedsample}.", names[i], ".parsed.pantf.done.txt", "', ")
+  tmp8 <- paste0("'{path}pantf/operations/{mergedsample}.", names[j], ".parsed.pantf.done.txt", "', ")
+  tmp9 <- paste0("'{path}pantf/operations/{mergedsample}.", names[k], ".parsed.pantf.done.txt", "', ")
+  tmp10 <- paste0("'{path}pantf/operations/{mergedsample}.", names[l], ".parsed.pantf.done.txt", "', ")
+  tmp11 <- paste0("'{path}pantf/operations/{mergedsample}.", names[m], ".parsed.pantf.done.txt", "', ")
+  tmp12 <- paste0("'{path}pantf/operations/{mergedsample}.", names[n], ".parsed.pantf.done.txt", "', ")
+  tmp13 <- paste0("'{path}pantf/operations/{mergedsample}.", names[o], ".parsed.pantf.done.txt", "', ")
+  tmp14 <- paste0("'{path}pantf/operations/{mergedsample}.", names[p], ".parsed.pantf.done.txt", "', ")
+  tmp15 <- paste0("'{path}pantf/operations/{mergedsample}.", names[q], ".parsed.pantf.done.txt", "', ")
+  tmp16 <- paste0("'{path}pantf/operations/{mergedsample}.", names[r], ".parsed.pantf.done.txt", "', ")
+  tmp17 <- paste0("'{path}pantf/operations/{mergedsample}.", names[s], ".parsed.pantf.done.txt", "', ")
+  tmp18 <- paste0("'{path}pantf/operations/{mergedsample}.", names[t], ".parsed.pantf.done.txt", "', ")
+  tmp19 <- paste0("'{path}pantf/operations/{mergedsample}.", names[u], ".parsed.pantf.done.txt", "', ")
+  tmp20 <- paste0("'{path}pantf/operations/{mergedsample}.", names[v], ".parsed.pantf.done.txt", "', ")
   
-  strings[b] <- paste0("rule group", b, ":\n", "\tinput:\n\t\t", tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmp8, tmp9, tmp10, tmp11, tmp12, tmp13, tmp14, tmp15, tmp16, tmp17, tmp18, tmp19, tmp20)
+  strings[b] <- paste0("rule PANTF_group", b, ":\n", "\tinput:\n\t\t", tmp1, "\n\t\t", tmp2, "\n\t\t", tmp3, "\n\t\t", tmp4, "\n\t\t", tmp5, "\n\t\t", tmp6, "\n\t\t", tmp7, "\n\t\t", tmp8, "\n\t\t", tmp9, "\n\t\t", tmp10, "\n\t\t", tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t", tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20)
   
   a <- a+20
   b <- b+1
