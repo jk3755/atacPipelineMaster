@@ -20,6 +20,11 @@ rule PANTF_group1:
 		'{path}pantf/operations/{mergedsample}.TFAP2C.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.USF2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SREBF1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group2:
 	input:
 		'{path}pantf/operations/{mergedsample}.SREBF2.parsed.pantf.done.txt', 
@@ -42,6 +47,11 @@ rule PANTF_group2:
 		'{path}pantf/operations/{mergedsample}.ATF3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.BATF.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TCF12.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group3:
 	input:
 		'{path}pantf/operations/{mergedsample}.MYC.parsed.pantf.done.txt', 
@@ -64,6 +74,11 @@ rule PANTF_group3:
 		'{path}pantf/operations/{mergedsample}.DBP.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FIGLA.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HES5.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group4:
 	input:
 		'{path}pantf/operations/{mergedsample}.HES7.parsed.pantf.done.txt', 
@@ -86,6 +101,11 @@ rule PANTF_group4:
 		'{path}pantf/operations/{mergedsample}.OLIG2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.OLIG3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TCF4.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group5:
 	input:
 		'{path}pantf/operations/{mergedsample}.TFAP2B.parsed.pantf.done.txt', 
@@ -108,6 +128,11 @@ rule PANTF_group5:
 		'{path}pantf/operations/{mergedsample}.HMGA2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MAFA.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MAFB.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group6:
 	input:
 		'{path}pantf/operations/{mergedsample}.MAF.parsed.pantf.done.txt', 
@@ -130,6 +155,11 @@ rule PANTF_group6:
 		'{path}pantf/operations/{mergedsample}.ARI3A.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ARI5B.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ARX.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group7:
 	input:
 		'{path}pantf/operations/{mergedsample}.ASCL2.parsed.pantf.done.txt', 
@@ -152,6 +182,11 @@ rule PANTF_group7:
 		'{path}pantf/operations/{mergedsample}.BRAC.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.BRCA1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.BSH.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group8:
 	input:
 		'{path}pantf/operations/{mergedsample}.CDC5L.parsed.pantf.done.txt', 
@@ -174,6 +209,11 @@ rule PANTF_group8:
 		'{path}pantf/operations/{mergedsample}.CXXC1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.DLX1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.DLX2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group9:
 	input:
 		'{path}pantf/operations/{mergedsample}.DLX3.parsed.pantf.done.txt', 
@@ -196,6 +236,11 @@ rule PANTF_group9:
 		'{path}pantf/operations/{mergedsample}.EGR1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.EGR2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.EGR3.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group10:
 	input:
 		'{path}pantf/operations/{mergedsample}.EGR4.parsed.pantf.done.txt', 
@@ -218,6 +263,11 @@ rule PANTF_group10:
 		'{path}pantf/operations/{mergedsample}.ESR1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ESR2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ESX1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group11:
 	input:
 		'{path}pantf/operations/{mergedsample}.ETS1.parsed.pantf.done.txt', 
@@ -240,6 +290,11 @@ rule PANTF_group11:
 		'{path}pantf/operations/{mergedsample}.FOXB1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FOXC1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FOXC2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group12:
 	input:
 		'{path}pantf/operations/{mergedsample}.FOXD1.parsed.pantf.done.txt', 
@@ -262,6 +317,11 @@ rule PANTF_group12:
 		'{path}pantf/operations/{mergedsample}.FOXP2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FOXP3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FOXQ1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group13:
 	input:
 		'{path}pantf/operations/{mergedsample}.FUBP1.parsed.pantf.done.txt', 
@@ -284,6 +344,11 @@ rule PANTF_group13:
 		'{path}pantf/operations/{mergedsample}.GLI2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.GLI3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.GLIS1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group14:
 	input:
 		'{path}pantf/operations/{mergedsample}.GLIS2.parsed.pantf.done.txt', 
@@ -306,6 +371,11 @@ rule PANTF_group14:
 		'{path}pantf/operations/{mergedsample}.HME2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HMX1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HMX2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group15:
 	input:
 		'{path}pantf/operations/{mergedsample}.HMX3.parsed.pantf.done.txt', 
@@ -328,6 +398,11 @@ rule PANTF_group15:
 		'{path}pantf/operations/{mergedsample}.HXA5.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HXA7.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HXA9.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group16:
 	input:
 		'{path}pantf/operations/{mergedsample}.HXB13.parsed.pantf.done.txt', 
@@ -350,6 +425,11 @@ rule PANTF_group16:
 		'{path}pantf/operations/{mergedsample}.HXD3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HXD4.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HXD8.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group17:
 	input:
 		'{path}pantf/operations/{mergedsample}.HXD9.parsed.pantf.done.txt', 
@@ -372,6 +452,11 @@ rule PANTF_group17:
 		'{path}pantf/operations/{mergedsample}.KAISO.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.KLF12.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.KLF13.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group18:
 	input:
 		'{path}pantf/operations/{mergedsample}.KLF14.parsed.pantf.done.txt', 
@@ -394,6 +479,11 @@ rule PANTF_group18:
 		'{path}pantf/operations/{mergedsample}.LMX1B.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MAZ.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MBD2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group19:
 	input:
 		'{path}pantf/operations/{mergedsample}.MCR.parsed.pantf.done.txt', 
@@ -416,6 +506,11 @@ rule PANTF_group19:
 		'{path}pantf/operations/{mergedsample}.MTF1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MUSC.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MYBA.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group20:
 	input:
 		'{path}pantf/operations/{mergedsample}.MYBB.parsed.pantf.done.txt', 
@@ -438,6 +533,11 @@ rule PANTF_group20:
 		'{path}pantf/operations/{mergedsample}.NFYA.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.NFYB.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.NFYC.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group21:
 	input:
 		'{path}pantf/operations/{mergedsample}.NGN2.parsed.pantf.done.txt', 
@@ -460,6 +560,11 @@ rule PANTF_group21:
 		'{path}pantf/operations/{mergedsample}.NR1I3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.NR2C1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.NR2C2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group22:
 	input:
 		'{path}pantf/operations/{mergedsample}.NR2E1.parsed.pantf.done.txt', 
@@ -482,6 +587,11 @@ rule PANTF_group22:
 		'{path}pantf/operations/{mergedsample}.P73.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PAX1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PAX2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group23:
 	input:
 		'{path}pantf/operations/{mergedsample}.PAX3.parsed.pantf.done.txt', 
@@ -504,6 +614,11 @@ rule PANTF_group23:
 		'{path}pantf/operations/{mergedsample}.PKNX1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PKNX2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PLAG1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group24:
 	input:
 		'{path}pantf/operations/{mergedsample}.PLAL1.parsed.pantf.done.txt', 
@@ -526,6 +641,11 @@ rule PANTF_group24:
 		'{path}pantf/operations/{mergedsample}.PRD14.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PRDM1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PRDM4.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group25:
 	input:
 		'{path}pantf/operations/{mergedsample}.PRGR.parsed.pantf.done.txt', 
@@ -548,6 +668,11 @@ rule PANTF_group25:
 		'{path}pantf/operations/{mergedsample}.RFX5.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.RHXF1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.RORA.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group26:
 	input:
 		'{path}pantf/operations/{mergedsample}.RORG.parsed.pantf.done.txt', 
@@ -570,6 +695,11 @@ rule PANTF_group26:
 		'{path}pantf/operations/{mergedsample}.SMRC1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SNAI1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SNAI2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group27:
 	input:
 		'{path}pantf/operations/{mergedsample}.SOX10.parsed.pantf.done.txt', 
@@ -592,6 +722,11 @@ rule PANTF_group27:
 		'{path}pantf/operations/{mergedsample}.SP3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SP4.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SPDEF.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group28:
 	input:
 		'{path}pantf/operations/{mergedsample}.SPI1.parsed.pantf.done.txt', 
@@ -614,6 +749,11 @@ rule PANTF_group28:
 		'{path}pantf/operations/{mergedsample}.TBP.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TBR1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TBX15.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group29:
 	input:
 		'{path}pantf/operations/{mergedsample}.TBX19.parsed.pantf.done.txt', 
@@ -636,6 +776,11 @@ rule PANTF_group29:
 		'{path}pantf/operations/{mergedsample}.TFDP1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TFE2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TGIF1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group30:
 	input:
 		'{path}pantf/operations/{mergedsample}.TGIF2.parsed.pantf.done.txt', 
@@ -658,6 +803,11 @@ rule PANTF_group30:
 		'{path}pantf/operations/{mergedsample}.YBOX1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZBED1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZBT18.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group31:
 	input:
 		'{path}pantf/operations/{mergedsample}.ZBT49.parsed.pantf.done.txt', 
@@ -680,6 +830,11 @@ rule PANTF_group31:
 		'{path}pantf/operations/{mergedsample}.ZN148.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZN219.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZN232.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group32:
 	input:
 		'{path}pantf/operations/{mergedsample}.ZN282.parsed.pantf.done.txt', 
@@ -702,6 +857,11 @@ rule PANTF_group32:
 		'{path}pantf/operations/{mergedsample}.ACO1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ADARB1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.AFF4.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group33:
 	input:
 		'{path}pantf/operations/{mergedsample}.AGGF1.parsed.pantf.done.txt', 
@@ -724,6 +884,11 @@ rule PANTF_group33:
 		'{path}pantf/operations/{mergedsample}.C19orf25.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.C19orf40.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.EXO5.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group34:
 	input:
 		'{path}pantf/operations/{mergedsample}.LINC00471.parsed.pantf.done.txt', 
@@ -746,6 +911,11 @@ rule PANTF_group34:
 		'{path}pantf/operations/{mergedsample}.NELFB.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.CPSF4.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.CSNK2B.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group35:
 	input:
 		'{path}pantf/operations/{mergedsample}.CSTF2.parsed.pantf.done.txt', 
@@ -768,6 +938,11 @@ rule PANTF_group35:
 		'{path}pantf/operations/{mergedsample}.DUS3L.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.DUSP22.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.DUSP26.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group36:
 	input:
 		'{path}pantf/operations/{mergedsample}.ECSIT.parsed.pantf.done.txt', 
@@ -790,6 +965,11 @@ rule PANTF_group36:
 		'{path}pantf/operations/{mergedsample}.FOXP4.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.GADD45A.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.GIT2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group37:
 	input:
 		'{path}pantf/operations/{mergedsample}.GLYCTK.parsed.pantf.done.txt', 
@@ -812,6 +992,11 @@ rule PANTF_group37:
 		'{path}pantf/operations/{mergedsample}.HHAT.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HHEX.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.UBE2K.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group38:
 	input:
 		'{path}pantf/operations/{mergedsample}.HIRIP3.parsed.pantf.done.txt', 
@@ -834,6 +1019,11 @@ rule PANTF_group38:
 		'{path}pantf/operations/{mergedsample}.HTATIP2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ID2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.IL24.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group39:
 	input:
 		'{path}pantf/operations/{mergedsample}.ING3.parsed.pantf.done.txt', 
@@ -856,6 +1046,11 @@ rule PANTF_group39:
 		'{path}pantf/operations/{mergedsample}.LUZP2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MAGEA8.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MAGED4B.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group40:
 	input:
 		'{path}pantf/operations/{mergedsample}.MAGEF1.parsed.pantf.done.txt', 
@@ -878,6 +1073,11 @@ rule PANTF_group40:
 		'{path}pantf/operations/{mergedsample}.MSRA.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MSRB3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.MTHFD1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group41:
 	input:
 		'{path}pantf/operations/{mergedsample}.MXD4.parsed.pantf.done.txt', 
@@ -900,6 +1100,11 @@ rule PANTF_group41:
 		'{path}pantf/operations/{mergedsample}.GAR1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.NONO.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.NR2F1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group42:
 	input:
 		'{path}pantf/operations/{mergedsample}.NUCB1.parsed.pantf.done.txt', 
@@ -922,6 +1127,11 @@ rule PANTF_group42:
 		'{path}pantf/operations/{mergedsample}.PIK3C3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PIR.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PKM.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group43:
 	input:
 		'{path}pantf/operations/{mergedsample}.PKNOX2.parsed.pantf.done.txt', 
@@ -944,6 +1154,11 @@ rule PANTF_group43:
 		'{path}pantf/operations/{mergedsample}.PTPMT1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PURG.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.R3HDM2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group44:
 	input:
 		'{path}pantf/operations/{mergedsample}.RAB14.parsed.pantf.done.txt', 
@@ -966,6 +1181,11 @@ rule PANTF_group44:
 		'{path}pantf/operations/{mergedsample}.RFC2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.RFC3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.RFXANK.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group45:
 	input:
 		'{path}pantf/operations/{mergedsample}.RIOK2.parsed.pantf.done.txt', 
@@ -988,6 +1208,11 @@ rule PANTF_group45:
 		'{path}pantf/operations/{mergedsample}.SF3B1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SFT2D1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SLC18A1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group46:
 	input:
 		'{path}pantf/operations/{mergedsample}.SMAP2.parsed.pantf.done.txt', 
@@ -1010,6 +1235,11 @@ rule PANTF_group46:
 		'{path}pantf/operations/{mergedsample}.SSBP3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SSX2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SSX3.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group47:
 	input:
 		'{path}pantf/operations/{mergedsample}.STAU2.parsed.pantf.done.txt', 
@@ -1032,6 +1262,11 @@ rule PANTF_group47:
 		'{path}pantf/operations/{mergedsample}.TIMM8A.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TMSB4XP8.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TOB2.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group48:
 	input:
 		'{path}pantf/operations/{mergedsample}.TP73.parsed.pantf.done.txt', 
@@ -1054,6 +1289,11 @@ rule PANTF_group48:
 		'{path}pantf/operations/{mergedsample}.USP39.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.UTP18.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.VAMP3.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group49:
 	input:
 		'{path}pantf/operations/{mergedsample}.EZR.parsed.pantf.done.txt', 
@@ -1076,6 +1316,11 @@ rule PANTF_group49:
 		'{path}pantf/operations/{mergedsample}.ZDHHC5.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZFP3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZHX3.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group50:
 	input:
 		'{path}pantf/operations/{mergedsample}.ZMAT2.parsed.pantf.done.txt', 
@@ -1098,6 +1343,11 @@ rule PANTF_group50:
 		'{path}pantf/operations/{mergedsample}.ZNF385A.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZNF503.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZNF510.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group51:
 	input:
 		'{path}pantf/operations/{mergedsample}.ZNF655.parsed.pantf.done.txt', 
@@ -1120,6 +1370,11 @@ rule PANTF_group51:
 		'{path}pantf/operations/{mergedsample}.RXRA::VDR.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TAL1::TCF3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.YY1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group52:
 	input:
 		'{path}pantf/operations/{mergedsample}.TP53.parsed.pantf.done.txt', 
@@ -1142,6 +1397,11 @@ rule PANTF_group52:
 		'{path}pantf/operations/{mergedsample}.POU2F2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.SMAD2::SMAD3::SMAD4.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.STAT2::STAT1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group53:
 	input:
 		'{path}pantf/operations/{mergedsample}.TCF7L2.parsed.pantf.done.txt', 
@@ -1164,6 +1424,11 @@ rule PANTF_group53:
 		'{path}pantf/operations/{mergedsample}.GATA1::TAL1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ESRRB.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HOXA5.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group54:
 	input:
 		'{path}pantf/operations/{mergedsample}.RARA::RXRA.parsed.pantf.done.txt', 
@@ -1186,6 +1451,11 @@ rule PANTF_group54:
 		'{path}pantf/operations/{mergedsample}.ONECUT1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.POU4F2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZBTB7B.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group55:
 	input:
 		'{path}pantf/operations/{mergedsample}.ZBTB7C.parsed.pantf.done.txt', 
@@ -1208,6 +1478,11 @@ rule PANTF_group55:
 		'{path}pantf/operations/{mergedsample}.POU2F1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.POU3F1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.POU3F3.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group56:
 	input:
 		'{path}pantf/operations/{mergedsample}.POU3F4.parsed.pantf.done.txt', 
@@ -1230,6 +1505,11 @@ rule PANTF_group56:
 		'{path}pantf/operations/{mergedsample}.HOXB3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HOXC10.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HOXC12.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group57:
 	input:
 		'{path}pantf/operations/{mergedsample}.HOXC13.parsed.pantf.done.txt', 
@@ -1252,6 +1532,11 @@ rule PANTF_group57:
 		'{path}pantf/operations/{mergedsample}.ZNF384.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZNF282.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.ZSCAN4.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group58:
 	input:
 		'{path}pantf/operations/{mergedsample}.FOS::JUN(var.2).parsed.pantf.done.txt', 
@@ -1274,6 +1559,11 @@ rule PANTF_group58:
 		'{path}pantf/operations/{mergedsample}.FOSL1::JUND(var.2).parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FOSL2::JUND.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.FOSL2::JUND(var.2).parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group59:
 	input:
 		'{path}pantf/operations/{mergedsample}.NR1A4::RXRA.parsed.pantf.done.txt', 
@@ -1296,6 +1586,11 @@ rule PANTF_group59:
 		'{path}pantf/operations/{mergedsample}.BHLHB2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.BHLHB3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.CART1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group60:
 	input:
 		'{path}pantf/operations/{mergedsample}.HOXA1.parsed.pantf.done.txt', 
@@ -1318,6 +1613,11 @@ rule PANTF_group60:
 		'{path}pantf/operations/{mergedsample}.BBX.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.BCL3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.CHD1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group61:
 	input:
 		'{path}pantf/operations/{mergedsample}.CHD2.parsed.pantf.done.txt', 
@@ -1340,6 +1640,11 @@ rule PANTF_group61:
 		'{path}pantf/operations/{mergedsample}.HOXA11.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HOXA3.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.HOXA4.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group62:
 	input:
 		'{path}pantf/operations/{mergedsample}.HOXA6.parsed.pantf.done.txt', 
@@ -1362,6 +1667,11 @@ rule PANTF_group62:
 		'{path}pantf/operations/{mergedsample}.IKZF2.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.IRX4.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.IRX6.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group63:
 	input:
 		'{path}pantf/operations/{mergedsample}.KLF7.parsed.pantf.done.txt', 
@@ -1384,6 +1694,11 @@ rule PANTF_group63:
 		'{path}pantf/operations/{mergedsample}.PGR.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PML.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.PRDM14.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+
 rule PANTF_group64:
 	input:
 		'{path}pantf/operations/{mergedsample}.RAD21.parsed.pantf.done.txt', 
@@ -1406,3 +1721,8 @@ rule PANTF_group64:
 		'{path}pantf/operations/{mergedsample}.STAT5B.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TAF1.parsed.pantf.done.txt', 
 		'{path}pantf/operations/{mergedsample}.TBL1XR1.parsed.pantf.done.txt', 
+	output:
+		'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+	shell:
+		'touch {output}'
+

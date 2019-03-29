@@ -131,7 +131,13 @@ while (a <= 1273){
   tmp19 <- paste0("'{path}pantf/operations/{mergedsample}.", names[u], ".parsed.pantf.done.txt", "', ")
   tmp20 <- paste0("'{path}pantf/operations/{mergedsample}.", names[v], ".parsed.pantf.done.txt", "', ")
   
-  strings[b] <- paste0("rule PANTF_group", b, ":\n", "\tinput:\n\t\t", tmp1, "\n\t\t", tmp2, "\n\t\t", tmp3, "\n\t\t", tmp4, "\n\t\t", tmp5, "\n\t\t", tmp6, "\n\t\t", tmp7, "\n\t\t", tmp8, "\n\t\t", tmp9, "\n\t\t", tmp10, "\n\t\t", tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t", tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20)
+  strings[b] <- paste0("rule PANTF_group", b, ":\n", "\tinput:\n\t\t",
+                       tmp1, "\n\t\t", tmp2, "\n\t\t", tmp3, "\n\t\t", tmp4, "\n\t\t", tmp5, "\n\t\t",
+                       tmp6, "\n\t\t", tmp7, "\n\t\t", tmp8, "\n\t\t", tmp9, "\n\t\t", tmp10, "\n\t\t",
+                       tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t",
+                       tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20,
+                       "\n\toutput:\n\t\t'{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'",
+                       "\n\tshell:\n\t\t'touch {output}'\n")
   
   a <- a+20
   b <- b+1
@@ -140,4 +146,16 @@ while (a <= 1273){
 
 write.table(strings, file = outfilePath2, quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
 
+####################################################
+
+outfilePath3 <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\panTFNames3.txt"
+
+for (z in 1:64){
+  
+  strings[z] <- paste0("'{path}pantf/operations/{mergedsample}.pantf.group", z, ".done.txt',")
+                      
+}
+
+
+write.table(strings, file = outfilePath3, quote = FALSE, sep = ",", eol = "\n", row.names = FALSE, col.names = FALSE)
 
