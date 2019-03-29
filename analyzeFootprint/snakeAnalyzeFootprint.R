@@ -1,5 +1,3 @@
-
-##
 cat("Loading libraries...", "\n")
 suppressMessages(library(ATACseqQC))
 suppressMessages(library(GenomicRanges))
@@ -9,7 +7,6 @@ suppressMessages(library(Rsamtools))
 suppressMessages(library(ChIPpeakAnno))
 suppressMessages(library(GenomicAlignments))
 suppressMessages(library(MotifDb))
-
 ##
 cat("Setting snakemake vars...", "\n")
 bampath <- snakemake@input[[1]]
@@ -197,10 +194,10 @@ load(sitespath)
 num_motifs <- length(bindingSites)
 cat("Found ", num_motifs, " motifs", "\n")
 
-##
+
 for (x in 1:num_motifs){
   
-  info_path <- paste0(dirpath, "pantf/parsed/", samplename, ".", genename, ".", "motif", x, ".info.Rdata")
+  info_path <- paste0(dirpath, "footprints/parsed/", samplename, ".", genename, ".", "motif", x, ".info.Rdata")
   cat("Output path for parsed binding sites object: ", info_path, "\n")
   
   if (file.exists(info_path) == TRUE){
@@ -221,14 +218,10 @@ for (x in 1:num_motifs){
     
     ##
     cat("Loading data...", "\n")
-    
-    mergein <- gsub("merged.pantf.done.txt", paste0("motif", x, ".merged.Rdata"), mergedpath)
+    mergein <- gsub("merged.done.txt", paste0("motif", x, ".merged.Rdata"), mergedpath)
     mergein <- gsub("operations", "data/merged", mergein)
-    
     cat("Loading merged signal file from path:", mergein, "\n")
     load(mergein)
-    
-    ##
     genomeSignals <- merged_signals[["signal"]]
     bpTotal <- length(genomeSignals[["+"]][1,])
     genomeSites <- merged_signals$bindingSites
@@ -244,8 +237,6 @@ for (x in 1:num_motifs){
     numGenomeSites <- length(genomeSignals[["+"]][,1])
     genomeSignalTotals <- c()
     motifGenomeSignalTotals <- c()
-    
-    ##
     for (i in 1:numGenomeSites){
       genomeSignalTotals[i] <- sum(genomeSignals[["+"]][i,] + genomeSignals[["-"]][i,])
       motifGenomeSignalTotals[i] <- sum(genomeSignals[["+"]][i,100:(100+motifWidth)] + genomeSignals[["-"]][i,100:(100+motifWidth)])}
@@ -280,7 +271,7 @@ for (x in 1:num_motifs){
     peakProfile <- buildProfile(peakSignals, libraryFactor, upstream, motifWidth, downstream)
     prof <- peakProfile$profile
     ## Make graph
-    svg_path <- paste0(dirpath, "pantf/graphs/", samplename, ".", genename, ".", "motif", x, ".peak.sites.svg")
+    svg_path <- paste0(dirpath, "footprints/graphs/", samplename, ".", genename, ".", "motif", x, ".peak.sites.svg")
     svg(file = svg_path) # set the filepath for saving the svg figure
     cat("Saving peaks footprint image at path:", svg_path, "\n")
     PWMin <- pwm2pfm(PWM)
@@ -367,7 +358,7 @@ for (x in 1:num_motifs){
       bfprof <- bfPeakProfile$profile
       
       ## Make graph for bf passing sites
-      svg_path <- paste0(dirpath, "pantf/graphs/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.svg")
+      svg_path <- paste0(dirpath, "footprints/graphs/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.svg")
       svg(file = svg_path) # set the filepath for saving the svg figure
       cat("Saving svg footprint image at path:", svg_path, "\n")
       PWMin <- pwm2pfm(PWM)
@@ -376,45 +367,113 @@ for (x in 1:num_motifs){
                                  Mlen=motifWidth, motif=PWMin)
       dev.off()
       
+      
+      #### Make heatmap for bf passing sites ####
+      ## USE THIS STRUCTURE FOR HEATMAPS
+      ## first, combine the signals from plus and minus strand
+      heatsigs <- combinedbfPassPeakSignal
+      heatnumsites <- numbfPassPeakSites
+      heatnumbp <- length(combinedbfPassPeakSignal[1,])
+      heatsites <- bfPassPeakSites
+      
+      
+      #sigs <- parsedSitesInfo[["bfPassPeakSignals"]]
+      #sig_plus <- sigs["+"]
+      #sig_minus <- sigs["-"]
+      #numsites <- length(sig_plus[["+"]][,1])
+      #numbp <- length(sig_plus[["+"]][1,])
+      #sites <- parsedSitesInfo[["bfPassPeakSites"]]
+      
+      ##
+      #temp <- matrix(data = NA, nrow = numsites, ncol = numbp)
+      #for (i in 1:numsites){temp[i,] <- sigs[['+']][i,] + sigs[['-']][i,]}
+      
+      ## scale each row individually
+      for (a in 1:heatnumsites){
+        maxsig <- max(heatsigs[a,])
+        for (b in 1:heatnumbp){heatsigs[a,b] <- (heatsigs[a,b] / maxsig)}}
+      maxsig <- 1
+      
+      ## invert signals
+      for (a in 1:heatnumsites){for (b in 1:heatnumbp){heatsigs[a,b] <- (1-heatsigs[a,b])}}
+      
+      ## Annotate the combined sublist name which will become the tital of the heatmap plot
+      plottitle <- paste0(genename, "_motif", x, "_numsites", heatnumsites)
+      combined <- list()
+      com <- paste0("combined$", plottitle, " <- heatsigs")
+      eval(parse(text = com))
+      
+      ##
+      heatsvg_path <- paste0(dirpath, "footprints/heatmaps/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.heatmap.svg")
+      svg(file = heatsvg_path) # set the filepath for saving the svg figure
+      cat("Saving svg footprint image at path:", heatsvg_path, "\n")
+      
+      ## Margin controls
+      # margin(a,b,c,d)
+      # a = size of graph from top to bottom, higher value = smaller. default = 0.1
+      # b = size of graph from left to right, higher value = smaller. default = 0.005
+      # c = flips x axis?
+      # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
+      # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
+      # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
+      
+      ##
+      ChIPpeakAnno::featureAlignedHeatmap(combined,
+                                          feature.gr=reCenterPeaks(heatsites,width=heatnumbp),
+                                          upper.extreme = maxsig, # set this to control the heatmap scale
+                                          annoMcols="score",
+                                          sortBy="score",
+                                          n.tile=heatnumbp,
+                                          margin = c(0.1, 0.005, 0.05, 0.2),
+                                          color=colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias=0.9)(100),
+                                          gp = gpar(fontsize=10),
+                                          newpage = TRUE)
+      dev.off()
+      ############################################################
+      
+      ## Data transfer to storage object and save
+      parsedSitesInfo <- list()
+      parsedSitesInfo$peaks <- gr_narrowPeak
+      parsedSitesInfo$motif <- x
+      parsedSitesInfo$PWM <- PWM
+      parsedSitesInfo$motifWidth <- motifWidth
+      parsedSitesInfo$libraryFactor <- libraryFactor
+      ## Whole genome sites
+      parsedSitesInfo$genomeSignals <- genomeSignals
+      parsedSitesInfo$genomeSites <- genomeSites
+      parsedSitesInfo$numGenomeSites <- numGenomeSites
+      parsedSitesInfo$combinedGenomeSignal <- combinedGenomeSignal
+      parsedSitesInfo$genomeSignalTotals <- genomeSignalTotals
+      parsedSitesInfo$motifGenomeSignalTotals <- motifGenomeSignalTotals
+      ## Raw peak overlapping sites
+      parsedSitesInfo$peakSignals <- peakSignals
+      parsedSitesInfo$peakSites <- peakSites
+      parsedSitesInfo$numPeakSites <- numPeakSites
+      parsedSitesInfo$combinedPeakSignal <- combinedPeakSignal
+      parsedSitesInfo$peakProfile <- peakProfile
+      parsedSitesInfo$peakSignalTotals <- peakSignalTotals
+      parsedSitesInfo$motifPeakSignalTotals <- motifPeakSignalTotals
+      ## BF corrected p-value passing peak sites
+      parsedSitesInfo$bfPassPeakSignals <-bfPassPeakSignals
+      parsedSitesInfo$bfPassPeakSites <- bfPassPeakSites
+      parsedSitesInfo$numbfPassPeakSites <- numbfPassPeakSites
+      parsedSitesInfo$combinedbfPassPeakSignal <- combinedbfPassPeakSignal
+      parsedSitesInfo$bfPassPeakProfile <- bfPeakProfile
+      parsedSitesInfo$bfPassPeakSignalTotals <- bfPassPeakSignalTotals
+      parsedSitesInfo$bfPassPeakMotifPeakSignalTotals <- bfPassPeakMotifSignalTotals
+      ## bf sites heatmap info
+      parsedSitesInfo$combined <- combined
+      parsedSitesInfo$heatsites <- heatsites
+      parsedSitesInfo$heatnumbp <- heatnumbp
+      ##
+      save(parsedSitesInfo, file = info_path)
+      
     }, # end try
     error=function(cond){
       message(cond)
       return(NA)
     },
     finally={})
-    
-    ## Data transfer to storage object and save
-    parsedSitesInfo <- list()
-    parsedSitesInfo$peaks <- gr_narrowPeak
-    parsedSitesInfo$motif <- x
-    parsedSitesInfo$PWM <- PWM
-    parsedSitesInfo$motifWidth <- motifWidth
-    parsedSitesInfo$libraryFactor <- libraryFactor
-    ## Whole genome sites
-    parsedSitesInfo$genomeSignals <- genomeSignals
-    parsedSitesInfo$genomeSites <- genomeSites
-    parsedSitesInfo$numGenomeSites <- numGenomeSites
-    parsedSitesInfo$combinedGenomeSignal <- combinedGenomeSignal
-    parsedSitesInfo$genomeSignalTotals <- genomeSignalTotals
-    parsedSitesInfo$motifGenomeSignalTotals <- motifGenomeSignalTotals
-    ## Raw peak overlapping sites
-    parsedSitesInfo$peakSignals <- peakSignals
-    parsedSitesInfo$peakSites <- peakSites
-    parsedSitesInfo$numPeakSites <- numPeakSites
-    parsedSitesInfo$combinedPeakSignal <- combinedPeakSignal
-    parsedSitesInfo$peakProfile <- peakProfile
-    parsedSitesInfo$peakSignalTotals <- peakSignalTotals
-    parsedSitesInfo$motifPeakSignalTotals <- motifPeakSignalTotals
-    ## BF corrected p-value passing peak sites
-    parsedSitesInfo$bfPassPeakSignals <-bfPassPeakSignals
-    parsedSitesInfo$bfPassPeakSites <- bfPassPeakSites
-    parsedSitesInfo$numbfPassPeakSites <- numbfPassPeakSites
-    parsedSitesInfo$combinedbfPassPeakSignal <- combinedbfPassPeakSignal
-    parsedSitesInfo$bfPassPeakProfile <- bfPeakProfile
-    parsedSitesInfo$bfPassPeakSignalTotals <- bfPassPeakSignalTotals
-    parsedSitesInfo$bfPassPeakMotifPeakSignalTotals <- bfPassPeakMotifSignalTotals
-    ## Save the data
-    save(parsedSitesInfo, file = info_path)
 
   } # end if (file.exists(info_path) == TRUE)
 } # end for (x in 1:num_motifs)
