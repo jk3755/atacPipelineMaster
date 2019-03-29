@@ -11,59 +11,42 @@ suppressMessages(library(BSgenome.Hsapiens.UCSC.hg38))
 suppressMessages(library(Biostrings))
 suppressMessages(library(MotifDb))
 
-## Query the database to return all human annotations
-mdbHuman <- query (MotifDb, 'hsapiens')
-## Get the list of all unique genes
-uniqueGenes <- unique(mdbHuman@elementMetadata@listData[["geneSymbol"]])
-## Get the total number of unique annotated genes
-numGenes <- length(uniqueGenes)
-## Initiate list object to store all motif data
-motifData <- list()
+##
+cat("Setting snakemake vars...", "\n")
+motifDataPath <- snakemake@input[[1]]
+outPath <- snakemake@output[[1]]
+currentGene <- snakemake@wildcards[["gene"]]
 
 ##
-for (gene in uniqueGenes){
-  
-    ## Get relevant indices
-    geneIdx <- which(mdbHuman@elementMetadata@listData[["geneSymbol"]] == gene)
-    ## Number of redundant motifs for current gene
-    numMotifs <- length(geneIdx)
-       
-    ## Get the unique motifs for current gene
-    tempMotifs <- list()
-    c <- 1
-    
-    ##
-    for (idx in geneIdx){
-      tempMotifs[c] <- mdbHuman@listData[idx]
-      c <- c+1} # end for (idx in geneIdx)
-    
-    ##
-    uniqueMotifs <- unique(tempMotifs)
-    numUniqueMotifs <- length(uniqueMotifs)
-    
-    ## Initiate sublists for current gene
-    tryCatch({
-      com <- paste0("motifData$", gene, " <- list()")
-      eval(parse(text = com))},
-    error=function(cond){
-      message(cond)
-      return(NA)},
-    finally={}) #end tryCatch()
-             
-    ## Populate motifData list for current gene
-    tryCatch({     
-      for (a in 1:numUniqueMotifs){
-      com <- paste0("motifData$", gene, "$motif", a, " <- uniqueMotifs[[a]]")
-      eval(parse(text = com))} # end for (a in 1:numUniqueMotifs)
-     },
-    error=function(cond){
-      message(cond)
-      return(NA)},
-      finally={}) #end tryCatch()
+cat("Loading motifData object...", "\n")
+load(motifDataPath)
 
-} # end for (gene in uniqueGenes)
+##
+com <- paste0("motifs <- motifData$", currentGene)
+eval(parse(text = com))
 
+## Set parameters
+numMotifs <- length(motifs)
+genome <- Hsapiens
+score <- "95%"
+bindingSites <- list()
+cat("Found", numMotifs, " unique motifs for gene", currentGene, "scanning for sites with", score, "PWM match", "\n")
 
+## Scan the genome for matches to each unique motif
+for (a in 1:numMotifs){
+  cat("Scanning motif", a, "for gene", currentGene, "\n")
+  tempSites <- list()
+  PWM <- motifs[[a]]
+  sites <- matchPWM(PWM, genome, min.score=score)
+  tempSites$PWM <- PWM
+  tempSites$sites <- sites
+  bindingSites[[a]] <- tempSites
+} # end for (a in 1:numMotifs)
 
+## Save the data
+cat("Saving data...", "\n")
+save(bindingSites, file = outPath)
 
-
+rm(list=ls())
+gc()
+cat("Finished scanning!", "\n")
