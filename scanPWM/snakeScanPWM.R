@@ -15,6 +15,8 @@ suppressMessages(library(MotifDb))
 cat("Setting snakemake vars...", "\n")
 motifDataPath <- snakemake@input[[1]]
 outPath <- snakemake@output[[1]]
+rdataPath <- gsub("operations", "data", outPath)
+rdataPath <- gsub("PWMscan.done", "bindingSites.Rdata", rdataPath)
 currentGene <- snakemake@wildcards[["gene"]]
 
 ##
@@ -28,7 +30,7 @@ eval(parse(text = com))
 ## Set parameters
 numMotifs <- length(motifs)
 genome <- Hsapiens
-score <- "95%"
+score <- "99%"
 bindingSites <- list()
 cat("Found", numMotifs, " unique motifs for gene", currentGene, "scanning for sites with", score, "PWM match", "\n")
 
@@ -45,7 +47,8 @@ for (a in 1:numMotifs){
 
 ## Save the data
 cat("Saving data...", "\n")
-save(bindingSites, file = outPath)
+save(bindingSites, file = rdataPath)
+file.create(outPath)
 
 rm(list=ls())
 gc()

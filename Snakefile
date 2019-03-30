@@ -73,10 +73,6 @@ rule run_PWMscan:
         "sites/geneNames.txt",
         "sites/operations/PWMscan.allgroups.done"
 
-rule snu61wt01_pantf_analysis:
-    input:
-        "snu61/wt01/pantf/operations/SNU61-WT-01.alltf.analysis.done.txt"
-
 ########################################################################################################################################
 #### SPOOL TF saturation analysis ######################################################################################################
 ########################################################################################################################################
@@ -93,13 +89,13 @@ rule SATURATION_footprint_analysis:
 #### SPOOL CROSS SAMPLE CORRELATION ####################################################################################################
 ########################################################################################################################################
 
-# rule run_xsample_corr_h508_snu61_ls1034:
-#     input:
-#         "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+rule run_xsample_corr_h508_snu61_ls1034:
+    input:
+        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 
-# rule run_xsample_corr_replicates_h508_snu61_ls1034:
-#     input:
-#         "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
+rule run_xsample_corr_replicates_h508_snu61_ls1034:
+    input:
+        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
@@ -972,134 +968,6 @@ rule AGGREGATOR_saturation_footprints:
         "touch {output}"
 
 ########################################################################################################################################
-#### FOOTPRINT ANALYSIS RULES ##########################################################################################################
-########################################################################################################################################
-
-########################################################################################################################################
-#### SPOOL FOOTPRINTING ################################################################################################################
-########################################################################################################################################
-
-#rule run_fp_coadmr_mdst8_wt01:
-#    input:
-#        "mdst8/wt01/footprints/parsed/MDST8-WT-01.coadmr.parsed.done.txt"
-
-# rule run_fp_coadmr_h508wt02a:
-#     input:
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.CDX2.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.TCF7.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.HOXA3.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.MNX1.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.POU5F1B.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.OVOL1.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.ESRRA.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.ASCL2.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.HNF4A.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.GMEB2.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.ZSWIM1.parsed.done.txt",
-#         "h508/wt02a/footprints/parsed/H508A-WT-02.CBFA2T2.parsed.done.txt"
-
-rule STEP35_make_footprint_signal_by_chr:
-    input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        "sites/{gene}.sites.Rdata",
-        "{path}operations/{mergedsample}-downsample.final.txt",
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
-    output:
-        "{path}footprints/operations/{mergedsample}.{gene}.{chr}.done.bychr.txt"
-    resources:
-        fp_by_chr=1
-    script:
-        "scripts/snakeMakeFPbyChr.R"
-
-rule STEP36_merge_footprint_signal_by_chr:
-    input:
-        "sites/{gene}.sites.Rdata",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr1.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr2.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr3.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr4.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr5.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr6.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr7.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr8.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr9.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr10.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr11.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr12.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr13.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr14.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr15.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr16.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr17.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr18.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr19.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr20.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr21.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chr22.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chrX.done.bychr.txt",
-        "{path}footprints/operations/{mergedsample}.{gene}.chrY.done.bychr.txt"
-    output:
-        "{path}footprints/operations/{mergedsample}.{gene}.merged.done.txt"
-    script:
-        "scripts/snakeMergeFPbyChr.R"
-
-rule STEP37_make_raw_footprint_graphs:
-    input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        "sites/{gene}.sites.Rdata",
-        "{path}footprints/operations/{mergedsample}.{gene}.merged.done.txt"
-    output:
-        "{path}footprints/operations/{mergedsample}.{gene}.graphs.done.txt"
-    resources:
-        raw_fp_graph=1
-    script:
-        "scripts/snakeGenerateMergedFPGraph.R"
-
-rule STEP38_parse_footprint_signals_and_generate_graphs:
-    input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        "sites/{gene}.sites.Rdata",
-        "{path}footprints/operations/{mergedsample}.{gene}.merged.done.txt",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
-        "{path}footprints/operations/{mergedsample}.{gene}.graphs.done.txt"
-    output:
-        "{path}footprints/operations/{mergedsample}.{gene}.parsed.done.txt"
-    resources:
-        parse_fp=1
-    script:
-        "scripts/snakeParseFP.R"
-
-# rule STEP39_merge_footprint_signal_motifs:
-#     input:
-#         "{path}footprints/operations/{mergedsample}.{gene}.parsed.done.txt"
-#     output:
-#         "{path}footprints/data/motifmerge/{mergedsample}.{gene}.{nummotif}.mergedmotif.Rdata"
-#     script:
-#         "scripts/snakeMergeMotifs.R"
-
-rule AGGREGATOR_COADMR_footprinting:
-    input:
-        "{path}footprints/operations/{mergedsample}.CDX2.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.TCF7.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.HOXA3.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.MNX1.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.POU5F1B.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.OVOL1.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.ESRRA.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.ASCL2.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.HNF4A.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.GMEB2.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.ZSWIM1.parsed.done.txt",
-        "{path}footprints/operations/{mergedsample}.CBFA2T2.parsed.done.txt"
-    output:
-        "{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt"
-    shell:
-        "touch {output}"
-
-########################################################################################################################################
 #### METRICS AND ANNOTATIONS RULES #####################################################################################################
 ########################################################################################################################################
 
@@ -1185,159 +1053,116 @@ rule xsample_footprint_direct_comparison:
         "script/snakeXsampleCompareFootprint.R"
 
 ########################################################################################################################################
-#### PAN-TF ANALYSIS RULES #############################################################################################################
+#### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
 ########################################################################################################################################
 
-rule PANTF_make_footprint_signal_by_chr:
+rule snu61wt01_pantf_analysis:
     input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        "sites/{gene}.sites.Rdata",
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
-    output:
-        "{path}pantf/operations/{mergedsample}.{gene}.{chr}.pantf.done.bychr.txt"
-    resources:
-        fp_by_chr=1
-    script:
-        "scripts/panTF/snakeMakeFPbyChrPanTF.R"
+        "snu61/wt01/pantf/operations/SNU61-WT-01.alltf.analysis.done.txt"
 
-rule PANTF_merge_footprint_signal_by_chr:
+rule PANTF_copy_bam:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
     input:
-        "sites/{gene}.sites.Rdata",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr1.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr2.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr3.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr4.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr5.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr6.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr7.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr8.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr9.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr10.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr11.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr12.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr13.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr14.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr15.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr16.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr17.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr18.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr19.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr20.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr21.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chr22.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chrX.pantf.done.bychr.txt",
-        "{path}pantf/operations/{mergedsample}.{gene}.chrY.pantf.done.bychr.txt"
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
     output:
-        "{path}pantf/operations/{mergedsample}.{gene}.merged.pantf.done.txt"
-    script:
-        "scripts/panTF/snakeMergeFPbyChrPanTF.R"
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam"
+    shell:
+        "cp {input} {output}"
 
-rule PANTF_parse_footprint_signals:
+rule AGGREGATOR_copy_bam:
     input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        "sites/{gene}.sites.Rdata",
-        "{path}pantf/operations/{mergedsample}.{gene}.merged.pantf.done.txt",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.1.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.2.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.3.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.4.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.5.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.6.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.7.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.8.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.9.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.10.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.11.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.12.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.13.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.14.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.15.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.16.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.17.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.18.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.19.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.20.bam"
     output:
-        "{path}pantf/operations/{mergedsample}.{gene}.parsed.pantf.done.txt"
-    resources:
-        parse_fp=1
-    script:
-        "scripts/panTF/snakeParseFPPanTF.R"
-
-rule PANTF_TFgroup_aggregator:
-    input:
-        '{path}pantf/operations/{mergedsample}.pantf.group1.done.txt',
-        '{path}pantf/operations/{mergedsample}.pantf.group2.done.txt'
-        # '{path}pantf/operations/{mergedsample}.pantf.group3.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group4.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group5.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group6.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group7.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group8.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group9.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group10.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group11.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group12.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group13.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group14.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group15.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group16.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group17.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group18.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group19.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group20.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group21.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group22.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group23.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group24.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group25.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group26.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group27.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group28.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group29.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group30.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group31.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group32.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group33.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group34.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group35.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group36.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group37.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group38.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group39.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group40.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group41.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group42.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group43.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group44.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group45.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group46.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group47.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group48.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group49.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group50.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group51.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group52.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group53.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group54.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group55.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group56.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group57.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group58.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group59.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group60.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group61.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group62.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group63.done.txt',
-        # '{path}pantf/operations/{mergedsample}.pantf.group64.done.txt'
-    output:
-        "{path}pantf/operations/{mergedsample}.alltf.analysis.done.txt"
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
     shell:
         "touch {output}"
 
-########################################################################################################################################
-#### PAN-TF GROUPS #####################################################################################################################
-########################################################################################################################################
-rule PANTF_group1:
+rule PANTF_analyze_footprint:
     input:
-        '{path}pantf/operations/{mergedsample}.TFAP2A.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.NFIL3.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.HLF.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.NHLH1.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.MAX.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.USF1.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.CEBPA.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.EBF1.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.CEBPB.parsed.pantf.done.txt', 
-        '{path}pantf/operations/{mergedsample}.FOS.parsed.pantf.done.txt' 
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+        "sites/data/{gene}.bindingSites.Rdata",
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
     output:
-        '{path}pantf/operations/{mergedsample}.pantf.group1.done.txt'
+        "{path}footprints/operations/{mergedsample}.{gene}.rawFPanalysis.done"
+    resources:
+        analyzeRawTF=1
+    script:
+        "scripts/panTF/snakeAnalyzeFootprint.R"
+
+rule PANTF_TFgroup_aggregator:
+    input:
+        '{path}footprints/operations/{mergedsample}.rawTF.group1.done'
+    output:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    shell:
+        "touch {output}"
+
+rule PANTF_remove_bamcopy:
+    input:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    output:
+         "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
+
+rule test:
+    input:
+        "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
+
+rule rawTF_group1:
+    input:
+        '{path}footprints/operations/{mergedsample}.TFAP2A.rawFPanalysis.bamcopy1.done', 
+        '{path}footprints/operations/{mergedsample}.NFIL3.rawFPanalysis.bamcopy2.done', 
+        '{path}footprints/operations/{mergedsample}.HLF.rawFPanalysis.bamcopy3.done', 
+        '{path}footprints/operations/{mergedsample}.NHLH1.rawFPanalysis.bamcopy4.done', 
+        '{path}footprints/operations/{mergedsample}.MAX.rawFPanalysis.bamcopy5.done', 
+        '{path}footprints/operations/{mergedsample}.USF1.rawFPanalysis.bamcopy6.done', 
+        '{path}footprints/operations/{mergedsample}.CEBPA.rawFPanalysis.bamcopy7.done', 
+        '{path}footprints/operations/{mergedsample}.EBF1.rawFPanalysis.bamcopy8.done', 
+        '{path}footprints/operations/{mergedsample}.CEBPB.rawFPanalysis.bamcopy9.done', 
+        '{path}footprints/operations/{mergedsample}.FOS.rawFPanalysis.bamcopy10.done', 
+        '{path}footprints/operations/{mergedsample}.FOSL1.rawFPanalysis.bamcopy11.done', 
+        '{path}footprints/operations/{mergedsample}.FOSL2.rawFPanalysis.bamcopy12.done', 
+        '{path}footprints/operations/{mergedsample}.JUN.rawFPanalysis.bamcopy13.done', 
+        '{path}footprints/operations/{mergedsample}.JUNB.rawFPanalysis.bamcopy14.done', 
+        '{path}footprints/operations/{mergedsample}.JUND.rawFPanalysis.bamcopy15.done', 
+        '{path}footprints/operations/{mergedsample}.MAFF.rawFPanalysis.bamcopy16.done', 
+        '{path}footprints/operations/{mergedsample}.MAFK.rawFPanalysis.bamcopy17.done', 
+        '{path}footprints/operations/{mergedsample}.TFAP2C.rawFPanalysis.bamcopy18.done', 
+        '{path}footprints/operations/{mergedsample}.USF2.rawFPanalysis.bamcopy19.done', 
+        '{path}footprints/operations/{mergedsample}.SREBF1.rawFPanalysis.bamcopy20.done'
+    output:
+        '{path}footprints/operations/{mergedsample}.rawTF.group1.done'
     shell:
         'touch {output}'
-
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
@@ -1433,7 +1258,6 @@ rule PWMscan_group_aggregator:
         "sites/operations/PWMscan.allgroups.done"
     shell:
         "touch {output}"
-
 rule PWMscan_group1:
     input:
         'sites/operations/TFAP2A.PWMscan.done', 
@@ -1460,7 +1284,6 @@ rule PWMscan_group1:
         'sites/operations/PWMscan.group1.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group2:
     input:
         'sites/operations/SREBF2.PWMscan.done', 
@@ -1487,7 +1310,6 @@ rule PWMscan_group2:
         'sites/operations/PWMscan.group2.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group3:
     input:
         'sites/operations/MYC.PWMscan.done', 
@@ -1514,7 +1336,6 @@ rule PWMscan_group3:
         'sites/operations/PWMscan.group3.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group4:
     input:
         'sites/operations/HES7.PWMscan.done', 
@@ -1541,7 +1362,6 @@ rule PWMscan_group4:
         'sites/operations/PWMscan.group4.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group5:
     input:
         'sites/operations/TFAP2B.PWMscan.done', 
@@ -1568,7 +1388,6 @@ rule PWMscan_group5:
         'sites/operations/PWMscan.group5.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group6:
     input:
         'sites/operations/MAF.PWMscan.done', 
@@ -1595,7 +1414,6 @@ rule PWMscan_group6:
         'sites/operations/PWMscan.group6.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group7:
     input:
         'sites/operations/ASCL2.PWMscan.done', 
@@ -1622,7 +1440,6 @@ rule PWMscan_group7:
         'sites/operations/PWMscan.group7.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group8:
     input:
         'sites/operations/CDC5L.PWMscan.done', 
@@ -1649,7 +1466,6 @@ rule PWMscan_group8:
         'sites/operations/PWMscan.group8.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group9:
     input:
         'sites/operations/DLX3.PWMscan.done', 
@@ -1676,7 +1492,6 @@ rule PWMscan_group9:
         'sites/operations/PWMscan.group9.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group10:
     input:
         'sites/operations/EGR4.PWMscan.done', 
@@ -1703,7 +1518,6 @@ rule PWMscan_group10:
         'sites/operations/PWMscan.group10.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group11:
     input:
         'sites/operations/ETS1.PWMscan.done', 
@@ -1730,7 +1544,6 @@ rule PWMscan_group11:
         'sites/operations/PWMscan.group11.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group12:
     input:
         'sites/operations/FOXD1.PWMscan.done', 
@@ -1757,7 +1570,6 @@ rule PWMscan_group12:
         'sites/operations/PWMscan.group12.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group13:
     input:
         'sites/operations/FUBP1.PWMscan.done', 
@@ -1784,7 +1596,6 @@ rule PWMscan_group13:
         'sites/operations/PWMscan.group13.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group14:
     input:
         'sites/operations/GLIS2.PWMscan.done', 
@@ -1811,7 +1622,6 @@ rule PWMscan_group14:
         'sites/operations/PWMscan.group14.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group15:
     input:
         'sites/operations/HMX3.PWMscan.done', 
@@ -1838,7 +1648,6 @@ rule PWMscan_group15:
         'sites/operations/PWMscan.group15.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group16:
     input:
         'sites/operations/HXB13.PWMscan.done', 
@@ -1865,7 +1674,6 @@ rule PWMscan_group16:
         'sites/operations/PWMscan.group16.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group17:
     input:
         'sites/operations/HXD9.PWMscan.done', 
@@ -1892,7 +1700,6 @@ rule PWMscan_group17:
         'sites/operations/PWMscan.group17.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group18:
     input:
         'sites/operations/KLF14.PWMscan.done', 
@@ -1919,7 +1726,6 @@ rule PWMscan_group18:
         'sites/operations/PWMscan.group18.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group19:
     input:
         'sites/operations/MCR.PWMscan.done', 
@@ -1946,7 +1752,6 @@ rule PWMscan_group19:
         'sites/operations/PWMscan.group19.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group20:
     input:
         'sites/operations/MYBB.PWMscan.done', 
@@ -1973,7 +1778,6 @@ rule PWMscan_group20:
         'sites/operations/PWMscan.group20.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group21:
     input:
         'sites/operations/NGN2.PWMscan.done', 
@@ -2000,7 +1804,6 @@ rule PWMscan_group21:
         'sites/operations/PWMscan.group21.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group22:
     input:
         'sites/operations/NR2E1.PWMscan.done', 
@@ -2027,7 +1830,6 @@ rule PWMscan_group22:
         'sites/operations/PWMscan.group22.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group23:
     input:
         'sites/operations/PAX3.PWMscan.done', 
@@ -2054,7 +1856,6 @@ rule PWMscan_group23:
         'sites/operations/PWMscan.group23.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group24:
     input:
         'sites/operations/PLAL1.PWMscan.done', 
@@ -2081,7 +1882,6 @@ rule PWMscan_group24:
         'sites/operations/PWMscan.group24.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group25:
     input:
         'sites/operations/PRGR.PWMscan.done', 
@@ -2108,7 +1908,6 @@ rule PWMscan_group25:
         'sites/operations/PWMscan.group25.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group26:
     input:
         'sites/operations/RORG.PWMscan.done', 
@@ -2135,7 +1934,6 @@ rule PWMscan_group26:
         'sites/operations/PWMscan.group26.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group27:
     input:
         'sites/operations/SOX10.PWMscan.done', 
@@ -2162,7 +1960,6 @@ rule PWMscan_group27:
         'sites/operations/PWMscan.group27.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group28:
     input:
         'sites/operations/SPI1.PWMscan.done', 
@@ -2189,7 +1986,6 @@ rule PWMscan_group28:
         'sites/operations/PWMscan.group28.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group29:
     input:
         'sites/operations/TBX19.PWMscan.done', 
@@ -2216,7 +2012,6 @@ rule PWMscan_group29:
         'sites/operations/PWMscan.group29.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group30:
     input:
         'sites/operations/TGIF2.PWMscan.done', 
@@ -2243,7 +2038,6 @@ rule PWMscan_group30:
         'sites/operations/PWMscan.group30.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group31:
     input:
         'sites/operations/ZBT49.PWMscan.done', 
@@ -2270,7 +2064,6 @@ rule PWMscan_group31:
         'sites/operations/PWMscan.group31.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group32:
     input:
         'sites/operations/ZN282.PWMscan.done', 
@@ -2297,7 +2090,6 @@ rule PWMscan_group32:
         'sites/operations/PWMscan.group32.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group33:
     input:
         'sites/operations/AGGF1.PWMscan.done', 
@@ -2324,7 +2116,6 @@ rule PWMscan_group33:
         'sites/operations/PWMscan.group33.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group34:
     input:
         'sites/operations/LINC00471.PWMscan.done', 
@@ -2351,7 +2142,6 @@ rule PWMscan_group34:
         'sites/operations/PWMscan.group34.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group35:
     input:
         'sites/operations/CSTF2.PWMscan.done', 
@@ -2378,7 +2168,6 @@ rule PWMscan_group35:
         'sites/operations/PWMscan.group35.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group36:
     input:
         'sites/operations/EDN1.PWMscan.done', 
@@ -2405,7 +2194,6 @@ rule PWMscan_group36:
         'sites/operations/PWMscan.group36.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group37:
     input:
         'sites/operations/GOT1.PWMscan.done', 
@@ -2432,7 +2220,6 @@ rule PWMscan_group37:
         'sites/operations/PWMscan.group37.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group38:
     input:
         'sites/operations/HIST1H2BN.PWMscan.done', 
@@ -2459,7 +2246,6 @@ rule PWMscan_group38:
         'sites/operations/PWMscan.group38.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group39:
     input:
         'sites/operations/IRF6.PWMscan.done', 
@@ -2486,7 +2272,6 @@ rule PWMscan_group39:
         'sites/operations/PWMscan.group39.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group40:
     input:
         'sites/operations/MAGOH.PWMscan.done', 
@@ -2513,7 +2298,6 @@ rule PWMscan_group40:
         'sites/operations/PWMscan.group40.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group41:
     input:
         'sites/operations/MYLK.PWMscan.done', 
@@ -2540,7 +2324,6 @@ rule PWMscan_group41:
         'sites/operations/PWMscan.group41.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group42:
     input:
         'sites/operations/NXPH3.PWMscan.done', 
@@ -2567,7 +2350,6 @@ rule PWMscan_group42:
         'sites/operations/PWMscan.group42.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group43:
     input:
         'sites/operations/POLE3.PWMscan.done', 
@@ -2594,7 +2376,6 @@ rule PWMscan_group43:
         'sites/operations/PWMscan.group43.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group44:
     input:
         'sites/operations/RAB7A.PWMscan.done', 
@@ -2621,7 +2402,6 @@ rule PWMscan_group44:
         'sites/operations/PWMscan.group44.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group45:
     input:
         'sites/operations/RNF138.PWMscan.done', 
@@ -2648,7 +2428,6 @@ rule PWMscan_group45:
         'sites/operations/PWMscan.group45.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group46:
     input:
         'sites/operations/SMUG1.PWMscan.done', 
@@ -2675,7 +2454,6 @@ rule PWMscan_group46:
         'sites/operations/PWMscan.group46.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group47:
     input:
         'sites/operations/TAF1A.PWMscan.done', 
@@ -2702,7 +2480,6 @@ rule PWMscan_group47:
         'sites/operations/PWMscan.group47.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group48:
     input:
         'sites/operations/TRIM21.PWMscan.done', 
@@ -2729,7 +2506,6 @@ rule PWMscan_group48:
         'sites/operations/PWMscan.group48.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group49:
     input:
         'sites/operations/WISP2.PWMscan.done', 
@@ -2756,7 +2532,6 @@ rule PWMscan_group49:
         'sites/operations/PWMscan.group49.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group50:
     input:
         'sites/operations/ZNF131.PWMscan.done', 
@@ -2783,7 +2558,6 @@ rule PWMscan_group50:
         'sites/operations/PWMscan.group50.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group51:
     input:
         'sites/operations/ZNF706.PWMscan.done', 
@@ -2810,7 +2584,6 @@ rule PWMscan_group51:
         'sites/operations/PWMscan.group51.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group52:
     input:
         'sites/operations/TCF7L2.PWMscan.done', 
@@ -2837,7 +2610,6 @@ rule PWMscan_group52:
         'sites/operations/PWMscan.group52.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group53:
     input:
         'sites/operations/ONECUT1.PWMscan.done', 
@@ -2864,7 +2636,6 @@ rule PWMscan_group53:
         'sites/operations/PWMscan.group53.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group54:
     input:
         'sites/operations/POU3F1.PWMscan.done', 
@@ -2891,7 +2662,6 @@ rule PWMscan_group54:
         'sites/operations/PWMscan.group54.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group55:
     input:
         'sites/operations/FOXK2.PWMscan.done', 
@@ -2918,7 +2688,6 @@ rule PWMscan_group55:
         'sites/operations/PWMscan.group55.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group56:
     input:
         'sites/operations/ZNF75A.PWMscan.done', 
@@ -2945,7 +2714,6 @@ rule PWMscan_group56:
         'sites/operations/PWMscan.group56.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group57:
     input:
         'sites/operations/ZNF232.PWMscan.done', 
@@ -2972,7 +2740,6 @@ rule PWMscan_group57:
         'sites/operations/PWMscan.group57.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group58:
     input:
         'sites/operations/GZF1.PWMscan.done', 
@@ -2999,7 +2766,6 @@ rule PWMscan_group58:
         'sites/operations/PWMscan.group58.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group59:
     input:
         'sites/operations/HOXC9.PWMscan.done', 
@@ -3026,7 +2792,6 @@ rule PWMscan_group59:
         'sites/operations/PWMscan.group59.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group60:
     input:
         'sites/operations/RAD21.PWMscan.done', 
@@ -3053,7 +2818,6 @@ rule PWMscan_group60:
         'sites/operations/PWMscan.group60.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group61:
     input:
         'sites/operations/TCF21.PWMscan.done', 
@@ -3080,7 +2844,6 @@ rule PWMscan_group61:
         'sites/operations/PWMscan.group61.done'
     shell:
         'touch {output}'
-
 rule PWMscan_group62:
     input:
         'sites/operations/ZNF652.PWMscan.done', 
