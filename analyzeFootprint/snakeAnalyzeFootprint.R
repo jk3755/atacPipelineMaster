@@ -8,6 +8,9 @@
 #biocLite("Rsamtools", suppressUpdates = TRUE)
 #biocLite("GenomicAlignments", suppressUpdates = TRUE)
 
+## Disable scientific notation in variables
+options(scipen = 999)
+
 ## Load libraries
 cat("Loading libraries...", "\n")
 suppressMessages(library(GenomicRanges))
@@ -29,48 +32,100 @@ geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ##
-sites <- bindingSites[[1]][["sites"]]
-motifWidth <- length(bindingSites[[1]][["PWM"]][1,])
-
-## extend each range +/- 250 bp from motif edges
-resized <- promoters(sites, upstream = 250, downstream = (250 + motifWidth), use.names=TRUE)
-
-## Read in the bam
-bamPath <- "C:\\Users\\jsk33\\Desktop\\SNU61-WT-01-repmerged.bam"
+numMotif <- length(bindingSites)
 bamFile <- BamFile(bamPath)
 
-## Set the read-in parameters
-sites <- bindingSites[[1]][["sites"]]
-param <- ScanBamParam(which = sites)
+## Initiate an R object to hold all generated data
+footprintData <- list()
+for (a in 1:numMotif){
+  com <- paste0("footprintData$motif", a, " <- list()")
+  eval(parse(text = com))} # end for (a in 1:numMotif)
 
-## Use GenomicAlignments package to read in bam file to GRanges, also very fast
-## Consider each read as a unique element (insertion), not paired end
-bamIn <- readGAlignments(bamFile, param = param)
 
-## Convert GAlignments to GRanges
-grIn <- granges(bamIn)
-## Trim everything but standard chromosomes, trim out of bounds ranges
-grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
-grIn <- trim(grIn)
+## Begin analysis
+for (b in 1:numMotif){
+  
+  ## Initiate a temporary list object to store data, will be transferred to footprintData list
+  tempData <- list()
+  
+  ##
+  tempData$PWM <- bindingSites[[b]][["PWM"]]
+  tempData$sites <- bindingSites[[b]][["sites"]]
+  tempData$motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
+  
+  ## extend each range +/- 250 bp from motif edges
+  tempData$extSites <- promoters(tempData$sites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
 
-## Convert the reads to insertions with width = 1
-grIn2 <- resize(grIn, width = 1)
+  ## Read in the data from bam file for current ranges
+  param <- ScanBamParam(which = tempData$extSites)
+  
+  ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
+  ## Consider each read as a unique element (insertion), not paired end
+  bamIn <- readGAlignments(bamFile, param = param)
+  
+  ## Convert GAlignments to GRanges
+  grIn <- granges(bamIn)
+  ## Trim everything but standard chromosomes, trim out of bounds ranges
+  grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
+  grIn <- trim(grIn)
+  ## Convert the reads to insertions with width = 1
+  grIn2 <- resize(grIn, width = 1)
+  ## Subset the Granges object into plus and minus strands for shifting
+  plusIdx <- which(strand(grIn2) == "+")
+  minusIdx <- which(strand(grIn2) == "-")
+  grPlus <- grIn2[plusIdx]
+  grMinus <- grIn2[minusIdx]
+  ## Shift the ATACseq reads to account for Tn5 insertion mechanism 
+  ## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
+  grPlusShifted <- shift(grPlus, shift=4L)
+  grMinusShifted <- shift(grMinus, shift=-5L)
+  ## Merge the plus and minus strand shifted Granges
+  grMerged <- c(grPlusShifted, grMinusShifted)
+  tempData$shiftedInsertions <- grMerged
+  
+  ## Perform the footprint calculations
+  ## Convert Tn5 insertions corrected Granges to Rle object
+  insRLE <- coverage(grMerged)
+  ## Get the matching sites
+  extSites <- tempData$extSites
+  extSites <- keepStandardChromosomes(extSites, pruning.mode="coarse")
+  extSites <- trim(extSites)
+  ## Create a views object for the Rle list using the Granges sites data
+  insViews <- Views(insRLE, extSites)
+  ## Convert to a matrix
+  insMatrix <- as.matrix(x)
+  
+  ## Calculate the insertion probability at each basepair
+  rawTotalSignal <- sum(insMatrix)
+  rawProfile <- matrix(data = NA, ncol = length(insMatrix[1,]), nrow = 2)
+  rownames(rawProfile) <- c("Column sums", "Insertion frequency")
+  ##
+  for (c in 1:length(insMatrix[1,])){
+    rawProfile[1,c] <- sum(insMatrix[,c])
+    rawProfile[2,c] <- (rawProfile[1,c] / totalSignal) * 100
+  } # end for (c in 1:length(insMatrix[1,]))
+  
+  ## Store the data
+  tempData$extSites <- extSites
+  tempData$insRLE <- insRLE
+  tempData$insViews <- insViews
+  tempData$insMatrix <- insMatrix
+  tempData$rawTotalSignal <- rawTotalSignal
+  tempData$rawProfile <- rawProfile
+  
+  
+  
+}
 
-## Subset the Granges object into plus and minus strands for shifting
-plusIdx <- which(strand(grIn2) == "+")
-minusIdx <- which(strand(grIn2) == "-")
-grPlus <- grIn2[plusIdx]
-grMinus <- grIn2[minusIdx]
 
-## Shift the ATACseq reads to account for Tn5 insertion mechanism 
-## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
-grPlusShifted <- shift(grPlus, shift=4L)
-grMinusShifted <- shift(grMinus, shift=-5L)
-## Merge the plus and minus strand shifted Granges
-grMerged <- c(grPlusShifted, grMinusShifted)
+
+
+
+
+
 
 ## Convert the Granges insertions to Rle encoding
-insRLE <- coverage(grMerged)
+
 
 
 ##
