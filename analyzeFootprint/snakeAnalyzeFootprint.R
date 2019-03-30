@@ -1,3 +1,90 @@
+
+## Load libraries
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(stats4))
+suppressMessages(library(BiocGenerics))
+suppressMessages(library(parallel))
+suppressMessages(library(Rsamtools))
+suppressMessages(library(GenomicAlignments))
+
+##
+sites <- bindingSites[[1]][["sites"]]
+motifWidth <- length(bindingSites[[1]][["PWM"]][1,])
+
+## extend each range +/- 250 bp from motif edges
+resized <- promoters(sites, upstream = 250, downstream = (250 + motifWidth), use.names=TRUE)
+
+## Read in the bam
+bamPath <- "C:\\Users\\jsk33\\Desktop\\SNU61-WT-01-repmerged.bam"
+bamFile <- BamFile(bamPath)
+
+## Set the read-in parameters
+sites <- bindingSites[[1]][["sites"]]
+param <- ScanBamParam(which = sites)
+
+## Use GenomicAlignments package to read in bam file to GRanges, also very fast
+## Consider each read as a unique element (insertion), not paired end
+bamIn <- readGAlignments(bamFile, param = param)
+
+## Convert GAlignments to GRanges
+grIn <- granges(bamIn)
+## Trim everything but standard chromosomes, trim out of bounds ranges
+grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
+grIn <- trim(grIn)
+
+## Convert the reads to insertions with width = 1
+grIn2 <- resize(grIn, width = 1)
+
+## Subset the Granges object into plus and minus strands for shifting
+plusIdx <- which(strand(grIn2) == "+")
+minusIdx <- which(strand(grIn2) == "-")
+grPlus <- grIn2[plusIdx]
+grMinus <- grIn2[minusIdx]
+
+## Shift the ATACseq reads to account for Tn5 insertion mechanism 
+## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
+grPlusShifted <- shift(grPlus, shift=4L)
+grMinusShifted <- shift(grMinus, shift=-5L)
+## Merge the plus and minus strand shifted Granges
+grMerged <- c(grPlusShifted, grMinusShifted)
+
+## Convert the Granges insertions to Rle encoding
+insRLE <- coverage(grMerged)
+
+
+## read in bam file with input seqlev specified by users
+
+if(anchor=="cut site"){
+  bamIn <- mapply(function(.b, .i) readGAlignments(.b, .i, param = param), 
+                  bampath, baipath, SIMPLIFY = FALSE)
+}else{
+  bamIn <- mapply(function(.b, .i) readGAlignmentPairs(.b, .i, param = param), 
+                  bampath, baipath, SIMPLIFY = FALSE)
+}
+##
+bamIn <- lapply(bamIn, as, Class = "GRanges")
+if(!is(bamIn, "GRangesList")) bamIn <- GRangesList(bamIn)
+bamIn <- unlist(bamIn)
+seqlevelsStyle(bamIn) <- seqlevelsStyle(genome)
+if(anchor=="cut site"){
+  ## keep 5'end as cutting sites
+  bamIn <- promoters(bamIn, upstream=0, downstream=1)
+}else{
+  ## keep fragment center
+  bamIn <- reCenterPeaks(bamIn, width=1)
+}
+##
+libSize <- length(bamIn)
+coverageSize <- sum(as.numeric(width(reduce(bamIn, ignore.strand=TRUE))))
+libFactor <- libSize / coverageSize
+return(libFactor)
+
+
+
+
+
+###################################################################
+
 cat("Loading libraries...", "\n")
 suppressMessages(library(ATACseqQC))
 suppressMessages(library(GenomicRanges))
@@ -338,7 +425,7 @@ for (x in 1:num_motifs){
     options(warn=-1)
     
     func <- tryCatch({
-    
+      
       bfPassPeakSignals <- list()
       bfPassPeakSignals$"+" <- peakSignals[["+"]][idxbfPeakPass,]
       bfPassPeakSignals$"-" <- peakSignals[["-"]][idxbfPeakPass,]
@@ -474,7 +561,7 @@ for (x in 1:num_motifs){
       return(NA)
     },
     finally={})
-
+    
   } # end if (file.exists(info_path) == TRUE)
 } # end for (x in 1:num_motifs)
 
