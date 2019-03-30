@@ -1,11 +1,32 @@
 
+## Install libraries, if necessary
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("GenomicRanges", suppressUpdates = TRUE)
+#biocLite("stats4", suppressUpdates = TRUE)
+#biocLite("BiocGenerics", suppressUpdates = TRUE)
+#biocLite("parallel", suppressUpdates = TRUE)
+#biocLite("Rsamtools", suppressUpdates = TRUE)
+#biocLite("GenomicAlignments", suppressUpdates = TRUE)
+
 ## Load libraries
+cat("Loading libraries...", "\n")
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(stats4))
 suppressMessages(library(BiocGenerics))
 suppressMessages(library(parallel))
 suppressMessages(library(Rsamtools))
 suppressMessages(library(GenomicAlignments))
+
+## Set snakemake variables
+cat("Setting snakemake variables...", "\n")
+bamPath <- snakemake@input[[1]]
+baiPath <- snakemake@input[[2]]
+sitesPath <- snakemake@input[[3]]
+peakPath <- snakemake@input[[4]]
+outPath <- snakemake@output[[1]]
+sampleName <- snakemake@wildcards[["mergedsample"]]
+geneName <- snakemake@wildcards[["gene"]]
+dirPath <- snakemake@wildcards[["path"]]
 
 ##
 sites <- bindingSites[[1]][["sites"]]
@@ -51,6 +72,9 @@ grMerged <- c(grPlusShifted, grMinusShifted)
 ## Convert the Granges insertions to Rle encoding
 insRLE <- coverage(grMerged)
 
+
+##
+x <- Views(insRLE, )
 
 ## read in bam file with input seqlev specified by users
 
