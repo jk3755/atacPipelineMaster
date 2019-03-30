@@ -93,7 +93,7 @@ for (b in 1:numMotif){
   ## Create a views object for the Rle list using the Granges sites data
   insViews <- Views(insRLE, extSites)
   ## Convert to a matrix
-  insMatrix <- as.matrix(x)
+  insMatrix <- as.matrix(insViews)
   
   ## Calculate the insertion probability at each basepair
   rawTotalSignal <- sum(insMatrix)
@@ -102,7 +102,7 @@ for (b in 1:numMotif){
   ##
   for (c in 1:length(insMatrix[1,])){
     rawProfile[1,c] <- sum(insMatrix[,c])
-    rawProfile[2,c] <- (rawProfile[1,c] / totalSignal) * 100
+    rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
   } # end for (c in 1:length(insMatrix[1,]))
   
   ## Store the data
@@ -112,51 +112,27 @@ for (b in 1:numMotif){
   tempData$insMatrix <- insMatrix
   tempData$rawTotalSignal <- rawTotalSignal
   tempData$rawProfile <- rawProfile
+  tempData$libSize <- length(bamIn)
+  tempData$coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
+  tempData$libFactor <- tempData$libSize / tempData$coverageSize
+  ##
+  rm(extSites, insRLE, insViews, insMatrix, rawTotalSignal, rawProfile, bamIn)
+  rm(grIn, grIn2, plusIdx, minusIdx, grPlus, grMinus, grPlusShifted, grMinusShifted)
+  
+  ## Calculate flanking accessibility and footprint depth data
+  rawFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = length(tempData$insMatrix[,1]))
+  colnames(rawFootprintMetrics) <- c("Background", "Flanking", "Motif", "Flanking Accessibility", "Footprint Depth")
   
   
+  
+  #### Transfer all the data for the current motif to the storage object
+  com <- paste0("footprintData$motif", a, " <- tempData")
+  eval(parse(text = com))
   
 }
 
 
 
-
-
-
-
-
-## Convert the Granges insertions to Rle encoding
-
-
-
-##
-x <- Views(insRLE, )
-
-## read in bam file with input seqlev specified by users
-
-if(anchor=="cut site"){
-  bamIn <- mapply(function(.b, .i) readGAlignments(.b, .i, param = param), 
-                  bampath, baipath, SIMPLIFY = FALSE)
-}else{
-  bamIn <- mapply(function(.b, .i) readGAlignmentPairs(.b, .i, param = param), 
-                  bampath, baipath, SIMPLIFY = FALSE)
-}
-##
-bamIn <- lapply(bamIn, as, Class = "GRanges")
-if(!is(bamIn, "GRangesList")) bamIn <- GRangesList(bamIn)
-bamIn <- unlist(bamIn)
-seqlevelsStyle(bamIn) <- seqlevelsStyle(genome)
-if(anchor=="cut site"){
-  ## keep 5'end as cutting sites
-  bamIn <- promoters(bamIn, upstream=0, downstream=1)
-}else{
-  ## keep fragment center
-  bamIn <- reCenterPeaks(bamIn, width=1)
-}
-##
-libSize <- length(bamIn)
-coverageSize <- sum(as.numeric(width(reduce(bamIn, ignore.strand=TRUE))))
-libFactor <- libSize / coverageSize
-return(libFactor)
 
 
 
