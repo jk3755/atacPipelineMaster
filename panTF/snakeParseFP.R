@@ -37,6 +37,30 @@ footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rd
 load(footprintDataPath)
 
 ##
+numMotif <- length(footprintData)
+
+## Performing parsing operations
+cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
+for (a in 1:numMotif){
+    
+    ## Prepare the data
+    com <- paste0("tempData <- footprintData$motif", a)
+    eval(parse(text = com))
+    numSites <- length(tempData[["insMatrix"]][,1])
+    siteTotalSignal <- c()
+    
+    ## Calculate total signal for each site
+    for (b in 1:numSites){
+      siteTotalSignal[b] <- sum(tempData[["insMatrix"]][b,])} # end for (b in 1:numSites)
+    
+    
+    
+    
+    
+} # end for (a in 1:numMotif)
+
+
+##
 cat("Building functions", "\n")
 #
 calcLibFactor <- function(mt, bampath, baipath){
@@ -132,13 +156,6 @@ buildProfile <- function(sigs, libFactor, upstream, wid, downstream){
   profileInfo$profile <- Profile
   return(profileInfo)
 } # end buildProfile
-#
-pwm2pfm <- function(pfm, name="motif"){
-  if(!all(round(colSums(pfm), digits=4)==1)){
-    return(NULL)
-  }
-  new("pfm", mat=as.matrix(pfm), name=name)
-} # end pwm2pfm
 #
 generateNullFP <- function(n, t, s, m){
   #This script will be used to generate indiviudal null models at predicted motif binding sites across the genome when scanning for TF footprinting from ATAC-seq data. To generate these null models, the current model will need to:
