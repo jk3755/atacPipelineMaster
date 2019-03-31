@@ -8,6 +8,7 @@
 #biocLite("Rsamtools", suppressUpdates = TRUE)
 #biocLite("GenomicAlignments", suppressUpdates = TRUE)
 #biocLite("genomation", suppressUpdates = TRUE)
+#intall.packages(ggplot2)
 
 ## Disable scientific notation in variables
 options(scipen = 999)
@@ -21,6 +22,7 @@ suppressMessages(library(parallel))
 suppressMessages(library(Rsamtools))
 suppressMessages(library(GenomicAlignments))
 suppressMessages(library(genomation))
+suppressMessages(library(ggplot2))
 
 ## Set snakemake variables
 cat("Setting snakemake vars...", "\n")
@@ -30,13 +32,68 @@ sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
+## Build functions
+cat("Building functions...", "\n")
+generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
+  # This script will be used to generate indiviudal null models at predicted motif binding sites across the genome when scanning for TF footprinting from ATAC-seq data. To generate these null models, the current model will need to:
+  #- Consider the total signal (number of insertions) at each specific ~200 bp locus
+  #- Use the actul underlying reference sequence of that ~200 bp stretch from the hg38 reference genome
+  #- Use published or experimentally derived models of Tn5 sequence specific insertion bias
+  #- For each locus, build a probablistic model of insertion site distributions based on the underlying sequence and Tn5 insertion bias
+  #- Generate the null model graph by weighted random residstribution of the total observed signal at that site
+  #- Importantly, the null model must be generated separately for the plus and minus strand, it can then be combined and compared to the combined signal from the reference observed signal at that sequence
+  # These null models can then be used for a site-by-site comparison of the null model against the observed data to accept or reject the null hypothesis
+  # iterations = number of iterations
+  # inputSignals = unique values for total signal
+  # analysisWidth = total bp in region of interest (flank + background + motif)
+  # motifWidth = motif width
+  
+  # declare vector of size n to store average motif signal values
+  averages <- c()
+  
+  # generate the null models and calculate motif averages
+  for (a in 1:iterations){
+    
+    # declare the null vector
+    null <- c(1:(analysisWidth))
+    
+    # randomly distribute the total signal
+    # size = the number of values to distribute
+    # prob = probability of each site
+    # length = length of the generated vector
+    null <- c(as.vector(rmultinom(1, size=inputSignal, prob=rep(1, length(null)))))
+    
+    ## Calculate the mean signal in motif region
+    motifStart <- ((analysisWidth - motifWidth)/2)
+    motifEnd <- (motifStart + motifWidth)
+    motifAvg <- (sum(null[motifStart:motifEnd])) / motifWidth
+    
+    ## Store the average values
+    averages[a] <- motifAvg
+    
+  } # end for (a in 1:n)
+  return(averages)
+} # end generateNullFP function
+
+plotInsProb <- function(){
+  
+  
+  
+  
+  
+}
+  
+  
+  
+  
+
 ## Load the footprintData file
 cat("Loading footprintData file...", "\n")
 footprintDataPath <- gsub("operations", "data/raw", footprintDataPath)
 footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
 load(footprintDataPath)
 
-##
+## The number of unique motifs for the current gene
 numMotif <- length(footprintData)
 
 ## Performing parsing operations
@@ -47,22 +104,37 @@ for (a in 1:numMotif){
     com <- paste0("tempData <- footprintData$motif", a)
     eval(parse(text = com))
     numSites <- length(tempData[["insMatrix"]][,1])
+    siteWidth <- length(tempData[["insMatrix"]][1,])
+    motifWidth <- tempData[["motifWidth"]]
     siteTotalSignal <- c()
     
     ## Calculate total signal for each site
     for (b in 1:numSites){
       siteTotalSignal[b] <- sum(tempData[["insMatrix"]][b,])} # end for (b in 1:numSites)
     
+    ## Find the unique values for total signal and generate null models
+    uniqueTotalSignals <- unique(siteTotalSignal)
     
+    ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
+    nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
+    colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
+    
+    ## Calculate the null models
+    for (c in 1:length(uniqueTotalSignals)){
+      nullVec <- generateNullFP(1000, uniqueTotalSignals[c], siteWidth, motifWidth)
+      nullModels[c,1] <- uniqueTotalSignals[c]
+      nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
     
     
     
 } # end for (a in 1:numMotif)
 
 
-##
-cat("Building functions", "\n")
-#
+
+
+
+
+
 calcLibFactor <- function(mt, bampath, baipath){
   
   mt <- keepStandardChromosomes(mt, pruning.mode="coarse")
@@ -157,68 +229,7 @@ buildProfile <- function(sigs, libFactor, upstream, wid, downstream){
   return(profileInfo)
 } # end buildProfile
 #
-generateNullFP <- function(n, t, s, m){
-  #This script will be used to generate indiviudal null models at predicted motif binding sites across the genome when scanning for TF footprinting from ATAC-seq data. To generate these null models, the current model will need to:
-  #- Consider the total signal (number of insertions) at each specific ~200 bp locus
-  #- Use the actul underlying reference sequence of that ~200 bp stretch from the hg38 reference genome
-  #- Use published or experimentally derived models of Tn5 sequence specific insertion bias
-  #- For each locus, build a probablistic model of insertion site distributions based on the underlying sequence and Tn5 insertion bias
-  #- Generate the null model graph by weighted random residstribution of the total observed signal at that site
-  #- Importantly, the null model must be generated separately for the plus and minus strand, it can then be combined and compared to the combined signal from the reference observed signal at that sequence
-  # These null models can then be used for a site-by-site comparison of the null model against the observed data to accept or reject the null hypothesis
-  # n = iterations
-  # t = unique values for total signal
-  # s = total bp in region of interest (flank + motif)
-  # m = motif width
-  
-  # declare vector of size n to store average motif signal values
-  averages <- c()
-  
-  # generate the null models and calculate motif averages
-  for (a in 1:n){
-    
-    # declare the null vector
-    null <- c(1:(s))
-    
-    # randomly distribute the total signal
-    # size = the number of values to distribute
-    # prob = probability of each site
-    # length = length of the generated vector
-    null <- c(as.vector(rmultinom(1, size=t, prob=rep(1, length(null)))))
-    
-    # calculate the average signal in the motif region
-    b <- (s - 100 - m) # start of motif
-    c <- (s - 100) # end of motif
-    avg <- sum(null[b:c])
-    avg <- (avg/m)
-    
-    # store the values
-    averages[a] <- avg
-    
-    ### plotting
-    # make the density plot
-    # generate the density distribution
-    # adjust can be modified to adjust the kernel estimation bandwidth
-    #d <- density(averages, adjust=1, from=0)
-    # make the plot
-    # main can be specified to make a chart title
-    # make the title string
-    #title <- paste0("Motif signal means", "\n", "n = ", n, ", input signal = ", t, ", motif size = ", m)
-    #plot(d, main=title)
-    ## check for uniform distribution with QQ plot
-    #qqplot(averages, runif(1000))
-    #abline(0,1)
-    
-  } # end for (a in 1:n)
-  return(averages)
-} # end generateNullFP function
 
-
-##
-cat("Parsing binding sites for gene", genename, " from sample", samplename, "\n")
-load(sitespath)
-num_motifs <- length(bindingSites)
-cat("Found ", num_motifs, " motifs", "\n")
 
 
 for (x in 1:num_motifs){
