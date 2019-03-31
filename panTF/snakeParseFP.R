@@ -191,9 +191,9 @@ for (a in 1:numMotif){
     siteTotalSignal <- c()
     
     ## Make graph of the raw peak sites
-    #svgPath <- paste0(dirPath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
-    #svg(file = svgPath)
-    #cat("Saving peaks footprint image at path:", svgPath, "\n")
+    svgPath <- paste0(dirPath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+    svg(file = svgPath)
+    cat("Saving peaks footprint image at path:", svgPath, "\n")
     plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
     plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
     dev.off()
@@ -260,9 +260,9 @@ for (a in 1:numMotif){
     bfNumSites <- length(idxbfPeakPass)
     
     ## Make a plot for the bf passing sites
-    #svgPath <- paste0(dirPath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
-    #svg(file = svgPath)
-    #cat("Saving peaks footprint image at path:", svgPath, "\n")
+    svgPath <- paste0(dirPath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
+    svg(file = svgPath)
+    cat("Saving peaks footprint image at path:", svgPath, "\n")
     plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
     plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
     dev.off()
@@ -351,11 +351,10 @@ for (a in 1:numMotif){
     return(NA)
     },
     finally={})
+    gc()
     
 } # end for (a in 1:numMotif)
-
+gc()
 ## Finish the script and create the output file for snakemake
-##
-save(parsedSitesInfo, file = info_path)
+save(footprintData, file = outPath)
 cat("Finished!", "\n")
-file.create(outpathdone)

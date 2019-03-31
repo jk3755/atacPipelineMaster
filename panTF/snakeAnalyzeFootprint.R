@@ -54,6 +54,9 @@ for (a in 1:numMotif){
 cat("Analyzing footprints for", geneName, "\n")
 cat("Found", numMotif, "unique motifs", "\n")
 
+## Index counter for motif naming, required in case some motifs have no matches in peak sites
+idxMotif <- 1
+
 ## Begin analysis
 for (b in 1:numMotif){
   
@@ -71,6 +74,13 @@ for (b in 1:numMotif){
   peakSites <- subsetByOverlaps(allSites, grPeaks)
   numPeakSites <- length(peakSites)
   cat("Found", numPeakSites, "motif binding sites in peak accessibility regions", "\n")
+  
+  if (numPeakSites == 0){
+    
+    next
+    
+  } else {
+  
   ## Transfer the data
   tempData$PWM <- bindingSites[[b]][["PWM"]]
   tempData$peakSites <- peakSites
@@ -87,7 +97,7 @@ for (b in 1:numMotif){
   cat("Loading relevant reads", "\n")
   bamIn <- readGAlignments(bamFile, param = param)
   ## Convert GAlignments to GRanges
-  cat("Converting reads to inserttions", "\n")
+  cat("Converting reads to insertions", "\n")
   grIn <- granges(bamIn)
   ## Trim everything but standard chromosomes, trim out of bounds ranges
   grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
@@ -167,8 +177,13 @@ for (b in 1:numMotif){
   
   #### Transfer all the data for the current motif to the storage object
   cat("Transferring all data to storage object footprintData", "\n")
-  com <- paste0("footprintData$motif", b, " <- tempData")
+  com <- paste0("footprintData$motif", idxMotif, " <- tempData")
   eval(parse(text = com))
+  
+  ## Update the motif index
+  idxMotif <- (idxMotif + 1)
+  
+  } # end if (numPeakSites = 0)
   
 } # end for (b in 1:numMotif)
 
