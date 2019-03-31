@@ -1,0 +1,16 @@
+## The snakemake example
+# samples:
+#     A: data/samples/A.fastq
+#     B: data/samples/B.fastq
+# Now, we can remove the statement defining SAMPLES from the Snakefile and change the rule bcftools_call to
+
+# rule bcftools_call:
+#     input:
+#         fa="data/genome.fa",
+#         bam=expand("sorted_reads/{sample}.bam", sample=config["samples"]),
+#         bai=expand("sorted_reads/{sample}.bam.bai", sample=config["samples"])
+#     output:
+#         "calls/all.vcf"
+#     shell:
+#         "samtools mpileup -g -f {input.fa} {input.bam} | "
+#         "bcftools call -mv - > {output}"
