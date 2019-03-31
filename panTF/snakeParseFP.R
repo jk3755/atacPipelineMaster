@@ -8,7 +8,9 @@
 #biocLite("Rsamtools", suppressUpdates = TRUE)
 #biocLite("GenomicAlignments", suppressUpdates = TRUE)
 #biocLite("genomation", suppressUpdates = TRUE)
-#intall.packages(ggplot2)
+#biocLite("seqLogo", suppressUpdates = TRUE)
+#install.packages("ggplot2")
+install.packages("ggpubr")
 
 ## Disable scientific notation in variables
 options(scipen = 999)
@@ -22,7 +24,9 @@ suppressMessages(library(parallel))
 suppressMessages(library(Rsamtools))
 suppressMessages(library(GenomicAlignments))
 suppressMessages(library(genomation))
+suppressMessages(library(seqLogo))
 suppressMessages(library(ggplot2))
+suppressMessages(library(ggpubr))
 
 ## Set snakemake variables
 cat("Setting snakemake vars...", "\n")
@@ -75,15 +79,106 @@ generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
   return(averages)
 } # end generateNullFP function
 
-plotInsProb <- function(){
+
+
+## Test the function
+plotInsProb(motifWidth = motifWidth, motifPWM = tempData[["PWM"]], insVector = Profile)
+
+
+plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALSE, insVector, svgPath = NULL){
+  
+  ## This function uses code adapted from the R package ATACSeqQC
+  ## Plot the figure in a new page in the viewport
+  grid.newpage()
+  ## Plot labels
+  xlab = "Dist. to motif (bp)"
+  ylab = "Tn5 fragmentation probability"
+  ## Data
+  totalBP <- length(insVector)
+  flankBP <- ((totalBP - motifWidth)/2) ## The number of BP flanking the motif on each side
+  
+  ## Add the plotting margins to the viewport (sets the outer bounds of the entire image)
+  vp <- plotViewport(margins=c(5.1, 5.1, 4.1, 2.1), name="plotRegion")
+  pushViewport(vp)
+  
+  ## x and y axis limits
+  xlim <- c(0, S+1) # x axis limits
+  ylim <- c(0, max(insVector) * 1.12) # y axis limits
+  
+  ## Viewport for the graph plotting area
+  vp1 <- viewport(y=.4, height=.8,
+                  xscale=xlim,
+                  yscale=ylim,
+                  name="footprints")
+  pushViewport(vp1)
+  
+  ## Add the insertion probability data line
+  grid.lines(x=1:S,
+             y=insVector,
+             default.units="native",
+             gp=gpar(lwd = 1, col = "darkred")) # lwd = line width, col = line color
   
   
+  ## This code adds the x and y axis lines
+  # at = is a numeric vector with the x-axis locations for tick marks
+  grid.xaxis(at = 
+               c(seq(1, flankBP, length.out = 3),
+                 flankBP + seq(1, motifWidth),
+                 flankBP + motifWidth + seq(1, flankBP, length.out = 3)),
+             label = c(-(flankBP + 1 - seq(1, flankBP + 1, length.out = 3)),
+                       rep("", motifWidth),
+                       seq(0, flankBP, len = 3)))
+  
+  grid.yaxis()
+  
+  ## Adds the dashed line across the x-axis horizontally (motif hashes)
+  grid.lines(x=c(flankBP, flankBP, 0), y=c(0, max(insVector), ylim[2]),
+             default.units="native", gp=gpar(lty=2))
+  
+  ##
+  grid.lines(x=c(flankBP + motifWidth + 1, flankBP + motifWidth + 1, S),
+             y=c(0, max(insVector), ylim[2]),
+             default.units="native", gp=gpar(lty=2))
+  
+  ## Updates the viewport
+  upViewport()
+  
+  ##
+  vp2 <- viewport(y=.9, height=.2,
+                  xscale=c(0, S+1),
+                  name="motif")
+  pushViewport(vp2)
+  
+  ## Resets the viewport position twice, for plotting the x and y axis labels
+  upViewport()
+  
+  legvp <- viewport(x=0.5,
+                    y=0.5,
+                    width=convertX(unit(1, "lines"), unitTo="npc"),
+                    height=convertY(unit(1, "lines"), unitTo="npc"),
+                    just=c("right", "top"), name="legendWraper")
+  pushViewport(legvp)
+  upViewport()
+  grid.text(legTitle,
+            y=unit(1, "npc")-convertY(unit(1, "lines"), unitTo="npc"),
+            gp=gpar(cex=1.2, fontface="bold"))
+  
+  upViewport()
   
   
+  ## Add the x and y axis labels to the image
+  grid.text(xlab, y=unit(1, 'lines'))
+  grid.text(ylab, x=unit(1, 'line'), rot = 90)
+
+} # end plotInsProb function
+
+
+
+
+
   
-}
-  
-  
+
+
   
   
 
