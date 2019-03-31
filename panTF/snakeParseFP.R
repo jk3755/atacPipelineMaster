@@ -182,8 +182,9 @@ for (a in 1:numMotif){
     siteWidth <- length(tempData[["insMatrix"]][1,])
     motifWidth <- tempData[["motifWidth"]]
     PWM <- footprintData[["motif1"]][["PWM"]][a]
-    insMatrix <- tempData[["rawProfile"]]
-    insVector <- insMatrix[2,]
+    insMatrix <- tempData[["insMatrix"]]
+    insProfile <- tempData[["rawProfile"]]
+    insVector <- insProfile[2,]
     siteTotalSignal <- c()
     
     ## Make graph of the raw peak sites
@@ -211,65 +212,66 @@ for (a in 1:numMotif){
       nullModels[c,1] <- uniqueTotalSignals[c]
       nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
 
+    ## Perform a one-tailed t-test to generate a p-value for each observed motif site
+    cat("Performing one-tailed t-tests on peak subset...", "\n")
+    ttestPeak <- list() # list to store the results of the t-tests
+    pvaluePeak <- c() # vector to store the p-values
+    tvaluePeak <- c() # vector to store the t-value
+    
+    ## Perform t-test on all sites
+    for (d in 1:numSites){
+    ## Retrieve the total signal for the current site
+    currentSignal <- c(siteTotalSignal[d])
+    ## Retrieve the appropriate null model
+    currentNullModel <- nullModels[which(nullModels[,1]==currentSignal),2]
+    ## Perform the t-test
+    ttestPeak[[d]] <- t.test(insMatrix[d,250:(250+motifWidth)], mu=currentNullModel, alternative="less", conf.level = 0.95)
+    pvaluePeak[d] <- ttestPeak[[d]][["p.value"]]
+    tvaluePeak[d] <- ttestPeak[[d]][["statistic"]][["t"]]
+    } # for (d in 1:numSites)
       
+    ## Get the indices of the sites that are lower than p = 0.05
+    cat("Selecting p-value passing sites...", "\n")
+    idxPvaluePass <- which(pvaluePeak < 0.05)
+    peakPvaluePass <- pvaluePeak[idxPvaluePass]
       
-      ##
-      for (i in 1:numUnique){
-        n <- 1000
-        t <- uniqueSignals[i]
-        s <- bpTotal
-        m <- motifWidth
-        nullSims[[i]] <- generateNullFP(n,t,s,m)
-        nullMean[i] <- mean(nullSims[[i]])}
+    ## Perform bonferroni correction
+    cat("Performing bonferroni correction...", "\n")
+    idxbfPeakPass <- which(pvaluePeak < (0.05/numSites))
+    bfPvaluePeakPass <- pvaluePeak[idxbfPeakPass]
       
+    ## Subset the insertion matrix based on the bonferroni passing sites only
+    cat("Subsetting sites based on bf corrected p-values...", "\n")
+    bfInsMatrix <- insMatrix[idxbfPeakPass,]
+    ##
+    bfTotalSignal <- sum(bfInsMatrix)
+    bfProfile <- matrix(data = NA, ncol = length(bfInsMatrix[1,]), nrow = 2)
+    rownames(bfProfile) <- c("Column sums", "Insertion frequency")
+    for (e in 1:length(bfInsMatrix[1,])){
+      bfProfile[1,e] <- sum(bfInsMatrix[,e])
+      bfProfile[2,e] <- (bfProfile[1,e] / bfTotalSignal) * 100
+    } # end for (e in 1:length(bfInsMatrix[1,]))
+    ##
+    bfVector <- bfProfile[2,]
+    
+    ## Make a plot for the bf passing sites
+    svgPath <- paste0(dirpath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+    svg(file = svgPath)
+    cat("Saving peaks footprint image at path:", svgPath, "\n")
+    plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
+    plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
+    dev.off()
       
-      ## Perform a one-tailed t-test to generate a p-value for each observed motif site
-      cat("Performing one-tailed t-tests on peak subset...", "\n")
-      ttestPeak <- list() # list to store the results of the t-tests
-      pvaluePeak <- c() # vector to store the p-values
-      tvaluePeak <- c() # vector to store the t-value
-      ## Need to combine the signals into one matrix (+/- strand)
-      ## use this list structure as it is necessary for downstream featureAlignedHeatmaps
-      #combinedGenomeSignal <- list()
-      #combinedGenomeSignal$signal <- matrix(data = NA, nrow = numPeakSites, ncol = bpTotal)
-      # combine the signals
-      #for (i in 1:numPeakSites){combinedGenomeSignal$signal[i,] <- peakSignals[["+"]][i,] + peakSignals[["-"]][i,]}
+    ## suppress warnings globally here, as they will disrupt the tryCatch block
+    ## will need to improve this code at some point
+    options(warn = -1)
       
-      ## 
-      for (i in 1:numPeakSites){
-        currentSignal <- c(combinedPeakSignal$signal[i,])
-        # retrieve the appropriate null model
-        currentNullModel <- nullSims[[which(uniqueSignals==sum(currentSignal))]]
-        # do the t-test
-        ttestPeak[[i]] <- t.test(currentSignal[100:(100+motifWidth)], mu=mean(currentNullModel), alternative="less", conf.level = 0.95)
-        pvaluePeak[i] <- ttestPeak[[i]][["p.value"]]
-        tvaluePeak[i] <- ttestPeak[[i]][["statistic"]][["t"]]
-      }
-      
-      ## get the indices of the sites that are lower than p = 0.05
-      cat("Selecting p-value passing sites...", "\n")
-      idxPeakPvaluePass <- which(pvaluePeak < 0.05)
-      peakPvaluePass <- pvaluePeak[idxPeakPvaluePass]
-      
-      ## bonferroni correction
-      cat("Performing bonferroni correction...", "\n")
-      idxbfPeakPass <- which(pvaluePeak < (0.05/numPeakSites))
-      bfPeakPass <- pvaluePeak[idxbfPeakPass]
-      
-      ## Subset the peak sites based on bf-corrected p-values
-      cat("Subsetting binding sites based on bf corrected p-values...", "\n")
-      
-      
-      ## suppress warnings globally here, as they will disrupt the tryCatch block
-      ## will need to improve this code at some point
-      options(warn=-1)
-      
-      func <- tryCatch({
+    func <- tryCatch({
         
-        bfPassPeakSignals <- list()
-        bfPassPeakSignals$"+" <- peakSignals[["+"]][idxbfPeakPass,]
-        bfPassPeakSignals$"-" <- peakSignals[["-"]][idxbfPeakPass,]
-        bfPassPeakSites <- peakSites[idxbfPeakPass]
+      bfPassPeakSignals <- list()
+      bfPassPeakSignals$"+" <- peakSignals[["+"]][idxbfPeakPass,]
+      bfPassPeakSignals$"-" <- peakSignals[["-"]][idxbfPeakPass,]
+      bfPassPeakSites <- peakSites[idxbfPeakPass]
         numbfPassPeakSites <- length(bfPassPeakSignals[["+"]][,1])
         bfPassPeakSignalTotals <- genomeSignalTotals[idxbfPeakPass]
         bfPassPeakMotifSignalTotals <- motifGenomeSignalTotals[idxbfPeakPass]
