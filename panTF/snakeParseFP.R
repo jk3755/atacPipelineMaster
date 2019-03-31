@@ -85,15 +85,15 @@ plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALS
   ## Plot the figure in a new page in the viewport
   grid.newpage()
   
+  ## Data
+  totalBP <- length(insVector)
+  flankBP <- ((totalBP - motifWidth) / 2 ) ## The number of BP flanking the motif on each side
+  
   ## Plot information
   xlab = "Dist. to motif (bp)"
   ylab = "Tn5 fragmentation probability"
   xlim <- c(0, totalBP + 1)
   ylim <- c(0, max(insVector) * 1.12)
-  
-  ## Data
-  totalBP <- length(insVector)
-  flankBP <- ((totalBP - motifWidth) / 2 ) ## The number of BP flanking the motif on each side
   
   ## Add the plotting margins to the viewport (sets the outer bounds of the entire image)
   vp <- plotViewport(margins=c(5.1, 5.1, 4.1, 2.1), name="plotRegion")
@@ -150,7 +150,7 @@ plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALS
   upViewport()
   
   ##
-  grid.text(legTitle,
+  grid.text(plotTitle,
             y=unit(1, "npc")-convertY(unit(1, "lines"), unitTo="npc"),
             gp=gpar(cex=1.2, fontface="bold"))
   upViewport()
@@ -181,7 +181,18 @@ for (a in 1:numMotif){
     numSites <- length(tempData[["insMatrix"]][,1])
     siteWidth <- length(tempData[["insMatrix"]][1,])
     motifWidth <- tempData[["motifWidth"]]
+    PWM <- footprintData[["motif1"]][["PWM"]][a]
+    insMatrix <- tempData[["rawProfile"]]
+    insVector <- insMatrix[2,]
     siteTotalSignal <- c()
+    
+    ## Make graph of the raw peak sites
+    svgPath <- paste0(dirpath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+    svg(file = svgPath)
+    cat("Saving peaks footprint image at path:", svgPath, "\n")
+    plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
+    plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
+    dev.off()
     
     ## Calculate total signal for each site
     for (b in 1:numSites){
@@ -199,78 +210,9 @@ for (a in 1:numMotif){
       nullVec <- generateNullFP(1000, uniqueTotalSignals[c], siteWidth, motifWidth)
       nullModels[c,1] <- uniqueTotalSignals[c]
       nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
-   
+
       
-      ##
-      cat("Loading data...", "\n")
-      mergein <- gsub("merged.done.txt", paste0("motif", x, ".merged.Rdata"), mergedpath)
-      mergein <- gsub("operations", "data/merged", mergein)
-      cat("Loading merged signal file from path:", mergein, "\n")
-      load(mergein)
-      genomeSignals <- merged_signals[["signal"]]
-      bpTotal <- length(genomeSignals[["+"]][1,])
-      genomeSites <- merged_signals$bindingSites
-      # create an index for the genome-wide sites
-      genomeSites@elementMetadata@listData$index <- 1:length(genomeSites@ranges@start)
-      PWM <- bindingSites[[x]][["PWM"]]
-      motifWidth <- length(PWM[1,])
-      scope <- seqlevels(genomeSites)
       
-      ## Calculate site signal totals for genome sites
-      # for each site, calculate the total signal and motif signal
-      cat("Calculating signal at each site...", "\n")
-      numGenomeSites <- length(genomeSignals[["+"]][,1])
-      genomeSignalTotals <- c()
-      motifGenomeSignalTotals <- c()
-      for (i in 1:numGenomeSites){
-        genomeSignalTotals[i] <- sum(genomeSignals[["+"]][i,] + genomeSignals[["-"]][i,])
-        motifGenomeSignalTotals[i] <- sum(genomeSignals[["+"]][i,100:(100+motifWidth)] + genomeSignals[["-"]][i,100:(100+motifWidth)])}
-      
-      ## Generate combined signal, keep this list structure, as it is necessary for downstream featureAlignedHeatmap generation
-      combinedGenomeSignal <- list()
-      combinedGenomeSignal$signal <- matrix(data = NA, nrow = numGenomeSites, ncol = bpTotal)
-      for (i in 1:numGenomeSites){combinedGenomeSignal$signal[i,] <- genomeSignals[["+"]][i,] + genomeSignals[["-"]][i,]}
-      
-      ## Calculate libFactor
-      cat("Calculating libFactor...", "\n")
-      libraryFactor <- calcLibFactor(genomeSites, bampath, baipath)
-      
-      ## First parse - binding sites in peaks only
-      peakSites <- subsetByOverlaps(genomeSites, gr_narrowPeak)
-      idx <- peakSites@elementMetadata@listData[["index"]]
-      peakSignals <- list()
-      peakSignals$"+" <- genomeSignals[["+"]][idx,]
-      peakSignals$"-" <- genomeSignals[["-"]][idx,]
-      peakSites <- genomeSites[idx]
-      peakSignalTotals <- genomeSignalTotals[idx]
-      motifPeakSignalTotals <- motifGenomeSignalTotals[idx]
-      numPeakSites <- length(peakSignals[["+"]][,1])
-      
-      ## Generate combined signals for peak sites
-      combinedPeakSignal <- list()
-      combinedPeakSignal$signal <- matrix(data = NA, nrow = numPeakSites, ncol = bpTotal)
-      for (i in 1:numPeakSites){combinedPeakSignal$signal[i,] <- peakSignals[["+"]][i,] + peakSignals[["-"]][i,]}
-      
-      ## Build profile for peak sites
-      cat("Building profile...", "\n")
-      peakProfile <- buildProfile(peakSignals, libraryFactor, upstream, motifWidth, downstream)
-      prof <- peakProfile$profile
-      ## Make graph
-      svg_path <- paste0(dirpath, "footprints/graphs/", samplename, ".", genename, ".", "motif", x, ".peak.sites.svg")
-      svg(file = svg_path) # set the filepath for saving the svg figure
-      cat("Saving peaks footprint image at path:", svg_path, "\n")
-      PWMin <- pwm2pfm(PWM)
-      cat("Plotting graph...", "\n")
-      ATACseqQC:::plotFootprints(prof,
-                                 Mlen=motifWidth, motif=PWMin)
-      dev.off()
-      
-      ## Implement null model to select peak sites
-      cat("Generating null models for raw peak sites...", "\n")
-      uniqueSignals <- unique(peakSignalTotals)
-      nullSims <- list()
-      numUnique <- length(uniqueSignals)
-      nullMean <- c()
       ##
       for (i in 1:numUnique){
         n <- 1000
