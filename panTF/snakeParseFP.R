@@ -191,9 +191,9 @@ for (a in 1:numMotif){
     siteTotalSignal <- c()
     
     ## Make graph of the raw peak sites
-    svgPath <- paste0(dirpath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
-    svg(file = svgPath)
-    cat("Saving peaks footprint image at path:", svgPath, "\n")
+    #svgPath <- paste0(dirPath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+    #svg(file = svgPath)
+    #cat("Saving peaks footprint image at path:", svgPath, "\n")
     plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
     plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
     dev.off()
@@ -260,9 +260,9 @@ for (a in 1:numMotif){
     bfNumSites <- length(idxbfPeakPass)
     
     ## Make a plot for the bf passing sites
-    svgPath <- paste0(dirpath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
-    svg(file = svgPath)
-    cat("Saving peaks footprint image at path:", svgPath, "\n")
+    #svgPath <- paste0(dirPath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
+    #svg(file = svgPath)
+    #cat("Saving peaks footprint image at path:", svgPath, "\n")
     plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
     plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
     dev.off()
@@ -296,9 +296,9 @@ for (a in 1:numMotif){
     eval(parse(text = com))
         
     ##
-    svgPath <- paste0(dirpath, "footprints/heatmaps/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.heatmap.svg")
-    svg(file = svgPath)
-    cat("Saving svg footprint image at path:", svgPath, "\n")
+    #svgPath <- paste0(dirpath, "footprints/heatmaps/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.heatmap.svg")
+    #svg(file = svgPath)
+    #cat("Saving svg footprint image at path:", svgPath, "\n")
         
     ## Margin controls
     # margin(a,b,c,d)
@@ -322,56 +322,40 @@ for (a in 1:numMotif){
                                         newpage = TRUE)
     dev.off()
 
+    ## Data transfer to storage object and save
+    parseData <- list()
+    ##
+    parseData$numSites <- numSites
+    parseData$insVector <- insVector
+    parseData$siteTotalSignal <- siteTotalSignal
+    parseData$uniqueTotalSignals <- uniqueTotalSignals
+    parseData$nullModels <- nullModels
+    parseData$ttestPeak <- ttestPeak
+    parseData$pvaluePeak <- pvaluePeak
+    parseData$tvaluePeak <- tvaluePeak
+    parseData$peakPvaluePass <- peakPvaluePass
+    parseData$bfPvaluePeakPass <- bfPvaluePeakPass
+    parseData$bfInsMatrix <- bfInsMatrix
+    parseData$bfTotalSignal <- bfTotalSignal
+    parseData$bfProfile <- bfProfile
+    parseData$bfVector <- bfVector
+    parseData$bfSites <- bfSites
+    parseData$bfNumSites <- bfNumSites
+    ##
+    com <- paste0("footprintData$motif", a, "$parseData <- parseData")
+    eval(parse(text = com))
     
-    
-    
-        
-        ## Data transfer to storage object and save
-        parsedSitesInfo <- list()
-        parsedSitesInfo$peaks <- gr_narrowPeak
-        parsedSitesInfo$motif <- x
-        parsedSitesInfo$PWM <- PWM
-        parsedSitesInfo$motifWidth <- motifWidth
-        parsedSitesInfo$libraryFactor <- libraryFactor
-        ## Whole genome sites
-        parsedSitesInfo$genomeSignals <- genomeSignals
-        parsedSitesInfo$genomeSites <- genomeSites
-        parsedSitesInfo$numGenomeSites <- numGenomeSites
-        parsedSitesInfo$combinedGenomeSignal <- combinedGenomeSignal
-        parsedSitesInfo$genomeSignalTotals <- genomeSignalTotals
-        parsedSitesInfo$motifGenomeSignalTotals <- motifGenomeSignalTotals
-        ## Raw peak overlapping sites
-        parsedSitesInfo$peakSignals <- peakSignals
-        parsedSitesInfo$peakSites <- peakSites
-        parsedSitesInfo$numPeakSites <- numPeakSites
-        parsedSitesInfo$combinedPeakSignal <- combinedPeakSignal
-        parsedSitesInfo$peakProfile <- peakProfile
-        parsedSitesInfo$peakSignalTotals <- peakSignalTotals
-        parsedSitesInfo$motifPeakSignalTotals <- motifPeakSignalTotals
-        ## BF corrected p-value passing peak sites
-        parsedSitesInfo$bfPassPeakSignals <-bfPassPeakSignals
-        parsedSitesInfo$bfPassPeakSites <- bfPassPeakSites
-        parsedSitesInfo$numbfPassPeakSites <- numbfPassPeakSites
-        parsedSitesInfo$combinedbfPassPeakSignal <- combinedbfPassPeakSignal
-        parsedSitesInfo$bfPassPeakProfile <- bfPeakProfile
-        parsedSitesInfo$bfPassPeakSignalTotals <- bfPassPeakSignalTotals
-        parsedSitesInfo$bfPassPeakMotifPeakSignalTotals <- bfPassPeakMotifSignalTotals
-        ## bf sites heatmap info
-        parsedSitesInfo$combined <- combined
-        parsedSitesInfo$heatsites <- heatsites
-        parsedSitesInfo$heatnumbp <- heatnumbp
-        ##
-        save(parsedSitesInfo, file = info_path)
-        
-      }, # end try
-      error=function(cond){
-        message(cond)
-        return(NA)
-      },
-      finally={})
+    }, # end try
+    error=function(cond){
+    message(cond)
+    return(NA)
+    },
+    finally={})
     
 } # end for (a in 1:numMotif)
 
-
-cat("Finished...", "\n")
+## Finish the script and create the output file for snakemake
+##
+save(parsedSitesInfo, file = info_path)
+cat("Finished!", "\n")
 file.create(outpathdone)
