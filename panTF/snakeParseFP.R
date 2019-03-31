@@ -9,8 +9,9 @@
 #biocLite("GenomicAlignments", suppressUpdates = TRUE)
 #biocLite("genomation", suppressUpdates = TRUE)
 #biocLite("seqLogo", suppressUpdates = TRUE)
+#biocLite("ChIPpeakAnno", suppressUpdates = TRUE)
 #install.packages("ggplot2")
-install.packages("ggpubr")
+#install.packages("ggpubr")
 
 ## Disable scientific notation in variables
 options(scipen = 999)
@@ -27,6 +28,7 @@ suppressMessages(library(genomation))
 suppressMessages(library(seqLogo))
 suppressMessages(library(ggplot2))
 suppressMessages(library(ggpubr))
+suppressMessages(library(ChIPpeakAnno))
 
 ## Set snakemake variables
 cat("Setting snakemake vars...", "\n")
@@ -178,6 +180,7 @@ for (a in 1:numMotif){
     ## Prepare the data
     com <- paste0("tempData <- footprintData$motif", a)
     eval(parse(text = com))
+    peakSites <- tempData[["sites"]]
     numSites <- length(tempData[["insMatrix"]][,1])
     siteWidth <- length(tempData[["insMatrix"]][1,])
     motifWidth <- tempData[["motifWidth"]]
@@ -253,9 +256,11 @@ for (a in 1:numMotif){
     } # end for (e in 1:length(bfInsMatrix[1,]))
     ##
     bfVector <- bfProfile[2,]
+    bfSites <- peakSites[idxbfPeakPass]
+    bfNumSites <- length(idxbfPeakPass)
     
     ## Make a plot for the bf passing sites
-    svgPath <- paste0(dirpath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+    svgPath <- paste0(dirpath, "footprints/graphs/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
     svg(file = svgPath)
     cat("Saving peaks footprint image at path:", svgPath, "\n")
     plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
@@ -268,97 +273,58 @@ for (a in 1:numMotif){
       
     func <- tryCatch({
         
-      bfPassPeakSignals <- list()
-      bfPassPeakSignals$"+" <- peakSignals[["+"]][idxbfPeakPass,]
-      bfPassPeakSignals$"-" <- peakSignals[["-"]][idxbfPeakPass,]
-      bfPassPeakSites <- peakSites[idxbfPeakPass]
-        numbfPassPeakSites <- length(bfPassPeakSignals[["+"]][,1])
-        bfPassPeakSignalTotals <- genomeSignalTotals[idxbfPeakPass]
-        bfPassPeakMotifSignalTotals <- motifGenomeSignalTotals[idxbfPeakPass]
+    #### Make heatmap for bf passing sites ####
+    ## USE THIS STRUCTURE FOR HEATMAPS
+    ## first, combine the signals from plus and minus strand
+    heatSigs <- bfInsMatrix
+    heatNumSites <- bfNumSites
+    heatNumBP <- siteWidth
+    heatSites <- bfSites
+      
+    ## scale each row individually
+    for (f in 1:heatNumSites){
+      maxsig <- max(heatSigs[f,])
+        for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
+    maxsig <- 1
+    ## invert signals
+    for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
         
-        ## Generate combined signal for bf passing sites
-        combinedbfPassPeakSignal <- list()
-        combinedbfPassPeakSignal$signal <- matrix(data = NA, nrow = numbfPassPeakSites, ncol = bpTotal)
-        for (i in 1:numbfPassPeakSites){combinedbfPassPeakSignal$signal[i,] <- bfPassPeakSignals[["+"]][i,] + bfPassPeakSignals[["-"]][i,]}
+    ## Annotate the combined sublist name which will become the tital of the heatmap plot
+    heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
+    combined <- list()
+    com <- paste0("combined$", heatTitle, " <- heatSigs")
+    eval(parse(text = com))
         
-        ## Generate profile for bf corrected peak sites
-        cat("Generating profile for bf corrected peak sites", "\n")
-        bfPeakProfile <- buildProfile(bfPassPeakSignals, libraryFactor, upstream, motifWidth, downstream)
-        bfprof <- bfPeakProfile$profile
+    ##
+    svgPath <- paste0(dirpath, "footprints/heatmaps/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.heatmap.svg")
+    svg(file = svgPath)
+    cat("Saving svg footprint image at path:", svgPath, "\n")
         
-        ## Make graph for bf passing sites
-        svg_path <- paste0(dirpath, "footprints/graphs/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.svg")
-        svg(file = svg_path) # set the filepath for saving the svg figure
-        cat("Saving svg footprint image at path:", svg_path, "\n")
-        PWMin <- pwm2pfm(PWM)
-        cat("Plotting graph for bf corrected peaks...", "\n")
-        ATACseqQC:::plotFootprints(bfprof,
-                                   Mlen=motifWidth, motif=PWMin)
-        dev.off()
+    ## Margin controls
+    # margin(a,b,c,d)
+    # a = size of graph from top to bottom, higher value = smaller. default = 0.1
+    # b = size of graph from left to right, higher value = smaller. default = 0.005
+    # c = flips x axis?
+    # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
+    # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
+    # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
         
-        
-        #### Make heatmap for bf passing sites ####
-        ## USE THIS STRUCTURE FOR HEATMAPS
-        ## first, combine the signals from plus and minus strand
-        heatsigs <- combinedbfPassPeakSignal
-        heatnumsites <- numbfPassPeakSites
-        heatnumbp <- length(combinedbfPassPeakSignal[1,])
-        heatsites <- bfPassPeakSites
-        
-        
-        #sigs <- parsedSitesInfo[["bfPassPeakSignals"]]
-        #sig_plus <- sigs["+"]
-        #sig_minus <- sigs["-"]
-        #numsites <- length(sig_plus[["+"]][,1])
-        #numbp <- length(sig_plus[["+"]][1,])
-        #sites <- parsedSitesInfo[["bfPassPeakSites"]]
-        
-        ##
-        #temp <- matrix(data = NA, nrow = numsites, ncol = numbp)
-        #for (i in 1:numsites){temp[i,] <- sigs[['+']][i,] + sigs[['-']][i,]}
-        
-        ## scale each row individually
-        for (a in 1:heatnumsites){
-          maxsig <- max(heatsigs[a,])
-          for (b in 1:heatnumbp){heatsigs[a,b] <- (heatsigs[a,b] / maxsig)}}
-        maxsig <- 1
-        
-        ## invert signals
-        for (a in 1:heatnumsites){for (b in 1:heatnumbp){heatsigs[a,b] <- (1-heatsigs[a,b])}}
-        
-        ## Annotate the combined sublist name which will become the tital of the heatmap plot
-        plottitle <- paste0(genename, "_motif", x, "_numsites", heatnumsites)
-        combined <- list()
-        com <- paste0("combined$", plottitle, " <- heatsigs")
-        eval(parse(text = com))
-        
-        ##
-        heatsvg_path <- paste0(dirpath, "footprints/heatmaps/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.heatmap.svg")
-        svg(file = heatsvg_path) # set the filepath for saving the svg figure
-        cat("Saving svg footprint image at path:", heatsvg_path, "\n")
-        
-        ## Margin controls
-        # margin(a,b,c,d)
-        # a = size of graph from top to bottom, higher value = smaller. default = 0.1
-        # b = size of graph from left to right, higher value = smaller. default = 0.005
-        # c = flips x axis?
-        # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
-        # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
-        # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
-        
-        ##
-        ChIPpeakAnno::featureAlignedHeatmap(combined,
-                                            feature.gr=reCenterPeaks(heatsites,width=heatnumbp),
-                                            upper.extreme = maxsig, # set this to control the heatmap scale
-                                            annoMcols="score",
-                                            sortBy="score",
-                                            n.tile=heatnumbp,
-                                            margin = c(0.1, 0.005, 0.05, 0.2),
-                                            color=colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias=0.9)(100),
-                                            gp = gpar(fontsize=10),
-                                            newpage = TRUE)
-        dev.off()
-        ############################################################
+    ##
+    ChIPpeakAnno::featureAlignedHeatmap(combined,
+                                        feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
+                                        upper.extreme = maxsig, # set this to control the heatmap scale
+                                        annoMcols = "score",
+                                        sortBy = "score",
+                                        n.tile = heatNumBP,
+                                        margin = c(0.1, 0.005, 0.05, 0.2),
+                                        color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
+                                        gp = gpar(fontsize = 10),
+                                        newpage = TRUE)
+    dev.off()
+
+    
+    
+    
         
         ## Data transfer to storage object and save
         parsedSitesInfo <- list()
