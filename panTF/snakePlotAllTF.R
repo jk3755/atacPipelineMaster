@@ -1,5 +1,24 @@
 
+## Load Packages
+loadLibrary <- function(lib){
+  for( i in lib ){
+    #  require returns TRUE invisibly if it was able to load package
+    if( ! require( i , character.only = TRUE ) ){
+      #  If package was not able to be loaded then re-install
+      install.packages( i , dependencies = TRUE )
+      #  Load package after installing
+      require( i , character.only = TRUE )}}}
+##
+loadLibrary(c("ggplot2", "ggsci"))
+
+## Install libraries, if necessary
+install.packages("ggplot2")
+install.packages("ggsci")
+##
 library(ggplot2)
+library(ggsci)
+
+
 
 ## Plot 1 - Footprint depth against flanking accessibility, for all TFs, dots colored by RNA expression level
 
@@ -32,7 +51,10 @@ ggplot(data, aes(footprint, flank, color=background)) +
   geom_point() + 
   scale_color_gradient(low="blue", high="red")
 
-
+##
+ggplot(data, aes(footprint, flank, color=background)) + 
+  geom_point() + 
+  scale_fill_gsea()
 
 
 

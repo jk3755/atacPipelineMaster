@@ -14,17 +14,38 @@ dest <- "C:\\Users\\jsk33\\Desktop\\"
 sraDB <- getSRAdbFile(destdir = dest)
 ##
 sqlfile <- "C:\\Users\\jsk33\\Desktop\\SRAmetadb.sqlite"
-
-
-
-sra_dbname <- file.path(system.file('extdata', package='SRAdb'), 'SRAmetadb.sqlite')
-
+##
+sra_dbname <- sqlfile
+##
 sra_con <- dbConnect(dbDriver("SQLite"), sra_dbname)
 
-ac <- "SRX5415026"
+##
+ac <- c("SRS2200162")
+##
+getFASTQfile(
+            in_acc = c("SRR8618987"),
+            sra_con = sra_con,
+            destDir = dest,
+            srcType = "ftp",
+            ascpCMD = NULL
+            )
+
+getSRAfile(
+          in_acc = c("SRX5415026"),
+          sra_con = sra_con,
+          destDir = dest,
+          fileType = 'sra',
+          srcType = 'ftp',
+          makeDirectory = FALSE,
+          method = 'curl',
+          ascpCMD = NULL
+          )
 
 
-getFASTQfile(ac, sra_con, destDir = dest, srcType = "ftp")
+#############
 
 
+
+
+##
 dbDisconnect(sra_con)
