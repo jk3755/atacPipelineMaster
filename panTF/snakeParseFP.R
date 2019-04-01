@@ -185,7 +185,7 @@ for (a in 1:numMotif){
     ## Prepare the data
     com <- paste0("tempData <- footprintData$motif", a)
     eval(parse(text = com))
-    peakSites <- tempData[["sites"]]
+    peakSites <- tempData[["peakSites"]]
     numSites <- length(tempData[["insMatrix"]][,1])
     siteWidth <- length(tempData[["insMatrix"]][1,])
     motifWidth <- tempData[["motifWidth"]]
@@ -196,12 +196,12 @@ for (a in 1:numMotif){
     siteTotalSignal <- c()
     
     ## Make graph of the raw peak sites
-    svgPath <- paste0(dirPath, "footprints/graphs/peaks/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
-    svg(file = svgPath)
-    cat("Saving peaks footprint image at path:", svgPath, "\n")
-    plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
-    plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
-    dev.off()
+    #svgPath <- paste0(dirPath, "footprints/graphs/peaks/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+    #svg(file = svgPath)
+    #cat("Saving peaks footprint image at path:", svgPath, "\n")
+    #plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
+    #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
+    #dev.off()
     
     ## Calculate total signal for each site
     for (b in 1:numSites){
@@ -265,12 +265,12 @@ for (a in 1:numMotif){
     bfNumSites <- length(idxbfPeakPass)
     
     ## Make a plot for the bf passing sites
-    svgPath <- paste0(dirPath, "footprints/graphs/bf/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
-    svg(file = svgPath)
-    cat("Saving peaks footprint image at path:", svgPath, "\n")
-    plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
-    plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
-    dev.off()
+    #svgPath <- paste0(dirPath, "footprints/graphs/bf/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
+    #svg(file = svgPath)
+    #cat("Saving peaks footprint image at path:", svgPath, "\n")
+    #plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
+    #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
+    #dev.off()
     
     #### Make heatmap for bf passing sites ####
     ## USE THIS STRUCTURE FOR HEATMAPS
