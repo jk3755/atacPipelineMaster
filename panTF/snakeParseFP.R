@@ -26,8 +26,8 @@ suppressMessages(library(Rsamtools))
 suppressMessages(library(GenomicAlignments))
 suppressMessages(library(genomation))
 suppressMessages(library(seqLogo))
-suppressMessages(library(ggplot2))
-suppressMessages(library(ggpubr))
+#suppressMessages(library(ggplot2))
+#suppressMessages(library(ggpubr))
 suppressMessages(library(ChIPpeakAnno))
 
 ## Set snakemake variables
@@ -165,8 +165,8 @@ plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALS
 
 ## Load the footprintData file
 cat("Loading footprintData file...", "\n")
-#footprintDataPath <- gsub("operations", "data/raw", footprintDataPath)
-#footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
+footprintDataPath <- gsub("operations", "data/raw", footprintDataPath)
+footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
 load(footprintDataPath)
 
 ## The number of unique motifs for the current gene
@@ -177,6 +177,11 @@ cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motif
 ##
 for (a in 1:numMotif){
     
+    ## suppress warnings globally here, as they will disrupt the tryCatch block
+    ## will need to improve this code at some point
+    options(warn = -1)
+    func <- tryCatch({
+  
     ## Prepare the data
     com <- paste0("tempData <- footprintData$motif", a)
     eval(parse(text = com))
@@ -266,13 +271,7 @@ for (a in 1:numMotif){
     plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".bfsites")
     plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
     dev.off()
-      
-    ## suppress warnings globally here, as they will disrupt the tryCatch block
-    ## will need to improve this code at some point
-    options(warn = -1)
-      
-    func <- tryCatch({
-        
+    
     #### Make heatmap for bf passing sites ####
     ## USE THIS STRUCTURE FOR HEATMAPS
     ## first, combine the signals from plus and minus strand
@@ -296,7 +295,7 @@ for (a in 1:numMotif){
     eval(parse(text = com))
         
     ##
-    svgPath <- paste0(dirpath, "footprints/graphs/heatmaps/", samplename, ".", genename, ".", "motif", x, ".bfpeak.sites.heatmap.svg")
+    svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
     svg(file = svgPath)
     cat("Saving svg footprint image at path:", svgPath, "\n")
         
@@ -355,6 +354,13 @@ for (a in 1:numMotif){
     
 } # end for (a in 1:numMotif)
 gc()
+
 ## Finish the script and create the output file for snakemake
-save(footprintData, file = outPath)
+dataOutPath <- gsub("raw", "parsed", footprintDataPath)
+save(footprintData, file = dataOutPath)
+##
+file.create(outPath)
 cat("Finished!", "\n")
+
+
+

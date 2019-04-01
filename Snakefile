@@ -1,3 +1,4 @@
+
 ########################################################################################################################################
 ################################ GENERAL INFO ##########################################################################################
 ########################################################################################################################################
@@ -28,12 +29,16 @@
 # Script from the files located in snakeModules directory
 #
 ########################################################################################################################################
-#### IMPORT MODULES ####################################################################################################################
+#### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 
 include: "snakeModules/panTF.snakefile"
 
 include: "snakeModules/scanPWM.snakefile"
+
+include: "snakeModules/parseTF.snakefile"
+
+#configfile: "snakeModules/config.yaml"
 
 ########################################################################################################################################
 #### SPOOL PREPROCESSING ###############################################################################################################
@@ -1071,11 +1076,28 @@ rule xsample_footprint_direct_comparison:
 ## There is still a chance two processes will access the same file the way it is currently written
 ## This will happen if two processes are launched with the same hard coded bam file
 ## Note sure how to fix this, its probably fine for now
-
 ## This code needs some work. Something is tripping it up if I try to run all TFs at once (gets stuck),
 ## And I have also not been able to enforce strict group ordering in the execution
 ## For now, I can run each group sequencially by using the shell command:
-## 
+## for i in {1..62}; do snakemake -j 20 run_group$i; done
+
+## Potential observation when writing/testing this block of code:
+## If I put all the TF targets into 62 target rule groups of 20 each,
+## And then attempt to run the pipeline by pulling an aggregator tool
+## That collects all 62 groups at once, it doesn't crash but stalls 
+## and does not run. This may be because the pipeline is pulling target
+## TFs from all 62 groups at once, so the entire cohort is available
+## to start new processes as soon as one finishes. What this means is,
+## FP targets that have very little computational requirements will finish
+## Quickly and then that thread will move on to a new target - until it reaches
+## One that has a heavy memory/computational load. All threads will do this until
+## Eventually all 20 processes are stuck on targets that have serious comp. requirements
+## And the pipeline will stall.
+## If, alternatively, you run the pipeline so that each group must finish completely before
+## the next one starts, this will not be a problem, as all the processes will sync up at
+## Each step and wait for the heavier ones to finish.
+
+## Note - this section utilizes rules defined in an auxillary snakefile
 
 rule snu61wt01_pantf_analysis:
     input:
@@ -1121,34 +1143,41 @@ rule PANTF_analyze_footprint:
     script:
         "scripts/panTF/snakeAnalyzeFootprint.R"
 
-# rule PANTF_remove_bamcopy:
-#     input:
-#         "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
-#     output:
-#         "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
-#     shell:
-#          """
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-#          touch {output}
-#          """
+rule PANTF_remove_bamcopy:
+    input:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    output:
+        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
 
-# rule PANTF_parse_footprint:
-#     input:
-#         "{path}footprints/operations/{mergedsample}.{gene}.rawFPanalysis.done"
-#     output:
+rule PANTF_parse_footprint:
+    input:
+        "{path}footprints/operations/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+    output:
+    	"{path}footprints/operations/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    resources:
+        parseFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+    	"scripts/panTF/snakeParseFP.R"
 
-#     script:
-
-# rule test:
-#     input:
-#         "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
+rule test:
+    input:
+        "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
 
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
 ########################################################################################################################################
+
+## Note - this section utilizes rules defined in an auxillary snakefile
 
 rule generate_motifData:
     output:
