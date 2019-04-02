@@ -7,8 +7,6 @@ BiocManager::install("tximport", version = "3.8")
 library(tximport)
 library(ensembldb)
 
-
-
 ###
 library(EnsDb.Hsapiens.v86)
 edb <- EnsDb.Hsapiens.v86
@@ -23,3 +21,10 @@ txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = TRU
 names(txi)
 head(txi$counts)
 
+###
+txi.tx <- tximport(files, type = "salmon", txOut = TRUE, ignoreTxVersion = TRUE)
+
+
+###
+txi.sum <- summarizeToGene(txi.tx, tx2gene, ignoreTxVersion = TRUE)
+all.equal(txi$counts, txi.sum$counts)
