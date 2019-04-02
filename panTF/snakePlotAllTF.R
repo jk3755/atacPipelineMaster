@@ -6,6 +6,10 @@ library(ggsci)
 ##
 options(warn = -1)
 options(scipen = 999)
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("mygene", version = "3.8")
+library(mygene)
 ################################################################################################################################
 
 #### Load and process the data from all genes ####
@@ -85,29 +89,29 @@ for (a in 1:numFiles){
   
   ## Try to grab the data for each potential motif
   tryCatch({
-  
-  ## Calculate the 10% trimmed mean of all insertions in the motif sites
-  motifSignal <- mean(mergedRawFootprintMetrics[,3], trim = 0.10)
-  ## Calculate the mean of all insertions in the flank region
-  flankSignal <- mean(mergedRawFootprintMetrics[,2])
-  ## Calculate the mean of background insertions
-  backgroundSignal <- mean(mergedRawFootprintMetrics[,1])
-  
-  ## Calculate flanking accessibility (log2 fold change between flank and background)
-  log2Flank <- log2(flankSignal/backgroundSignal)
-  ## Calculate footprint depth (log2 fold change between flank and background)
-  log2Depth <- log2(motifSignal/flankSignal)
-  
-  ## Transfer the data to the temporary vectors
-  tempFlank[idxFlank] <- log2Flank
-  tempMotif[idxMotif] <- log2Depth
-  tempBackground[idxBackground] <- backgroundSignal
-  
-  ## Update vector indices
-  idxFlank <- (idxFlank +1)
-  idxMotif <- (idxMotif +1)
-  idxBackground <- (idxBackground +1)
-  
+    
+    ## Calculate the 10% trimmed mean of all insertions in the motif sites
+    motifSignal <- mean(mergedRawFootprintMetrics[,3], trim = 0.10)
+    ## Calculate the mean of all insertions in the flank region
+    flankSignal <- mean(mergedRawFootprintMetrics[,2])
+    ## Calculate the mean of background insertions
+    backgroundSignal <- mean(mergedRawFootprintMetrics[,1])
+    
+    ## Calculate flanking accessibility (log2 fold change between flank and background)
+    log2Flank <- log2(flankSignal/backgroundSignal)
+    ## Calculate footprint depth (log2 fold change between flank and background)
+    log2Depth <- log2(motifSignal/flankSignal)
+    
+    ## Transfer the data to the temporary vectors
+    tempFlank[idxFlank] <- log2Flank
+    tempMotif[idxMotif] <- log2Depth
+    tempBackground[idxBackground] <- backgroundSignal
+    
+    ## Update vector indices
+    idxFlank <- (idxFlank +1)
+    idxMotif <- (idxMotif +1)
+    idxBackground <- (idxBackground +1)
+    
   }, # end try
   error=function(cond){
     message(cond)
@@ -116,52 +120,102 @@ for (a in 1:numFiles){
   finally={})
 } # end for (a in 1:numFiles)
 
+
 ### Put the data into dataframe format for plotting
 
 ## Count the total number of data points to plot (Total unique motifs)
 numPoints <- length(tempBackground)
 
-## get the gene names
-x <- substring(fileList, 42)
-x <- substring(x, 2)
-x <- gsub(".parsedFootprintData.Rdata", "", x)
+#### get the gene names TEMP FIX ####
+genex <- substring(fileList, 42)
+genex <- substring(genex, 2)
+genex <- gsub(".parsedFootprintData.Rdata", "", genex)
 
-## Add gene names to dataframe also
+## Add gene names to dataframe
+
+load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
+coadCounts <- cclecounts[["large_intestine_bat1"]]
+snu61Exp <- coadCounts[,24]
+##
+geneList <- names(snu61Exp)
+mappings <- queryMany(geneList, scopes="entrezgene", fields="symbol", species="human")
+##
+genemaps <- mappings@listData[["symbol"]]
+##
+idx <- which(genemaps %in% genex)
+##
+
+addme <- c()
+for (m in 1:668){
+  
+  f <- which(genemaps %in% genex[m])
+  
+  if (length(f)==0){
+    addme[m] <- 0
+    
+  } else {
+    
+    addme[m] <- snu61Exp[[f]]
+    
+  }
+
+}
+
+
+for (k in 1:nums){
+  
+  idx <- which(n %in% item)
+  val <- snu61exp[[idx]]
+  dfFootprints$exp[[idx]] <- val
+  
+}
 
 ## Transfer data to data frame
-dfFootprints <- data.frame(flank = tempFlank, depth = tempMotif, background = tempBackground, geneName = x)
+dfFootprints <- data.frame(flank = tempFlank, depth = tempMotif, background = tempBackground, geneName = genex, exp = addme )
+
+
+
+
+
+
 
 #### Generate the plots ####
 ## Plot 1
 ## Footprint depth against flanking accessibility
 ## Data points colored by RNA expression level
-ggplot(dfFootprints, aes(depth, flank, color=background)) + 
+ggplot(dfFootprints, aes(depth, flank, color=exp)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red")
 
+####################
+library(viper)
+load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
+load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
+coadCounts <- cclecounts[["large_intestine_bat1"]]
+x <- msviper(coadCounts, regul)
+plot(x, cex=.7)
+
+nex <- x[["es"]][["nes"]]
+
+nexname <- names(nex)
+nexmappings <- queryMany(nexname, scopes="entrezgene", fields="symbol", species="human")
+nexgenemaps <- nexmappings@listData[["symbol"]]
 ##
-ggplot(data, aes(footprint, flank, color=background)) + 
+idx <- which(nexgenemaps %in% genex)
+##
+addmex <- c()
+for (m in 1:668){
+  f <- which(nexgenemaps %in% genex[m])
+  if (length(f)==0){
+    addmex[m] <- -10
+  } else {
+    addmex[m] <- nex[[f]]
+  }}
+
+## Transfer data to data frame
+dfFootprints$nex <- addmex
+
+## plot the graph with viper values
+ggplot(dfFootprints, aes(depth, flank, color=nex)) + 
   geom_point() + 
-  scale_fill_gsea()
-
-
-
-## Plot 2 - Footprint depth against flanking accessibility, for all TFs, dots colored by VIPER protein activity level
-
-#################### Code testing
-
-
-snu61_exp <- coadCounts[,24]
-
-### We need to map between Entrez IDs in the regulon and gene symbols in the other data
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install("mygene", version = "3.8")
-library(mygene)
-
-##
-
-geneList <- 
-  
-  
-queryMany(geneList, scopes="symbol", fields="entrezgene", species="human")
+  scale_color_gradient(low="blue", high="red")

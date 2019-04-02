@@ -100,10 +100,6 @@ simpleVIPER <- function (eset, regulon, minsize=20){
 #txi.sum <- summarizeToGene(txi.tx, tx2gene, ignoreTxVersion = TRUE)
 
 ###
-coad_counts <- cclecounts[["large_intestine_bat1"]]
-x <- simpleVIPER(coad_counts, regul)
-plot(x)
-###
 load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
 load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
 coadCounts <- cclecounts[["large_intestine_bat1"]]
