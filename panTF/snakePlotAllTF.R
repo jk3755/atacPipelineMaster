@@ -44,20 +44,25 @@ for (a in 1:numFiles){
   
   ## Load the footprintData object
   load(fileList[a])
+  ## Create a temporary object for the current data
   tempData <- footprintData
-  
   ## Number of potential motifs to plot
   numMotifs <- length(tempData)
+  
+  ## Iterate over all potential motifs
+  for (b in 1:numMotifs){
   
   ## Try to grab the data for each potential motif
   tryCatch({
   
-  ##
-  com <- paste0("tempMotifData <- tempData$motif", a)
+  com <- paste0("tempMotifData <- tempData$motif", b)
   eval(parse(text = com))
   ##
   motifWidth <- tempMotifData[["motifWidth"]]
   tempMetrics <- tempMotifData[["rawFootprintMetrics"]]
+  
+  ## Catch an error where the loaded motif list has no data
+  if (is.null(tempMetrics)){next}else{
   
   ## Calculate the 10% trimmed mean of all insertions in the motif sites
   motifSignal <- mean(tempMetrics[,3], trim = 0.10)
@@ -77,12 +82,11 @@ for (a in 1:numFiles){
   tempBackground[idxBackground] <- backgroundSignal
   
   ## Update vector indices
-  idxFlank <- 1
-  idxMotif <- 1
-  idxBackground <- 1
-
-
+  idxFlank <- (idxFlank +1)
+  idxMotif <- (idxMotif +1)
+  idxBackground <- (idxBackground +1)
   
+  } # end if (is.null(tempMetrics))
   }, # end try
   error=function(cond){
     message(cond)
@@ -90,15 +94,8 @@ for (a in 1:numFiles){
   },
   finally={})
   
-  
-  tempMotifData <- tempData[1]
-  
-  ##
-  dataMatrix[a,1] <- mean(temp[,4])
-  dataMatrix[a,2] <- mean(temp[,5])
-  dataMatrix[a,3] <- mean(temp[,1])
-  
-}
+  } # end for (b in 1:numMotifs)
+} # end for (a in 1:numFiles)
 
 
 ## Count the total number of data points to plot (Number of total unique motifs for all unique TFs)
