@@ -1,17 +1,16 @@
 
-## Install and load libraries
-source("https://bioconductor.org/biocLite.R")
-biocLite("bcellViper", suppressUpdates = TRUE)
+## Install/load
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("tximport", version = "3.8")
 biocLite("viper", suppressUpdates = TRUE)
 ##
+library(tximport)
+library(EnsDb.Hsapiens.v86)
 library(viper)
 
-# 1.2 Load data
-data(bcellViper, package="bcellViper")
-# 1.3 Get expression matrix
-eset <- exprs(dset)
 
-## Build funcctions
+### Build funcctions
 simpleaREA <- function (tt, regulon){
   # Step 1 - Create the Mode of Regulation and Weights matrices.
   # 1.1 Get a list of all targets of every regulator in the network.
@@ -62,7 +61,6 @@ simpleaREA <- function (tt, regulon){
   # 5.2 Adjust 3T enrichment scores proportionally to the weights calculated above.
   nes <- sum3 * lwt
 } # end simpleaREA function
-
 simpleVIPER <- function (eset, regulon, minsize=20){
   # Data Preprocessing
   # Step 1 - Filter the expression data.
@@ -91,10 +89,24 @@ simpleVIPER <- function (eset, regulon, minsize=20){
   return(nes)
 } # end simpleVIPER function
 
-##
-x <- simpleVIPER(eset, regulon)
-plot(x)
 
-##
-y <- msviper(eset, regulon)
-plot(y, cex=.7)
+### Import from salmon data output
+#edb <- EnsDb.Hsapiens.v86
+#tx <- transcripts(edb, columns = c(listColumns(edb , "tx"), "gene_name"), return.type = "DataFrame")
+#tx2gene <- data.frame(TXNAME = tx@listData[["tx_id"]], GENEID = tx@listData[["gene_name"]])
+#files <- "C:\\Users\\jsk33\\Desktop\\SRR8618987.snu61.salmon.quant\\quant.sf"
+#txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = TRUE)
+#txi.tx <- tximport(files, type = "salmon", txOut = TRUE, ignoreTxVersion = TRUE)
+#txi.sum <- summarizeToGene(txi.tx, tx2gene, ignoreTxVersion = TRUE)
+
+###
+coad_counts <- cclecounts[["large_intestine_bat1"]]
+x <- simpleVIPER(coad_counts, regul)
+plot(x)
+###
+load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
+load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
+coadCounts <- cclecounts[["large_intestine_bat1"]]
+x <- msviper(coadCounts, regul)
+plot(x, cex=.7)
+
