@@ -1,31 +1,13 @@
 
 ## Setup : Load Packages #######################################################################################################
-loadLibrary <- function(lib){
-  # Require returns TRUE invisibly if it was able to load package
-  # If package was not able to be loaded then first check if it can be loaded with Bioconductor
-  # If not, attempt to reinstall with Bioconductor and then install.packages 
-  # Load package after (re)installing
-  for(i in lib){
-    if (!require("BiocManager")){
-      install.packages("BiocManager")
-        if(!require(i, character.only = TRUE)){
-          BiocManager::install(i)
-            if(!require(i, character.only = TRUE)){
-              install.packages(i, dependencies = TRUE)
-                require(i, character.only = TRUE)}}}}}
-## Required libraries
-packages <- c(
-              "ggplot2",
-              "ggsci")
-
-loadLibrary(packages)
+library(ggplot2)
+library(ggsci)
+##
 options(warn = -1)
 options(scipen = 999)
 ################################################################################################################################
 
-
-## Plot 1 - Footprint depth against flanking accessibility, for all TFs, dots colored by RNA expression level
-
+#### Load and process the data from all genes ####
 ## List all the files that will be analyzed
 fileList <- list.files("C:\\Users\\jsk33\\Desktop\\fpdata\\", full.names = TRUE)
 numFiles <- length(fileList)
@@ -93,20 +75,21 @@ for (a in 1:numFiles){
     return(NA)
   },
   finally={})
-  
   } # end for (b in 1:numMotifs)
 } # end for (a in 1:numFiles)
 
+## Put the data into dataframe format for plotting
 
-## Count the total number of data points to plot (Number of total unique motifs for all unique TFs)
-##
-dataMatrix <- matrix(data = NA, nrow = numFiles, ncol = 3)
-colnames(dataMatrix) <- c("Flank", "Motif", "Background")
-##
-data <- data.frame(flank = dataMatrix[,1], footprint = dataMatrix[,2], background = dataMatrix[,3])
+## Count the total number of data points to plot (Total unique motifs)
+numPoints <- length(tempBackground)
+## Transfer data to data frame
+dfFootprints <- data.frame(flank = tempFlank, depth = tempMotif, background = tempBackground)
 
-##
-ggplot(data, aes(footprint, flank, color=background)) + 
+#### Generate the plots ####
+## Plot 1
+## Footprint depth against flanking accessibility
+## Data points colored by RNA expression level
+ggplot(dfFootprints, aes(depth, flank, color=background)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red")
 
