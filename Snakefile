@@ -36,8 +36,6 @@ include: "snakeModules/panTF.snakefile"
 
 include: "snakeModules/scanPWM.snakefile"
 
-include: "snakeModules/parseTF.snakefile"
-
 #configfile: "snakeModules/config.yaml"
 
 ########################################################################################################################################
@@ -1106,19 +1104,16 @@ rule xsample_footprint_direct_comparison:
 
 ## Note - this section utilizes rules defined in an auxillary snakefile called 'panTF.snakefile'
 
-
 ## Spooling commands ###################################################################################################################
-
-rule snu61wt01_pantf_analysis:
+# Run this with a terminal command like: for i in {1..62}; do snakemake --config group=$i -j 20 run_group$i; done
+rule run_pantf_h508wt01:
     input:
-        "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
+        expand("h508/wt01/footprints/operations/H508-WT-01.parseTF.group{param}.done", param=config["group"])
 
-rule test:
-    input:
-        "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
-
-
-## Processing rules ####################################################################################################################
+## Pipeline rules ###################################################################################################################
+rule PANTF_run_group:
+	input:
+		"h508/wt01/footprints/operations/H508-WT-01.parseTF.group{config.group}.done"
 
 rule PANTF_copy_bam:
     # The TF analysis script runs in 20 simultaneous processes
@@ -1173,8 +1168,6 @@ rule PANTF_parse_footprint_analysis:
         '{path}footprints/benchmark/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
     	"scripts/panTF/snakeParseFootprint.R"
-
-
 
 ## Remove the extra copies of the bam files once they are no longer needed
 rule PANTF_remove_bamcopy:
