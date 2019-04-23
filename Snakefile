@@ -1110,6 +1110,17 @@ rule run_pantf_h508wt01:
     input:
         expand("h508/wt01/footprints/operations/H508-WT-01.parseTF.group{param}.done", param=config["group"])
 
+
+# You can also use this rule to run everything at once
+# For some reason, this runs MUCH slower/gets stuck. I don't know why
+# Will need to spend some time troubleshooting at some point
+# For now, use the other method 
+#rule run_pantf_ls1034wt01:
+#    input:
+#        "ls1034/wt01/footprints/operations/LS1034-WT-01.parseFP.allgroups.done"
+
+
+
 ## Pipeline rules ###################################################################################################################
 rule PANTF_run_group:
 	input:
