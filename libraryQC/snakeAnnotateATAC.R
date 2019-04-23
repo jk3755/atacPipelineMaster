@@ -2,15 +2,14 @@
 # https://www.bioconductor.org/packages/devel/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html
 
 ## Install libraries, if necessary
-#install.packages("BiocManager")
-#library(BiocManager)
-#BiocManager::install("ChIPseeker")
-#BiocManager::install("genomation")
-#BiocManager::install("GenomicRanges")
-#BiocManager::install("clusterProfiler")
-#BiocManager::install("TxDb.Hsapiens.UCSC.hg38.knownGene")
-#BiocManager::install("org.Hs.eg.db")
-#BiocManager::install("ReactomePA")
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("ChIPseeker", suppressUpdates = TRUE)
+biocLite("genomation", suppressUpdates = TRUE)
+biocLite("GenomicRanges", suppressUpdates = TRUE)
+biocLite("clusterProfiler", suppressUpdates = TRUE)
+biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene", suppressUpdates = TRUE)
+biocLite("org.Hs.eg.db", suppressUpdates = TRUE)
+biocLite("ReactomePA", suppressUpdates = TRUE)
 
 ##
 cat("Loading libraries...", "\n")
