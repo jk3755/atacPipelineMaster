@@ -58,6 +58,79 @@ rule AGGREGATOR_copy_bam:
         "touch {output}"
 
 ########################################################################################################################################
+#### GROUP AGGREGATOR ##################################################################################################################
+########################################################################################################################################
+
+rule PANTF_TFgroup_aggregator:
+    input:
+        '{path}footprints/operations/{mergedsample}.rawTF.group1.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group2.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group3.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group4.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group5.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group6.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group7.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group8.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group9.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group10.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group11.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group12.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group13.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group14.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group15.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group16.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group17.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group18.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group19.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group20.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group21.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group22.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group23.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group24.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group25.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group26.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group27.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group28.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group29.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group30.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group31.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group32.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group33.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group34.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group35.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group36.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group37.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group38.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group39.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group40.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group41.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group42.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group43.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group44.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group45.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group46.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group47.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group48.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group49.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group50.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group51.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group52.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group53.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group54.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group55.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group56.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group57.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group58.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group59.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group60.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group61.done',
+        '{path}footprints/operations/{mergedsample}.rawTF.group62.done'
+    output:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    shell:
+        "touch {output}"
+
+########################################################################################################################################
 #### PARSE FP ANALYSIS #################################################################################################################
 ########################################################################################################################################
 
