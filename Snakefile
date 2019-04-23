@@ -1104,11 +1104,21 @@ rule xsample_footprint_direct_comparison:
 ## the next one starts, this will not be a problem, as all the processes will sync up at
 ## Each step and wait for the heavier ones to finish.
 
-## Note - this section utilizes rules defined in an auxillary snakefile
+## Note - this section utilizes rules defined in an auxillary snakefile called 'panTF.snakefile'
+
+
+## Spooling commands ###################################################################################################################
 
 rule snu61wt01_pantf_analysis:
     input:
         "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
+
+rule test:
+    input:
+        "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
+
+
+## Processing rules ####################################################################################################################
 
 rule PANTF_copy_bam:
     # The TF analysis script runs in 20 simultaneous processes
@@ -1134,7 +1144,8 @@ rule PANTF_copy_bai:
     shell:
         "cp {input} {output}"
 
-rule PANTF_analyze_footprint:
+## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
+rule PANTF_raw_footprint_analysis:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
@@ -1144,12 +1155,28 @@ rule PANTF_analyze_footprint:
     output:
         "{path}footprints/operations/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     resources:
-        analyzeRawTF=1
+        analyzeRawFP=1
     benchmark:
         '{path}footprints/benchmark/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
-        "scripts/panTF/snakeAnalyzeFootprint.R"
+        "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
+## Parsing the raw footprints involves identifying which genomic loci have a TF bound
+rule PANTF_parse_footprint_analysis:
+    input:
+        "{path}footprints/operations/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+    output:
+    	"{path}footprints/operations/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    resources:
+        parseFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+    	"scripts/panTF/snakeParseFootprint.R"
+
+
+
+## Remove the extra copies of the bam files once they are no longer needed
 rule PANTF_remove_bamcopy:
     input:
         "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
@@ -1162,22 +1189,6 @@ rule PANTF_remove_bamcopy:
          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
          touch {output}
          """
-
-rule PANTF_parse_footprint:
-    input:
-        "{path}footprints/operations/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
-    output:
-    	"{path}footprints/operations/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
-    resources:
-        parseFootprint=1
-    benchmark:
-        '{path}footprints/benchmark/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-    script:
-    	"scripts/panTF/snakeParseFP.R"
-
-rule test:
-    input:
-        "snu61/wt01/footprints/operations/SNU61-WT-01.rawTF.analysis.done"
 
 
 ########################################################################################################################################
