@@ -112,37 +112,97 @@ for (a in 1:numFiles){
     
     
     #### Perform the merging and deduplication ####
+    
     for (b in 2:numMotifs){
       
       tryCatch({
         
-        com <- paste0("overlaps <- findOverlaps(sites1, sites", b,")")
+        ## Find overlaps and generate selection indices
+        com <- paste0("tempOverlapsPeaks <- findOverlaps(peakSites1, peakSites", b,")")
         eval(parse(text = com))
-        if (length(overlaps@from) == 0){
-          
-          # If no overlaps are present, can just directly merge the two Granges
-          com <- paste0("sites1 <- c(sites1, sites", b, ")")
+        ##
+        com <- paste0("tempOverlapsBound <- findOverlaps(boundSites1, boundSites", b,")")
+        eval(parse(text = com))
+        ##
+        com <- paste0("tempOverlapsUnbound <- findOverlaps(unboundSites1, unboundSites", b,")")
+        eval(parse(text = com))
+        
+        #### MERGE THE PEAK SITES (all sites) ####
+        ## If no overlaps are present, can just directly merge the two Granges
+        if (length(tempOverlapsPeaks@from) == 0){
+          com <- paste0("peakSites1 <- c(peakSites1, peakSites", b, ")")
           eval(parse(text = com))
-          com <- paste0("rawFootprintMetrics1 <- rbind(rawFootprintMetrics1, rawFootprintMetrics", b, ")")
+          com <- paste0("rawPeakFootprintMetrics1 <- rbind(rawPeakFootprintMetrics1, rawPeakFootprintMetrics", b, ")")
           eval(parse(text = com))
-          
+        ## Otherwise, if some overlaps are present, merge the Granges, but omit overlapping sites from second group
         } else {
-          
-          # If overlaps are present, merge only the non-overlapping ranges from the second Granges
-          mergeIdx <- overlaps@to
-          com <- paste0("sites1 <- c(sites1, sites", b, "[-mergeIdx])")
+          mergeIdx <- tempOverlapsPeaks@to
+          ##
+          com <- paste0("peakSites1 <- c(peakSites1, peakSites", b, "[-mergeIdx])")
           eval(parse(text = com))
-          com <- paste0("rawFootprintMetrics1 <- rbind(rawFootprintMetrics1, rawFootprintMetrics", b, "[-mergeIdx,])")
+          com <- paste0("rawPeakFootprintMetrics1 <- rbind(rawPeakFootprintMetrics1, rawPeakFootprintMetrics", b, "[-mergeIdx,])")
           eval(parse(text = com))
-          
         } # end if (length(overlaps@from) == 0)
+        
+        #### MERGE THE BOUND SITES ####
+        if (length(tempOverlapsBound@from) == 0){
+          com <- paste0("boundSites1 <- c(boundSites1, boundSites", b, ")")
+          eval(parse(text = com))
+          com <- paste0("boundSitesMetrics1 <- rbind(boundSitesMetrics1, boundSitesMetrics", b, ")")
+          eval(parse(text = com))
+        } else {
+          mergeIdx <- tempOverlapsBound@to
+          ##
+          com <- paste0("boundSites1 <- c(boundSites1, boundSites", b, "[-mergeIdx])")
+          eval(parse(text = com))
+          com <- paste0("boundSitesMetrics1 <- rbind(boundSitesMetrics1, boundSitesMetrics", b, "[-mergeIdx,])")
+          eval(parse(text = com))
+        } # end if (length(tempOverlapsBound@from) == 0)
+        
+        #### MERGE THE UNBOUND SITES ####
+        if (length(tempOverlapsBound@from) == 0){
+          com <- paste0("boundSites1 <- c(boundSites1, boundSites", b, ")")
+          eval(parse(text = com))
+          com <- paste0("boundSitesMetrics1 <- rbind(boundSitesMetrics1, boundSitesMetrics", b, ")")
+          eval(parse(text = com))
+        } else {
+          mergeIdx <- tempOverlapsBound@to
+          ##
+          com <- paste0("boundSites1 <- c(boundSites1, boundSites", b, "[-mergeIdx])")
+          eval(parse(text = com))
+          com <- paste0("boundSitesMetrics1 <- rbind(boundSitesMetrics1, boundSitesMetrics", b, "[-mergeIdx,])")
+          eval(parse(text = com))
+        } # end if (length(tempOverlapsBound@from) == 0)
+          
+          
+          
+          
+          ## Bound sites
+          com <- paste0("boundSites", z, " <- peakSites", z, "[boundSiteIndex", z, ",]")
+          eval(parse(text = com))
+          com <- paste0("boundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[boundSiteIndex", z, ",]")
+          eval(parse(text = com))
+          com <- paste0("boundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[boundSiteIndex", z, ",]")
+          eval(parse(text = com))
+          com <- paste0("numBoundSites", z, " <- length(boundSites", z, ")")
+          eval(parse(text = com))
+          
+          ## Unbound sites
+          com <- paste0("unboundSites", z, " <- peakSites", z, "[-boundSiteIndex", z, ",]")
+          eval(parse(text = com))
+          com <- paste0("unboundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[-boundSiteIndex", z, ",]")
+          eval(parse(text = com))
+          com <- paste0("unboundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[-boundSiteIndex", z, ",]")
+          eval(parse(text = com))
+          com <- paste0("numUnboundSites", z, " <- length(unboundSites", z, ")")
+          eval(parse(text = com))
+          
+          
       }, # end try
-      
       error=function(cond){
         message(cond)
         return(NA)},
       finally={})
-      
     } # end for (b in 2:numMotifs)
   } # end if (numMotifs == 1)
   
