@@ -128,26 +128,33 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
         mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11repmerged {wildcards.path}preprocessing/12bigwig {wildcards.path}preprocessing/operations
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
+        #
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/footprints
-        mkdir -p -v {wildcards.path}saturation/footprints/data {wildcards.path}saturation/footprints/graphs 
-        mkdir -p -v {wildcards.path}saturation/footprints/data/merged {wildcards.path}saturation/footprints/data/motifmerge {wildcards.path}saturation/footprints/data/parsed {wildcards.path}saturation/footprints/data/bychr
+        mkdir -p -v {wildcards.path}saturation/footprints/data {wildcards.path}saturation/footprints/graphs {wildcards.path}saturation/footprints/operations {wildcards.path}saturation/footprints/benchmark
         mkdir -p -v {wildcards.path}saturation/complexity
         mkdir -p -v {wildcards.path}saturation/peaks
         mkdir -p -v {wildcards.path}saturation/downsampled
+        #
         mkdir -p -v {wildcards.path}footprints
-        mkdir -p -v {wildcards.path}footprints/graphs {wildcards.path}footprints/heatmaps {wildcards.path}footprints/data
-        mkdir -p -v {wildcards.path}footprints/data/merged {wildcards.path}footprints/data/motifmerge {wildcards.path}footprints/parsed {wildcards.path}footprints/data/bychr {wildcards.path}footprints/operations
+        mkdir -p -v {wildcards.path}footprints/benchmark
+        mkdir -p -v {wildcards.path}footprints/benchmark/parse {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
+        mkdir -p -v {wildcards.path}footprints/data 
+        mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed
+        mkdir -p -v {wildcards.path}footprints/graphs
+		mkdir -p -v {wildcards.path}footprints/graphs/bf {wildcards.path}footprints/graphs/heatmaps {wildcards.path}footprints/graphs/peaks {wildcards.path}footprints/graphs/processed
+		mkdir -p -v {wildcards.path}footprints/operations
+        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed
+        #
         mkdir -p -v {wildcards.path}peaks
-        mkdir -p -v {wildcards.path}peaks/genrich {wildcards.path}peaks/macs2 {wildcards.path}peaks/macs2/individual {wildcards.path}peaks/macs2/merged
-        mkdir -p -v {wildcards.path}correlation
+        mkdir -p -v {wildcards.path}peaks/genrich
+        mkdir -p -v {wildcards.path}peaks/macs2
+        mkdir -p -v {wildcards.path}peaks/macs2/individual {wildcards.path}peaks/macs2/merged
+        #
+        mkdir -p -v {wildcards.path}operations
         mkdir -p -v {wildcards.path}metrics
-        mkdir -p -v {wildcards.path}operations {wildcards.path}operations/footsat
-        mkdir -p -v {wildcards.path}pantf
-        mkdir -p -v {wildcards.path}pantf/parsed
-        mkdir -p -v {wildcards.path}pantf/operations
-        mkdir -p -v {wildcards.path}pantf/graphs
-        mkdir -p -v {wildcards.path}pantf/data {wildcards.path}pantf/data/bychr {wildcards.path}pantf/data/merged {wildcards.path}pantf/data/motifmerge
+        mkdir -p -v {wildcards.path}correlation
+        #
         touch {output}
         """
 
