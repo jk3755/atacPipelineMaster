@@ -65,7 +65,7 @@ for (a in 1:numFiles){
     
   } else {
     
-    ## Pull the data for each individual motif
+    ## Pull the data for each individual motif and perform the bound/unbound split
     for (z in 1:numMotifs){
       tryCatch({
         
@@ -78,16 +78,30 @@ for (a in 1:numFiles){
         eval(parse(text = com))
         
         ## Perform the bound/unbound split
-        com <- paste0("boundSiteOverlaps", z, " <- findOverlaps(footprintData[['motif", z, "']][['parseData']][['bfSites']], footprintData[['motif1']][['peakSites']])")
+        com <- paste0("boundSiteOverlaps", z, " <- findOverlaps(footprintData[['motif", z, "']][['parseData']][['bfSites']], footprintData[['motif", z, "']][['peakSites']])")
         eval(parse(text = com))
         com <- paste0("boundSiteIndex", z, " <- boundSiteOverlaps", z, "@to")
         eval(parse(text = com))
-        ##
+        
+        ## Bound sites
         com <- paste0("boundSites", z, " <- peakSites", z, "[boundSiteIndex", z, ",]")
         eval(parse(text = com))
-        com <- paste0("boundSites", z, " <- peakSites", z, "[boundSiteIndex", z, ",]")
+        com <- paste0("boundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[boundSiteIndex", z, ",]")
+        eval(parse(text = com))
+        com <- paste0("boundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[boundSiteIndex", z, ",]")
+        eval(parse(text = com))
+        com <- paste0("numBoundSites", z, " <- length(boundSites", z, ")")
         eval(parse(text = com))
         
+        ## Unbound sites
+        com <- paste0("unboundSites", z, " <- peakSites", z, "[-boundSiteIndex", z, ",]")
+        eval(parse(text = com))
+        com <- paste0("unboundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[-boundSiteIndex", z, ",]")
+        eval(parse(text = com))
+        com <- paste0("unboundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[-boundSiteIndex", z, ",]")
+        eval(parse(text = com))
+        com <- paste0("numUnboundSites", z, " <- length(unboundSites", z, ")")
+        eval(parse(text = com))
         
       }, # end try
       error=function(cond){
@@ -97,7 +111,7 @@ for (a in 1:numFiles){
     } # end for (z in 1:numMotif)
     
     
-    #### Perform the merging, deduplication, and bound/unbound split operations ####
+    #### Perform the merging and deduplication ####
     for (b in 2:numMotifs){
       
       tryCatch({
