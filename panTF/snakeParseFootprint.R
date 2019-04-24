@@ -165,7 +165,7 @@ plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALS
 
 ## Load the footprintData file
 cat("Loading footprintData file...", "\n")
-footprintDataPath <- gsub("operations", "data/raw", footprintDataPath)
+footprintDataPath <- gsub("operations", "data", footprintDataPath)
 footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
 load(footprintDataPath)
 
