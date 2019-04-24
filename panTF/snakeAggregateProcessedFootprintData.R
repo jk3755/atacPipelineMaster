@@ -1,7 +1,7 @@
 
 
 ## Load libraries
-library(GenomicRanges)
+suppressMessages(library(GenomicRanges))
 
 ## Set snakemake variables
 inputDir <- snakemake@input[[1]]
@@ -18,7 +18,7 @@ cat("Found", numFiles, "footprint data files. Processing...", "\n")
 
 ## Initialize a data frame that will store the aggregated data for all TFs
 ## Will make plot generation much easier
-aggregateFootprintData <- data.frame(matrix(vector(), 20, numFiles,
+aggregateFootprintData <- data.frame(matrix(vector(), 0, 22,
                           dimnames=list(c(), c(
                           "Gene", "numMotifs", "numPeakSites", "numBoundSites", "numUnboundSites",
                           "peakMotifSignal", "peakFlankSignal", "peakBackgroundSignal", "peak.log2Flank", "peak.log2Depth",
@@ -46,6 +46,7 @@ for (a in 1:numFiles){
   ## Use regex to get the gene name of the current file
   geneName <- gsub(inputDir, "", fileList[a])
   geneName <- gsub(paste0(sampleName, "."), "", geneName)
+  geneName <- gsub("/", "", geneName)
   geneName <- gsub(".processedFootprintData.Rdata", "", geneName)
   
   #### TRANSFER DATA TO AGGREGATOR OBJECTs ####

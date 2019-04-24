@@ -1134,7 +1134,7 @@ rule pantf_aggregator_h508wt02a:
 
 
 ## Pipeline TF rules ###################################################################################################################
-rule PANTF_run_aggregator
+rule PANTF_run_aggregator:
 	input:
 		"{path}footprints/data/processed/"
 	output:
