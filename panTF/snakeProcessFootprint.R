@@ -27,16 +27,18 @@ inputPath <- gsub("operations/parse", "data/parsed", inputPath)
 inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
 load(inputPath)
 
+## To avoid errors, clear the list of any empty sub-lists first
+footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
+## Also remove any sublists that do not have the parsed data object stored
+footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 15L, TRUE)
+##
+numMotifs <- length(footprintData)
+
 tryCatch({
   
 #### MERGE AND DEDUPLICATE ALL BINDING SITES ####
 ## At this point, the footprints have already been parsed into bound and unbound sites
 ## Transfer data for both to the new storage object, for downstream analysis
-  
-## To avoid errors, clear the list of any empty sub-lists first
-footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
-##
-numMotifs <- length(footprintData)
 
 # If there is only one motif available, there is no need to merge and deduplicate the identified sites
 if (numMotifs == 1){
