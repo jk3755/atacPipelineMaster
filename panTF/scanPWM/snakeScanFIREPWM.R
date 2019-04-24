@@ -51,14 +51,12 @@ ZNF696$"motif3" <- COAD_FIRE_PWM[["ZNF696_motif3_fire_PWM"]]
 
 
 #### ADNP
-outPath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\scanPWM\\ADNP.bindingSites.Rdata"
+outPath <- "C:\\Users\\jsk33\\Desktop\\ADNP.bindingSites.Rdata"
 
 ## Set parameters
-numMotifs <- length(ADNP)
 genome <- Hsapiens
 score <- "99%"
 bindingSites <- list()
-
 
 ## Scan the genome for matches to each unique motif
 PWM <- ADNP[["motif1"]]
@@ -68,17 +66,91 @@ sites <- matchPWM(PWM, genome, min.score=score)
 tempSites$PWM <- PWM
 tempSites$sites <- sites
 
+bindingSites$"motif1" <- tempSites
+save(bindingSites, file = outPath)
 
 
+#### TAF4
+outPath <- "C:\\Users\\jsk33\\Desktop\\TAF4.bindingSites.Rdata"
 
-bindingSites[[a]] <- tempSites
+## Set parameters
+genome <- Hsapiens
+score <- "99%"
+bindingSites <- list()
+
+## Scan the genome for matches to each unique motif
+PWM <- TAF4[["motif1"]]
+rownames(PWM) <- DNA_BASES
+tempSites <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+bindingSites$"motif1" <- tempSites
+
+## Scan the genome for matches to each unique motif
+PWM <- TAF4[["motif2"]]
+rownames(PWM) <- DNA_BASES
+tempSites <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+bindingSites$"motif2" <- tempSites
+
+save(bindingSites, file = outPath)
 
 
-## Save the data
-cat("Saving data...", "\n")
-save(bindingSites, file = rdataPath)
-file.create(outPath)
+#### ZMYND8
+outPath <- "C:\\Users\\jsk33\\Desktop\\ZMYND8.bindingSites.Rdata"
 
-rm(list=ls())
-gc()
-cat("Finished scanning!", "\n")
+## Set parameters
+genome <- Hsapiens
+score <- "99%"
+bindingSites <- list()
+
+## Scan the genome for matches to each unique motif
+PWM <- ZMYND8[["motif1"]]
+rownames(PWM) <- DNA_BASES
+tempSites <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+bindingSites$"motif1" <- tempSites
+
+save(bindingSites, file = outPath)
+
+#### ZNF696
+outPath <- "C:\\Users\\jsk33\\Desktop\\ZNF696.bindingSites.Rdata"
+
+## Set parameters
+genome <- Hsapiens
+score <- "99%"
+bindingSites <- list()
+
+## Scan the genome for matches to each unique motif
+PWM <- ZNF696[["motif1"]]
+rownames(PWM) <- DNA_BASES
+tempSites <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+bindingSites$"motif1" <- tempSites
+
+## Scan the genome for matches to each unique motif
+PWM <- ZNF696[["motif2"]]
+rownames(PWM) <- DNA_BASES
+tempSites <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+bindingSites$"motif2" <- tempSites
+
+## Scan the genome for matches to each unique motif
+PWM <- ZNF696[["motif3"]]
+rownames(PWM) <- DNA_BASES
+tempSites <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+bindingSites$"motif3" <- tempSites
+
+save(bindingSites, file = outPath)
