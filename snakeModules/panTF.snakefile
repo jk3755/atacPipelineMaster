@@ -133,6 +133,27 @@ rule PANTF_TFgroup_aggregator:
 ########################################################################################################################################
 #### PARSE FP ANALYSIS #################################################################################################################
 ########################################################################################################################################
+
+
+rule processFP_COAD_MRs:
+    input:
+        '{path}footprints/operations/processed/{mergedsample}.TCF7.processFP.bamcopy1.done',
+        '{path}footprints/operations/processed/{mergedsample}.MNX1.processFP.bamcopy2.done',
+        '{path}footprints/operations/processed/{mergedsample}.POU5F1B.processFP.bamcopy3.done',
+        '{path}footprints/operations/processed/{mergedsample}.ESRRA.processFP.bamcopy4.done',
+        '{path}footprints/operations/processed/{mergedsample}.CDX2.processFP.bamcopy5.done',
+        '{path}footprints/operations/processed/{mergedsample}.HNF4A.processFP.bamcopy6.done',
+        '{path}footprints/operations/processed/{mergedsample}.GMEB2.processFP.bamcopy7.done',
+        '{path}footprints/operations/processed/{mergedsample}.HOXA3.processFP.bamcopy8.done',
+        '{path}footprints/operations/processed/{mergedsample}.OVOL1.processFP.bamcopy9.done',
+        '{path}footprints/operations/processed/{mergedsample}.ASCL2.processFP.bamcopy10.done',
+        '{path}footprints/operations/processed/{mergedsample}.ZSWIM1.processFP.bamcopy11.done',
+        '{path}footprints/operations/processed/{mergedsample}.CBFA2T2.processFP.bamcopy12.done'
+    output:
+        '{path}footprints/operations/groups/{mergedsample}.processFP.COADMR.done'
+    shell:
+        'touch {output}'
+
 rule processFP_group1:
     input:
         '{path}footprints/operations/processed/{mergedsample}.TFAP2A.processFP.bamcopy1.done', 
