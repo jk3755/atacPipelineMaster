@@ -27,7 +27,23 @@ fileList <- list.files(fpDirPath, full.names = TRUE)
 numFiles <- length(fileList)
 cat("Found", numFiles, "footprint data files. Processing...", "\n")
 
+## Initialize a data frame that will store the aggregated data for all TFs
+## Will make plot generation much easier
+aggregateFootprintData <- data.frame(matrix(vector(), 0, 20,
+                                    dimnames=list(c(), c("Gene", "numMotifs", "numPeakSites", "numBoundSites", "numUnboundSites",
+                                                         "peakMotifSignal", "peakFlankSignal", "peakBackgroundSignal", "peak.log2Flank", "peak.log2Depth",
+                                                         "boundMotifSignal", "boundFlankSignal", "boundBackgroundSignal", "bound.log2Flank", "bound.log2Depth",
+                                                         "unboundMotifSignal", "unboundFlankSignal", "unboundBackgroundSignal", "unbound.log2Flank", "unbound.log2Depth"))),
+                                    stringsAsFactors=F)
+
+
+## Also initialize a list to store the Footprint metrics and site data for each gene
+aggregateFootprintMetricsData <- list()
+
 #### Iterate over all identified files in the directory and perform the processing for each one ####
+## Initialize a new list object to store the processed data
+processedFootprintData <- list()
+
 for (a in 1:numFiles){
   cat("Processing input file ", a, "\n")
   
@@ -267,5 +283,39 @@ for (a in 1:numFiles){
   processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
   processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
   processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
+  
+  #### TRANSFER DATA TO AGGREGATOR OBJECTs ####
+  aggregateFootprintData[a,1] <- footprintData[["motif1"]][["geneName"]]
+  aggregateFootprintData[a,2] <- numMotifs
+  aggregateFootprintData[a,3] <- numPeakSites
+  aggregateFootprintData[a,4] <- numBoundSites
+  aggregateFootprintData[a,5] <- numUnboundSites
+  aggregateFootprintData[a,6] <- peakMotifSignal
+  aggregateFootprintData[a,7] <- peakFlankSignal
+  aggregateFootprintData[a,8] <- peakBackgroundSignal
+  aggregateFootprintData[a,9] <- peak.log2Flank
+  aggregateFootprintData[a,10] <- peak.log2Depth
+  aggregateFootprintData[a,11] <- boundMotifSignal
+  aggregateFootprintData[a,12] <- boundFlankSignal
+  aggregateFootprintData[a,13] <- boundBackgroundSignal
+  aggregateFootprintData[a,14] <- bound.log2Flank
+  aggregateFootprintData[a,15] <- bound.log2Depth
+  aggregateFootprintData[a,16] <- unboundMotifSignal
+  aggregateFootprintData[a,17] <- unboundFlankSignal
+  aggregateFootprintData[a,18] <- unboundBackgroundSignal
+  aggregateFootprintData[a,19] <- unbound.log2Flank
+  aggregateFootprintData[a,20] <- unbound.log2Depth
+
+  ##
+  tempList <- list()
+  tempList$"peakSites" <- peakSites
+  tempList$"rawPeakFootprintMetrics" <- rawPeakFootprintMetrics
+  tempList$"boundSites" <- boundSites
+  tempList$"boundSitesMetrics" <- boundSitesMetrics
+  tempList$"unboundSites" <- unboundSites
+  tempList$"unboundSitesMetrics" <- unboundSitesMetrics
+  ##
+  com <- paste0("unboundSites1 <- c(unboundSites1, unboundSites", b, ")")
+  eval(parse(text = com))
 
 } # end for (a in 1:numFiles)

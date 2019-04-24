@@ -1114,6 +1114,10 @@ rule run_pantf_ls1034wt01:
     input:
         expand("ls1034/wt01/footprints/operations/LS1034-WT-01.parseTF.group{param}.done", param=config["group"])
 
+rule run_pantf_h508wt02a:
+    input:
+        expand("h508/wt02a/footprints/operations/H508A-WT-02.parseTF.group{param}.done", param=config["group"])
+
 
 # You can also use this rule to run everything at once
 # For some reason, this runs MUCH slower/gets stuck. I don't know why
