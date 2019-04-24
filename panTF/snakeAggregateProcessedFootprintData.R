@@ -5,6 +5,7 @@ library(ggplot2)
 library(ggsci)
 library(mygene)
 library(viper)
+library(ggrepel)
 ##
 options(warn = -1)
 options(scipen = 999)
@@ -76,9 +77,20 @@ for (a in 1:numFiles){
   
 } # end for (a in 1:numFiles)
 
-ggplot(aggregateFootprintData, aes(peak.log2depth, peak.log2flank)) + 
-  geom_point()
+p <- ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) + 
+  geom_point() +
+  geom_text(aes(label = Gene),hjust=0, vjust=0)
 
+
+ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) + 
+  geom_point() +
+  geom_label_repel(aes(label = Gene),
+                   box.padding   = 0.35, # amount of padding around each label bounding box
+                   point.padding = 0.5, # how much to move the labels away from the points. set to NA to turn off
+                   segment.color = 'black', # this changes to color of the line pointing to the point
+                   label.size = NA, # this will remove the boxes around the labels
+                   size = 2) + # this changes the size of the label text
+  theme_classic()
 
 
 ## Load the RNA expression data from ccle
