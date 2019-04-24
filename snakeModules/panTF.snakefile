@@ -149,11 +149,11 @@ rule processFP_COAD_MRs:
         '{path}footprints/operations/processed/{mergedsample}.ASCL2.processFP.bamcopy10.done',
         '{path}footprints/operations/processed/{mergedsample}.ZSWIM1.processFP.bamcopy11.done',
         '{path}footprints/operations/processed/{mergedsample}.CBFA2T2.processFP.bamcopy12.done',
-        '{path}footprints/operations/processed/{mergedsample}.PAX6.processFP.bamcopy12.done',
-        '{path}footprints/operations/processed/{mergedsample}.ADNP.processFP.bamcopy12.done',
-        '{path}footprints/operations/processed/{mergedsample}.TAF4.processFP.bamcopy12.done',
-        '{path}footprints/operations/processed/{mergedsample}.ZMYND8.processFP.bamcopy12.done',
-        '{path}footprints/operations/processed/{mergedsample}.ZNF696.processFP.bamcopy12.done',
+        '{path}footprints/operations/processed/{mergedsample}.PAX6.processFP.bamcopy13.done',
+        '{path}footprints/operations/processed/{mergedsample}.ADNP.processFP.bamcopy14.done',
+        '{path}footprints/operations/processed/{mergedsample}.TAF4.processFP.bamcopy15.done',
+        '{path}footprints/operations/processed/{mergedsample}.ZMYND8.processFP.bamcopy16.done',
+        '{path}footprints/operations/processed/{mergedsample}.ZNF696.processFP.bamcopy17.done'
     output:
         '{path}footprints/operations/groups/{mergedsample}.processFP.COADMR.done'
     shell:

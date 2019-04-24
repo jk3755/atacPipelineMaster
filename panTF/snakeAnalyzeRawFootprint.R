@@ -21,7 +21,7 @@ suppressMessages(library(parallel))
 suppressMessages(library(Rsamtools))
 suppressMessages(library(GenomicAlignments))
 suppressMessages(library(genomation))
-suppressMessages(library(R.utils))
+#suppressMessages(library(R.utils))
 
 ## Set snakemake variables
 cat("Setting snakemake variables...", "\n")
@@ -323,14 +323,12 @@ file.create(outPath)
 
 
 
-
-
 ## Required for the timeout exception
-tryCatch(
-  expr = {
-    withTimeout({cat("Analyzing motif", b, "\n")
-    )},
-    timeout = 600)
-  },
-  TimeoutException = function(ex) cat("Script took too long, skipping for now\n")
-  )}
+#tryCatch(
+#  expr = {
+#    withTimeout({cat("Analyzing motif", b, "\n")
+#    )},
+#    timeout = 600)
+#  },
+#  TimeoutException = function(ex) cat("Script took too long, skipping for now\n")
+#  )}
