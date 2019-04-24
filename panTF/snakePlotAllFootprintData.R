@@ -1,27 +1,23 @@
-library(ggplot2)
-library(ggsci)
-library(mygene)
-library(viper)
-library(ggrepel)
+
+##
+suppressMessages(library(ggplot2))
+suppressMessages(library(ggsci))
+suppressMessages(library(mygene))
+suppressMessages(library(viper))
+suppressMessages(library(ggrepel))
+
 ##
 options(warn = -1)
 options(scipen = 999)
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("mygene", version = "3.8")
-## Setup : Load Packages #######################################################################################################
-library(GenomicRanges)
-library(ggplot2)
-library(ggsci)
-library(mygene)
-library(viper)
-##
-options(warn = -1)
-options(scipen = 999)
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install("mygene", version = "3.8")
-################################################################################################################################
+
+
+
+#### GET THE DATA ####
+footprintData <- aggregateData[["aggregateFootprintData"]]
+footprintMetrics <- aggregateData[["aggregateFootprintMetricsData"]]
 
 
 
@@ -32,12 +28,14 @@ BiocManager::install("mygene", version = "3.8")
 
 #### ADD VIPER NES SCORE VALUES TO THE DF ####
 
-p <- ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) + 
-  geom_point() +
-  geom_text(aes(label = Gene),hjust=0, vjust=0)
 
 
-ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) + 
+#### PLOTS ####
+
+## Plot 1
+
+# With labels
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank)) + 
   geom_point() +
   geom_label_repel(aes(label = Gene),
                    box.padding   = 0.35, # amount of padding around each label bounding box
@@ -46,6 +44,15 @@ ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) +
                    label.size = NA, # this will remove the boxes around the labels
                    size = 2) + # this changes the size of the label text
   theme_classic()
+
+# Without labels
+ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) + 
+  geom_point()
+
+
+
+
+
 
 
 ## Load the RNA expression data from ccle
