@@ -94,29 +94,29 @@ while (a <= numGenes){
   u <- a+18
   v <- a+19
   
-  tmp1 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[c], ".rawFPanalysis.bamcopy1.done", "', ")
-  tmp2 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[d], ".rawFPanalysis.bamcopy2.done", "', ")
-  tmp3 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[e], ".rawFPanalysis.bamcopy3.done", "', ")
-  tmp4 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[f], ".rawFPanalysis.bamcopy4.done", "', ")
-  tmp5 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[g], ".rawFPanalysis.bamcopy5.done", "', ")
-  tmp6 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[h], ".rawFPanalysis.bamcopy6.done", "', ")
-  tmp7 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[i], ".rawFPanalysis.bamcopy7.done", "', ")
-  tmp8 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[j], ".rawFPanalysis.bamcopy8.done", "', ")
-  tmp9 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[k], ".rawFPanalysis.bamcopy9.done", "', ")
-  tmp10 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[l], ".rawFPanalysis.bamcopy10.done", "', ")
-  tmp11 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[m], ".rawFPanalysis.bamcopy11.done", "', ")
-  tmp12 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[n], ".rawFPanalysis.bamcopy12.done", "', ")
-  tmp13 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[o], ".rawFPanalysis.bamcopy13.done", "', ")
-  tmp14 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[p], ".rawFPanalysis.bamcopy14.done", "', ")
-  tmp15 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[q], ".rawFPanalysis.bamcopy15.done", "', ")
-  tmp16 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[r], ".rawFPanalysis.bamcopy16.done", "', ")
-  tmp17 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[s], ".rawFPanalysis.bamcopy17.done", "', ")
-  tmp18 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[t], ".rawFPanalysis.bamcopy18.done", "', ")
-  tmp19 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[u], ".rawFPanalysis.bamcopy19.done", "', ")
-  tmp20 <- paste0("'{path}footprints/operations/{mergedsample}.", uniqueGenes[v], ".rawFPanalysis.bamcopy20.done", "'")
+  tmp1 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[c], ".processFP.bamcopy1.done", "', ")
+  tmp2 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[d], ".processFP.bamcopy2.done", "', ")
+  tmp3 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[e], ".processFP.bamcopy3.done", "', ")
+  tmp4 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[f], ".processFP.bamcopy4.done", "', ")
+  tmp5 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[g], ".processFP.bamcopy5.done", "', ")
+  tmp6 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[h], ".processFP.bamcopy6.done", "', ")
+  tmp7 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[i], ".processFP.bamcopy7.done", "', ")
+  tmp8 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[j], ".processFP.bamcopy8.done", "', ")
+  tmp9 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[k], ".processFP.bamcopy9.done", "', ")
+  tmp10 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[l], ".processFP.bamcopy10.done", "', ")
+  tmp11 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[m], ".processFP.bamcopy11.done", "', ")
+  tmp12 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[n], ".processFP.bamcopy12.done", "', ")
+  tmp13 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[o], ".processFP.bamcopy13.done", "', ")
+  tmp14 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[p], ".processFP.bamcopy14.done", "', ")
+  tmp15 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[q], ".processFP.bamcopy15.done", "', ")
+  tmp16 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[r], ".processFP.bamcopy16.done", "', ")
+  tmp17 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[s], ".processFP.bamcopy17.done", "', ")
+  tmp18 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[t], ".processFP.bamcopy18.done", "', ")
+  tmp19 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[u], ".processFP.bamcopy19.done", "', ")
+  tmp20 <- paste0("'{path}footprints/operations/processed/{mergedsample}.", uniqueGenes[v], ".processFP.bamcopy20.done", "'")
   
   strings[b] <- paste0(
-                      "rule rawTF_group",
+                      "rule processFP_group",
                       b,
                       ":\n",
                       "\tinput:\n\t\t",
@@ -125,7 +125,7 @@ while (a <= numGenes){
                       tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t",
                       tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20, "\n\t",
                       "output:\n\t\t",
-                      "'{path}footprints/operations/{mergedsample}.rawTF.group", b, ".done'\n",
+                      "'{path}footprints/operations/{mergedsample}.processFP.group", b, ".done'\n",
                       "\tshell:\n\t\t",
                       "'touch {output}'"
                       )
@@ -135,7 +135,7 @@ while (a <= numGenes){
 }
 
 ## Write the file
-outPath <- snakemake@output[[1]]
+outPath <- "C:\\Users\\jsk33\\Desktop\\test.txt"
 write.table(
             strings,
             file = outPath,
