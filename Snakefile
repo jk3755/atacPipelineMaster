@@ -138,11 +138,11 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}footprints/benchmark
         mkdir -p -v {wildcards.path}footprints/benchmark/parse {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
         mkdir -p -v {wildcards.path}footprints/data 
-        mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed
+        mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/graphs
 		mkdir -p -v {wildcards.path}footprints/graphs/bf {wildcards.path}footprints/graphs/heatmaps {wildcards.path}footprints/graphs/peaks {wildcards.path}footprints/graphs/processed
 		mkdir -p -v {wildcards.path}footprints/operations
-        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed
+        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
         #
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/genrich
@@ -1118,6 +1118,10 @@ rule run_pantf_h508wt02a:
     input:
         expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
 
+rule pantf_aggregator_h508wt02a:
+	input:
+		"h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
+
 
 # You can also use this rule to run everything at once
 # For some reason, this runs MUCH slower/gets stuck. I don't know why
@@ -1129,7 +1133,15 @@ rule run_pantf_h508wt02a:
 
 
 
-## Pipeline rules ###################################################################################################################
+## Pipeline TF rules ###################################################################################################################
+rule PANTF_run_aggregator
+	input:
+		"{path}footprints/data/processed/"
+	output:
+		"{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
+	script:
+		"scripts/panTF/snakeAggregateProcessedFootprintData.R"
+
 rule PANTF_copy_bam:
     # The TF analysis script runs in 20 simultaneous processes
     # Each process will need to access the bam file individually
