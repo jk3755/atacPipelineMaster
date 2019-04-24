@@ -34,6 +34,9 @@ footprintData <- list.clean(footprintData, function(footprintData) length(footpr
 ##
 numMotifs <- length(footprintData)
 
+## Because some motifs may be removed due to errors, pull the motif names to be used in downstream commands (can't just go sequentially)
+motifNames <- names(footprintData)
+
 tryCatch({
   
 #### MERGE AND DEDUPLICATE ALL BINDING SITES ####
@@ -44,13 +47,25 @@ tryCatch({
 if (numMotifs == 1){
   
   ##
-  peakSites <- footprintData[["motif1"]][["peakSites"]]
-  peakInsertionMatrix <- footprintData[["motif1"]][["insMatrix"]]
-  rawPeakFootprintMetrics <- footprintData[["motif1"]][["rawFootprintMetrics"]]
+  com <- paste0("footprintData[['", motifNames[1], "']][['peakSites']]")
+  eval(parse(text = com))
+  
+  ##
+  com <- paste0("footprintData[['", motifNames[1], "']][['insMatrix']]")
+  eval(parse(text = com))
+  
+  ##
+  com <- paste0("footprintData[['", motifNames[1], "']][['rawFootprintMetrics']]")
+  eval(parse(text = com))
+  
+  ##
   numPeakSites <- length(peakSites)
   
   ## Split the sites into bound and unbound as determined by null model with bonferroni correction
-  boundSiteOverlaps <- findOverlaps(footprintData[["motif1"]][["parseData"]][["bfSites"]], footprintData[["motif1"]][["peakSites"]])
+  com <- paste0("boundSiteOverlaps <- findOverlaps(footprintData[['", motifNames[1], "']][['parseData']][['bfSites']], footprintData[['", motifNames[1], "]][['peakSites']])")
+  eval(parse(text = com))
+  
+  ##
   boundSiteIndex <- boundSiteOverlaps@to
   ##
   boundSites <- peakSites[boundSiteIndex]
@@ -74,15 +89,15 @@ if (numMotifs == 1){
     tryCatch({
       
       ## Pull the basic data
-      com <- paste0("peakSites", z, " <- footprintData[['motif", z, "']][['peakSites']]")
+      com <- paste0("peakSites", z, " <- footprintData[['", motifNames[z], "']][['peakSites']]")
       eval(parse(text = com))
-      com <- paste0("peakInsertionMatrix", z, " <- footprintData[['motif", z, "']][['insMatrix']]")
+      com <- paste0("peakInsertionMatrix", z, " <- footprintData[['", motifNames[z], "']][['insMatrix']]")
       eval(parse(text = com))
-      com <- paste0("rawPeakFootprintMetrics", z, " <- footprintData[['motif", z, "']][['rawFootprintMetrics']]")
+      com <- paste0("rawPeakFootprintMetrics", z, " <- footprintData[['", motifNames[z], "']][['rawFootprintMetrics']]")
       eval(parse(text = com))
       
       ## Perform the bound/unbound split
-      com <- paste0("boundSiteOverlaps", z, " <- findOverlaps(footprintData[['motif", z, "']][['parseData']][['bfSites']], footprintData[['motif", z, "']][['peakSites']])")
+      com <- paste0("boundSiteOverlaps", z, " <- findOverlaps(footprintData[['", motifNames[z], "']][['parseData']][['bfSites']], footprintData[['", motifNames[z], "']][['peakSites']])")
       eval(parse(text = com))
       com <- paste0("boundSiteIndex", z, " <- boundSiteOverlaps", z, "@to")
       eval(parse(text = com))
@@ -270,17 +285,18 @@ processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
 processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
 
 
-## Save the data
-gc()
-dataOutPath <- gsub("parsed", "processed", inputPath)
-save(processedFootprintData, file = dataOutPath)
-
 }, # end try
 error=function(cond){
   message(cond)
   return(NA)},
 finally={})
 
+
+
+## Save the data
+gc()
+dataOutPath <- gsub("parsed", "processed", inputPath)
+save(processedFootprintData, file = dataOutPath)
 
 ##
 file.create(outPath)
