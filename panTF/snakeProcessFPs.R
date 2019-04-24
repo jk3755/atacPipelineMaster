@@ -305,7 +305,6 @@ for (a in 1:numFiles){
   aggregateFootprintData[a,18] <- unboundBackgroundSignal
   aggregateFootprintData[a,19] <- unbound.log2Flank
   aggregateFootprintData[a,20] <- unbound.log2Depth
-
   ##
   tempList <- list()
   tempList$"peakSites" <- peakSites
@@ -315,7 +314,7 @@ for (a in 1:numFiles){
   tempList$"unboundSites" <- unboundSites
   tempList$"unboundSitesMetrics" <- unboundSitesMetrics
   ##
-  com <- paste0("unboundSites1 <- c(unboundSites1, unboundSites", b, ")")
+  com <- paste0("aggregateFootprintMetricsData$'", footprintData[["motif1"]][["geneName"]], "' <- tempList")
   eval(parse(text = com))
 
 } # end for (a in 1:numFiles)
