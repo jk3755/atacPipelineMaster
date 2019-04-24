@@ -23,154 +23,94 @@ cat("Found", numFiles, "footprint data files. Processing...", "\n")
 ## Initialize a data frame that will store the aggregated data for all TFs
 ## Will make plot generation much easier
 aggregateFootprintData <- data.frame(matrix(vector(), 0, 20,
-                                            dimnames=list(c(), c("Gene", "numMotifs", "numPeakSites", "numBoundSites", "numUnboundSites",
-                                                                 "peakMotifSignal", "peakFlankSignal", "peakBackgroundSignal", "peak.log2Flank", "peak.log2Depth",
-                                                                 "boundMotifSignal", "boundFlankSignal", "boundBackgroundSignal", "bound.log2Flank", "bound.log2Depth",
-                                                                 "unboundMotifSignal", "unboundFlankSignal", "unboundBackgroundSignal", "unbound.log2Flank", "unbound.log2Depth"))),
-                                     stringsAsFactors=F)
+                          dimnames=list(c(), c("Gene", "numMotifs", "numPeakSites", "numBoundSites", "numUnboundSites",
+                          "peakMotifSignal", "peakFlankSignal", "peakBackgroundSignal", "peak.log2Flank", "peak.log2Depth",
+                          "boundMotifSignal", "boundFlankSignal", "boundBackgroundSignal", "bound.log2Flank", "bound.log2Depth",
+                          "unboundMotifSignal", "unboundFlankSignal", "unboundBackgroundSignal", "unbound.log2Flank", "unbound.log2Depth"))),
+                          stringsAsFactors=F)
 
 
 ## Also initialize a list to store the Footprint metrics and site data for each gene
 aggregateFootprintMetricsData <- list()
 
 
-##############
-
-#### TRANSFER DATA TO AGGREGATOR OBJECTs ####
-aggregateFootprintData[a,1] <- geneName
-aggregateFootprintData[a,2] <- processedFootprintData[["numMotifs"]]
-aggregateFootprintData[a,3] <- processedFootprintData[["numPeakSites"]]
-aggregateFootprintData[a,4] <- processedFootprintData[["numBoundSites"]]
-aggregateFootprintData[a,5] <- processedFootprintData[["numUnboundSites"]]
-aggregateFootprintData[a,6] <- processedFootprintData[["peakMotifSignal"]]
-aggregateFootprintData[a,7] <- processedFootprintData[["peakFlankSignal"]]
-aggregateFootprintData[a,8] <- processedFootprintData[["peakBackgroundSignal"]]
-aggregateFootprintData[a,9] <- processedFootprintData[["peak.log2Flank"]]
-aggregateFootprintData[a,10] <- processedFootprintData[["peak.log2Depth"]]
-aggregateFootprintData[a,11] <- processedFootprintData[["boundMotifSignal"]]
-aggregateFootprintData[a,12] <- processedFootprintData[["boundFlankSignal"]]
-aggregateFootprintData[a,13] <- processedFootprintData[["boundBackgroundSignal"]]
-aggregateFootprintData[a,14] <- processedFootprintData[["bound.log2Flank"]]
-aggregateFootprintData[a,15] <- processedFootprintData[["bound.log2Depth"]]
-aggregateFootprintData[a,16] <- processedFootprintData[["unboundMotifSignal"]]
-aggregateFootprintData[a,17] <- processedFootprintData[["unboundFlankSignal"]]
-aggregateFootprintData[a,18] <- processedFootprintData[["unboundBackgroundSignal"]]
-aggregateFootprintData[a,19] <- processedFootprintData[["unbound.log2Flank"]]
-aggregateFootprintData[a,20] <- processedFootprintData[["unbound.log2Depth"]]
-
-##
-tempList <- list()
-tempList$"peakSites" <- processedFootprintData[["peakSites"]]
-tempList$"rawPeakFootprintMetrics" <- processedFootprintData[["rawPeakFootprintMetrics"]]
-tempList$"boundSites" <- processedFootprintData[["boundSites"]]
-tempList$"boundSitesMetrics" <- processedFootprintData[["boundSitesMetrics"]]
-tempList$"unboundSites" <- processedFootprintData[["unboundSites"]]
-tempList$"unboundSitesMetrics" <- processedFootprintData[["unboundSitesMetrics"]]
-##
-com <- paste0("aggregateFootprintMetricsData$'", geneName, "' <- tempList")
-eval(parse(text = com))
-
-
-
-##########
-
-## Inititate vectors for temporary data storage
-tempFlank <- c()
-tempMotif <- c()
-tempBackground <- c()
-## Index iterators for vectors
-idxFlank <- 1
-idxMotif <- 1
-idxBackground <- 1
-
-## Iterate over each unique transcription factor
+## Iterate over all files, aggregate data
 for (a in 1:numFiles){
-  cat("Processing input file ", a, "\n")
   
-  ## Load the footprintData object
+  ##
   load(fileList[a])
-  ## Create a temporary object for the current data
-  tempData <- footprintData
-  ## Number of potential motifs to plot
-  numMotifs <- length(tempData)
   
+  #### TRANSFER DATA TO AGGREGATOR OBJECTs ####
+  aggregateFootprintData[a,1] <- geneName
+  aggregateFootprintData[a,2] <- processedFootprintData[["numMotifs"]]
+  aggregateFootprintData[a,3] <- processedFootprintData[["numPeakSites"]]
+  aggregateFootprintData[a,4] <- processedFootprintData[["numBoundSites"]]
+  aggregateFootprintData[a,5] <- processedFootprintData[["numUnboundSites"]]
+  aggregateFootprintData[a,6] <- processedFootprintData[["peakMotifSignal"]]
+  aggregateFootprintData[a,7] <- processedFootprintData[["peakFlankSignal"]]
+  aggregateFootprintData[a,8] <- processedFootprintData[["peakBackgroundSignal"]]
+  aggregateFootprintData[a,9] <- processedFootprintData[["peak.log2Flank"]]
+  aggregateFootprintData[a,10] <- processedFootprintData[["peak.log2Depth"]]
+  aggregateFootprintData[a,11] <- processedFootprintData[["boundMotifSignal"]]
+  aggregateFootprintData[a,12] <- processedFootprintData[["boundFlankSignal"]]
+  aggregateFootprintData[a,13] <- processedFootprintData[["boundBackgroundSignal"]]
+  aggregateFootprintData[a,14] <- processedFootprintData[["bound.log2Flank"]]
+  aggregateFootprintData[a,15] <- processedFootprintData[["bound.log2Depth"]]
+  aggregateFootprintData[a,16] <- processedFootprintData[["unboundMotifSignal"]]
+  aggregateFootprintData[a,17] <- processedFootprintData[["unboundFlankSignal"]]
+  aggregateFootprintData[a,18] <- processedFootprintData[["unboundBackgroundSignal"]]
+  aggregateFootprintData[a,19] <- processedFootprintData[["unbound.log2Flank"]]
+  aggregateFootprintData[a,20] <- processedFootprintData[["unbound.log2Depth"]]
   
-    
-  } # end if (numMotifs == 1)
+  ##
+  tempList <- list()
+  tempList$"peakSites" <- processedFootprintData[["peakSites"]]
+  tempList$"rawPeakFootprintMetrics" <- processedFootprintData[["rawPeakFootprintMetrics"]]
+  tempList$"boundSites" <- processedFootprintData[["boundSites"]]
+  tempList$"boundSitesMetrics" <- processedFootprintData[["boundSitesMetrics"]]
+  tempList$"unboundSites" <- processedFootprintData[["unboundSites"]]
+  tempList$"unboundSitesMetrics" <- processedFootprintData[["unboundSitesMetrics"]]
+  ##
+  com <- paste0("aggregateFootprintMetricsData$'", geneName, "' <- tempList")
+  eval(parse(text = com))
   
-  ## Try to grab the data for each potential motif
-  tryCatch({
-    
-    ## Calculate the 10% trimmed mean of all insertions in the motif sites
-    motifSignal <- mean(mergedRawFootprintMetrics[,3], trim = 0.10)
-    ## Calculate the mean of all insertions in the flank region
-    flankSignal <- mean(mergedRawFootprintMetrics[,2])
-    ## Calculate the mean of background insertions
-    backgroundSignal <- mean(mergedRawFootprintMetrics[,1])
-    
-    ## Calculate flanking accessibility (log2 fold change between flank and background)
-    log2Flank <- log2(flankSignal/backgroundSignal)
-    ## Calculate footprint depth (log2 fold change between flank and background)
-    log2Depth <- log2(motifSignal/flankSignal)
-    
-    ## Transfer the data to the temporary vectors
-    tempFlank[idxFlank] <- log2Flank
-    tempMotif[idxMotif] <- log2Depth
-    tempBackground[idxBackground] <- backgroundSignal
-    
-    ## Update vector indices
-    idxFlank <- (idxFlank +1)
-    idxMotif <- (idxMotif +1)
-    idxBackground <- (idxBackground +1)
-    
-  }, # end try
-  error=function(cond){
-    message(cond)
-    return(NA)
-  },
-  finally={})
 } # end for (a in 1:numFiles)
 
+ggplot(aggregateFootprintData, aes(peak.log2depth, peak.log2flank)) + 
+  geom_point()
 
 
 
-
-
-
-### Put the data into dataframe format for plotting
-
-## Count the total number of data points to plot (Total unique motifs)
-numPoints <- length(tempBackground)
-
-#### get the gene names TEMP FIX ####
-#genex <- substring(fileList, 42)
-#genex <- substring(genex, 2)
-#genex <- gsub(".parsedFootprintData.Rdata", "", genex)
-##
-#genex <- substring(fileList, 39)
-#genex <- substring(genex, 2)
-#genex <- gsub(".rawFootprintData.Rdata", "", genex)
-##
-genex <- substring(fileList, 40)
-genex <- substring(genex, 3)
-genex <- gsub(".rawFootprintData.Rdata", "", genex)
-## Add gene names to dataframe
-
+## Load the RNA expression data from ccle
 load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
 coadCounts <- cclecounts[["large_intestine_bat1"]]
+
+
+
+#### Generate the plots ####
+## Plot 1
+## Footprint depth against flanking accessibility
+## Data points colored by RNA expression level
+ggplot(aggregateFootprintData, aes(peak.log2depth, peak.log2flank, color=exp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red")
+
 #snu61Exp <- coadCounts[,24]
 h508Exp <- coadCounts[,7]
 mdst8Exp <- coadCounts[,29]
+
 ##
 curExp <- mdst8Exp
+
 ##
 geneList <- names(curExp)
 mappings <- queryMany(geneList, scopes="entrezgene", fields="symbol", species="human")
+
 ##
 genemaps <- mappings@listData[["symbol"]]
+
 ##
 idx <- which(genemaps %in% genex)
-
 
 ##
 addme <- c()
@@ -183,22 +123,7 @@ for (m in 1:numPoints){
   }}
 
 
-##
-#for (k in 1:236){
-#  idx <- which(n %in% item)
-#  val <- curExp[[idx]]
-#  dfFootprints$exp[[idx]] <- val}
 
-## Transfer data to data frame
-dfFootprints <- data.frame(flank = tempFlank, depth = tempMotif, background = tempBackground, geneName = genex, exp = addme)
-
-#### Generate the plots ####
-## Plot 1
-## Footprint depth against flanking accessibility
-## Data points colored by RNA expression level
-ggplot(dfFootprints, aes(depth, flank, color=exp)) + 
-  geom_point() + 
-  scale_color_gradient(low="blue", high="red")
 
 ####################
 load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
