@@ -49,39 +49,30 @@ ZNF696$"motif1" <- COAD_FIRE_PWM[["ZNF696_motif1_fire_PWM"]]
 ZNF696$"motif2" <- COAD_FIRE_PWM[["ZNF696_motif2_fire_PWM"]]
 ZNF696$"motif3" <- COAD_FIRE_PWM[["ZNF696_motif3_fire_PWM"]]
 
-##
-cat("Setting snakemake vars...", "\n")
-motifDataPath <- snakemake@input[[1]]
-outPath <- snakemake@output[[1]]
-rdataPath <- gsub("operations", "data", outPath)
-rdataPath <- gsub("PWMscan.done", "bindingSites.Rdata", rdataPath)
-currentGene <- snakemake@wildcards[["gene"]]
 
-##
-cat("Loading motifData object...", "\n")
-load(motifDataPath)
-
-##
-com <- paste0("motifs <- motifData$", currentGene)
-eval(parse(text = com))
+#### ADNP
+outPath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\scanPWM\\ADNP.bindingSites.Rdata"
 
 ## Set parameters
-numMotifs <- length(motifs)
+numMotifs <- length(ADNP)
 genome <- Hsapiens
 score <- "99%"
 bindingSites <- list()
-cat("Found", numMotifs, " unique motifs for gene", currentGene, "scanning for sites with", score, "PWM match", "\n")
+
 
 ## Scan the genome for matches to each unique motif
-for (a in 1:numMotifs){
-  cat("Scanning motif", a, "for gene", currentGene, "\n")
-  tempSites <- list()
-  PWM <- motifs[[a]]
-  sites <- matchPWM(PWM, genome, min.score=score)
-  tempSites$PWM <- PWM
-  tempSites$sites <- sites
-  bindingSites[[a]] <- tempSites
-} # end for (a in 1:numMotifs)
+PWM <- ADNP[["motif1"]]
+rownames(PWM) <- DNA_BASES
+tempSites1 <- list()
+sites <- matchPWM(PWM, genome, min.score=score)
+tempSites$PWM <- PWM
+tempSites$sites <- sites
+
+
+
+
+bindingSites[[a]] <- tempSites
+
 
 ## Save the data
 cat("Saving data...", "\n")
