@@ -22,71 +22,22 @@ footprintMetrics <- aggregateData[["aggregateFootprintMetricsData"]]
 
 
 #### ADD RNA EXPRESSION VALUES TO THE DF ####
-
-
-
-
-#### ADD VIPER NES SCORE VALUES TO THE DF ####
-
-
-
-#### PLOTS ####
-
-## Plot 1
-
-# With labels
-ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank)) + 
-  geom_point() +
-  geom_label_repel(aes(label = Gene),
-                   box.padding   = 0.35, # amount of padding around each label bounding box
-                   point.padding = 0.5, # how much to move the labels away from the points. set to NA to turn off
-                   segment.color = 'black', # this changes to color of the line pointing to the point
-                   label.size = NA, # this will remove the boxes around the labels
-                   size = 2) + # this changes the size of the label text
-  theme_classic()
-
-# Without labels
-ggplot(aggregateFootprintData, aes(peak.log2Depth, peak.log2Flank)) + 
-  geom_point()
-
-
-
-
-
-
-
 ## Load the RNA expression data from ccle
 load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
 coadCounts <- cclecounts[["large_intestine_bat1"]]
-
-
-
-#### Generate the plots ####
-## Plot 1
-## Footprint depth against flanking accessibility
-## Data points colored by RNA expression level
-ggplot(aggregateFootprintData, aes(peak.log2depth, peak.log2flank, color=exp)) + 
-  geom_point() + 
-  scale_color_gradient(low="blue", high="red")
-
 #snu61Exp <- coadCounts[,24]
 h508Exp <- coadCounts[,7]
 mdst8Exp <- coadCounts[,29]
 
-##
 curExp <- mdst8Exp
 
-##
 geneList <- names(curExp)
 mappings <- queryMany(geneList, scopes="entrezgene", fields="symbol", species="human")
 
-##
 genemaps <- mappings@listData[["symbol"]]
 
-##
 idx <- which(genemaps %in% genex)
 
-##
 addme <- c()
 for (m in 1:numPoints){
   f <- which(genemaps %in% genex[m])
@@ -97,6 +48,10 @@ for (m in 1:numPoints){
   }}
 
 
+
+
+
+#### ADD VIPER NES SCORE VALUES TO THE DF ####
 
 
 ####################
@@ -143,6 +98,86 @@ ggplot(dfFootprints, aes(depth, flank, color=nex)) +
 ggplot(dfFootprints, aes(nex, depth, color=flank)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red")
+
+
+
+
+
+
+
+#### PLOTS ####
+
+## Plot 1 - Depth vs Flank
+
+# Peaks
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank)) + 
+  geom_point()
+
+# Bound
+ggplot(footprintData, aes(bound.log2Depth, bound.log2Flank)) + 
+  geom_point()
+
+# Unbound
+ggplot(footprintData, aes(unbound.log2Depth, unbound.log2Flank)) + 
+  geom_point()
+
+## Plot 2 - Num unboud vs bound sites
+ggplot(footprintData, aes(log(numBoundSites), log(numUnboundSites))) + 
+  geom_point() +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
+
+
+
+#### PLOT SINGLE TF SITES ####
+peakMetrics <- data.frame(footprintMetrics[["ATF1"]][["rawPeakFootprintMetrics"]])
+boundMetrics <- data.frame(footprintMetrics[["ATF1"]][["boundSitesMetrics"]])
+unboundMetrics <- data.frame(footprintMetrics[["ATF1"]][["unboundSitesMetrics"]])
+
+# Flank vs motif signal
+ggplot(peakMetrics, aes(Flanking, Motif)) + 
+  geom_point() +
+  ggtitle("Peaks")
+
+ggplot(boundMetrics, aes(Flanking, Motif)) + 
+  geom_point() +
+  ggtitle("Bound Sites")
+
+ggplot(unboundMetrics, aes(Flanking, Motif)) + 
+  geom_point() +
+  ggtitle("Unbound Sites")
+
+
+### Flanking acc vs depth
+ggplot(peakMetrics, aes(Flanking.Accessibility, Footprint.Depth)) + 
+  geom_point() +
+  ggtitle("Peaks, Flanking vs. Depth")
+
+### Flanking acc vs depth
+ggplot(boundMetrics, aes(Flanking.Accessibility, Footprint.Depth)) + 
+  geom_point() +
+  ggtitle("Bound, Flanking vs. Depth")
+
+### Flanking acc vs depth
+ggplot(unboundMetrics, aes(Flanking.Accessibility, Footprint.Depth)) + 
+  geom_point() +
+  ggtitle("Unbound, Flanking vs. Depth")
+
+### SHOW BOTH POPULATIONS IN ONE GRAPH, COLOR POINTS BY BOUND/UNBOUND
+
+#### Generate the plots ####
+## Plot 1
+## Footprint depth against flanking accessibility
+## Data points colored by RNA expression level
+ggplot(aggregateFootprintData, aes(peak.log2depth, peak.log2flank, color=exp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red")
+
+
+
+
+
+
+
 
 
 
