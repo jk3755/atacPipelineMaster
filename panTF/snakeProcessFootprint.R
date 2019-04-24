@@ -292,11 +292,16 @@ error=function(cond){
 finally={})
 
 
-
+tryCatch({
 ## Save the data
 gc()
 dataOutPath <- gsub("parsed", "processed", inputPath)
 save(processedFootprintData, file = dataOutPath)
+}, # end try
+error=function(cond){
+  message(cond)
+  return(NA)},
+finally={})
 
 ##
 file.create(outPath)
