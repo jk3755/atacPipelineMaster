@@ -29,6 +29,7 @@ suppressMessages(library(seqLogo))
 #suppressMessages(library(ggplot2))
 #suppressMessages(library(ggpubr))
 suppressMessages(library(ChIPpeakAnno))
+suppressMessages(library(rlist))
 
 ## Set snakemake variables
 cat("Setting snakemake vars...", "\n")
@@ -168,6 +169,9 @@ cat("Loading footprintData file...", "\n")
 footprintDataPath <- gsub("operations", "data", footprintDataPath)
 footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
 load(footprintDataPath)
+
+## To avoid errors, clear the list of any empty sub-lists first
+footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
 
 ## The number of unique motifs for the current gene
 numMotif <- length(footprintData)

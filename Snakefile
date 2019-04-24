@@ -1108,15 +1108,15 @@ rule xsample_footprint_direct_comparison:
 # Run this with a terminal command like: for i in {1..62}; do snakemake --config group=$i -j 20 run_pantf_ls1034wt01; done
 rule run_pantf_h508wt01:
     input:
-        expand("h508/wt01/footprints/operations/H508-WT-01.processFP.group{param}.done", param=config["group"])
+        expand("h508/wt01/footprints/operations/groups/H508-WT-01.processFP.group{param}.done", param=config["group"])
 
 rule run_pantf_ls1034wt01:
     input:
-        expand("ls1034/wt01/footprints/operations/LS1034-WT-01.parseTF.group{param}.done", param=config["group"])
+        expand("ls1034/wt01/footprints/operations/groups/LS1034-WT-01.parseTF.group{param}.done", param=config["group"])
 
 rule run_pantf_h508wt02a:
     input:
-        expand("h508/wt02a/footprints/operations/H508A-WT-02.processFP.group{param}.done", param=config["group"])
+        expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
 
 
 # You can also use this rule to run everything at once

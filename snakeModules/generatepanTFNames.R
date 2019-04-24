@@ -439,7 +439,7 @@ while (a <= numGenes){
     tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t",
     tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20, "\n\t",
     "output:\n\t\t",
-    "'{path}footprints/operations/raw/{mergedsample}.parseTF.group", b, ".done'\n\t",
+    "'{path}footprints/operations/groups/{mergedsample}.processFP.group", b, ".done'\n\t",
     "shell:\n\t\t",
     "'touch {output}'"
   )

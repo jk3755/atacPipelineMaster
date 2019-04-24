@@ -133,7 +133,6 @@ rule PANTF_TFgroup_aggregator:
 ########################################################################################################################################
 #### PARSE FP ANALYSIS #################################################################################################################
 ########################################################################################################################################
-
 rule processFP_group1:
     input:
         '{path}footprints/operations/processed/{mergedsample}.TFAP2A.processFP.bamcopy1.done', 
@@ -157,7 +156,7 @@ rule processFP_group1:
         '{path}footprints/operations/processed/{mergedsample}.USF2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.SREBF1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group1.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group1.done'
     shell:
         'touch {output}'
 rule processFP_group2:
@@ -183,7 +182,7 @@ rule processFP_group2:
         '{path}footprints/operations/processed/{mergedsample}.BATF.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.TCF12.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group2.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group2.done'
     shell:
         'touch {output}'
 rule processFP_group3:
@@ -209,7 +208,7 @@ rule processFP_group3:
         '{path}footprints/operations/processed/{mergedsample}.FIGLA.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HES5.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group3.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group3.done'
     shell:
         'touch {output}'
 rule processFP_group4:
@@ -235,7 +234,7 @@ rule processFP_group4:
         '{path}footprints/operations/processed/{mergedsample}.OLIG3.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.TCF4.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group4.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group4.done'
     shell:
         'touch {output}'
 rule processFP_group5:
@@ -261,7 +260,7 @@ rule processFP_group5:
         '{path}footprints/operations/processed/{mergedsample}.MAFA.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.MAFB.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group5.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group5.done'
     shell:
         'touch {output}'
 rule processFP_group6:
@@ -287,7 +286,7 @@ rule processFP_group6:
         '{path}footprints/operations/processed/{mergedsample}.ARI5B.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ARX.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group6.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group6.done'
     shell:
         'touch {output}'
 rule processFP_group7:
@@ -313,7 +312,7 @@ rule processFP_group7:
         '{path}footprints/operations/processed/{mergedsample}.BRCA1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.BSH.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group7.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group7.done'
     shell:
         'touch {output}'
 rule processFP_group8:
@@ -339,7 +338,7 @@ rule processFP_group8:
         '{path}footprints/operations/processed/{mergedsample}.DLX1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.DLX2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group8.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group8.done'
     shell:
         'touch {output}'
 rule processFP_group9:
@@ -365,7 +364,7 @@ rule processFP_group9:
         '{path}footprints/operations/processed/{mergedsample}.EGR2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.EGR3.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group9.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group9.done'
     shell:
         'touch {output}'
 rule processFP_group10:
@@ -391,7 +390,7 @@ rule processFP_group10:
         '{path}footprints/operations/processed/{mergedsample}.ESR2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ESX1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group10.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group10.done'
     shell:
         'touch {output}'
 rule processFP_group11:
@@ -417,7 +416,7 @@ rule processFP_group11:
         '{path}footprints/operations/processed/{mergedsample}.FOXC1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.FOXC2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group11.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group11.done'
     shell:
         'touch {output}'
 rule processFP_group12:
@@ -443,7 +442,7 @@ rule processFP_group12:
         '{path}footprints/operations/processed/{mergedsample}.FOXP3.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.FOXQ1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group12.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group12.done'
     shell:
         'touch {output}'
 rule processFP_group13:
@@ -469,7 +468,7 @@ rule processFP_group13:
         '{path}footprints/operations/processed/{mergedsample}.GLI3.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.GLIS1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group13.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group13.done'
     shell:
         'touch {output}'
 rule processFP_group14:
@@ -495,7 +494,7 @@ rule processFP_group14:
         '{path}footprints/operations/processed/{mergedsample}.HMX1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HMX2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group14.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group14.done'
     shell:
         'touch {output}'
 rule processFP_group15:
@@ -521,7 +520,7 @@ rule processFP_group15:
         '{path}footprints/operations/processed/{mergedsample}.HXA7.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HXA9.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group15.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group15.done'
     shell:
         'touch {output}'
 rule processFP_group16:
@@ -547,7 +546,7 @@ rule processFP_group16:
         '{path}footprints/operations/processed/{mergedsample}.HXD4.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HXD8.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group16.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group16.done'
     shell:
         'touch {output}'
 rule processFP_group17:
@@ -573,7 +572,7 @@ rule processFP_group17:
         '{path}footprints/operations/processed/{mergedsample}.KLF12.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.KLF13.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group17.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group17.done'
     shell:
         'touch {output}'
 rule processFP_group18:
@@ -599,7 +598,7 @@ rule processFP_group18:
         '{path}footprints/operations/processed/{mergedsample}.MAZ.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.MBD2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group18.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group18.done'
     shell:
         'touch {output}'
 rule processFP_group19:
@@ -625,7 +624,7 @@ rule processFP_group19:
         '{path}footprints/operations/processed/{mergedsample}.MUSC.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.MYBA.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group19.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group19.done'
     shell:
         'touch {output}'
 rule processFP_group20:
@@ -651,7 +650,7 @@ rule processFP_group20:
         '{path}footprints/operations/processed/{mergedsample}.NFYB.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.NFYC.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group20.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group20.done'
     shell:
         'touch {output}'
 rule processFP_group21:
@@ -677,7 +676,7 @@ rule processFP_group21:
         '{path}footprints/operations/processed/{mergedsample}.NR2C1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.NR2C2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group21.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group21.done'
     shell:
         'touch {output}'
 rule processFP_group22:
@@ -703,7 +702,7 @@ rule processFP_group22:
         '{path}footprints/operations/processed/{mergedsample}.PAX1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.PAX2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group22.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group22.done'
     shell:
         'touch {output}'
 rule processFP_group23:
@@ -729,7 +728,7 @@ rule processFP_group23:
         '{path}footprints/operations/processed/{mergedsample}.PKNX2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.PLAG1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group23.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group23.done'
     shell:
         'touch {output}'
 rule processFP_group24:
@@ -755,7 +754,7 @@ rule processFP_group24:
         '{path}footprints/operations/processed/{mergedsample}.PRDM1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.PRDM4.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group24.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group24.done'
     shell:
         'touch {output}'
 rule processFP_group25:
@@ -781,7 +780,7 @@ rule processFP_group25:
         '{path}footprints/operations/processed/{mergedsample}.RHXF1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.RORA.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group25.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group25.done'
     shell:
         'touch {output}'
 rule processFP_group26:
@@ -807,7 +806,7 @@ rule processFP_group26:
         '{path}footprints/operations/processed/{mergedsample}.SNAI1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.SNAI2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group26.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group26.done'
     shell:
         'touch {output}'
 rule processFP_group27:
@@ -833,7 +832,7 @@ rule processFP_group27:
         '{path}footprints/operations/processed/{mergedsample}.SP4.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.SPDEF.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group27.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group27.done'
     shell:
         'touch {output}'
 rule processFP_group28:
@@ -859,7 +858,7 @@ rule processFP_group28:
         '{path}footprints/operations/processed/{mergedsample}.TBR1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.TBX15.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group28.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group28.done'
     shell:
         'touch {output}'
 rule processFP_group29:
@@ -885,7 +884,7 @@ rule processFP_group29:
         '{path}footprints/operations/processed/{mergedsample}.TFE2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.TGIF1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group29.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group29.done'
     shell:
         'touch {output}'
 rule processFP_group30:
@@ -911,7 +910,7 @@ rule processFP_group30:
         '{path}footprints/operations/processed/{mergedsample}.ZBED1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZBT18.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group30.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group30.done'
     shell:
         'touch {output}'
 rule processFP_group31:
@@ -937,7 +936,7 @@ rule processFP_group31:
         '{path}footprints/operations/processed/{mergedsample}.ZN219.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZN232.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group31.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group31.done'
     shell:
         'touch {output}'
 rule processFP_group32:
@@ -963,7 +962,7 @@ rule processFP_group32:
         '{path}footprints/operations/processed/{mergedsample}.ADARB1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.AFF4.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group32.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group32.done'
     shell:
         'touch {output}'
 rule processFP_group33:
@@ -989,7 +988,7 @@ rule processFP_group33:
         '{path}footprints/operations/processed/{mergedsample}.C19orf40.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.EXO5.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group33.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group33.done'
     shell:
         'touch {output}'
 rule processFP_group34:
@@ -1015,7 +1014,7 @@ rule processFP_group34:
         '{path}footprints/operations/processed/{mergedsample}.CPSF4.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.CSNK2B.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group34.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group34.done'
     shell:
         'touch {output}'
 rule processFP_group35:
@@ -1041,7 +1040,7 @@ rule processFP_group35:
         '{path}footprints/operations/processed/{mergedsample}.DUSP26.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ECSIT.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group35.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group35.done'
     shell:
         'touch {output}'
 rule processFP_group36:
@@ -1067,7 +1066,7 @@ rule processFP_group36:
         '{path}footprints/operations/processed/{mergedsample}.GIT2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.GLYCTK.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group36.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group36.done'
     shell:
         'touch {output}'
 rule processFP_group37:
@@ -1093,7 +1092,7 @@ rule processFP_group37:
         '{path}footprints/operations/processed/{mergedsample}.UBE2K.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HIRIP3.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group37.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group37.done'
     shell:
         'touch {output}'
 rule processFP_group38:
@@ -1119,7 +1118,7 @@ rule processFP_group38:
         '{path}footprints/operations/processed/{mergedsample}.IL24.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ING3.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group38.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group38.done'
     shell:
         'touch {output}'
 rule processFP_group39:
@@ -1145,7 +1144,7 @@ rule processFP_group39:
         '{path}footprints/operations/processed/{mergedsample}.MAGED4B.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.MAGEF1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group39.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group39.done'
     shell:
         'touch {output}'
 rule processFP_group40:
@@ -1171,7 +1170,7 @@ rule processFP_group40:
         '{path}footprints/operations/processed/{mergedsample}.MXD4.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.MYEF2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group40.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group40.done'
     shell:
         'touch {output}'
 rule processFP_group41:
@@ -1197,7 +1196,7 @@ rule processFP_group41:
         '{path}footprints/operations/processed/{mergedsample}.NUP107.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.NUP133.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group41.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group41.done'
     shell:
         'touch {output}'
 rule processFP_group42:
@@ -1223,7 +1222,7 @@ rule processFP_group42:
         '{path}footprints/operations/processed/{mergedsample}.PLAGL1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.PLG.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group42.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group42.done'
     shell:
         'touch {output}'
 rule processFP_group43:
@@ -1249,7 +1248,7 @@ rule processFP_group43:
         '{path}footprints/operations/processed/{mergedsample}.RAB18.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.RAB2A.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group43.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group43.done'
     shell:
         'touch {output}'
 rule processFP_group44:
@@ -1275,7 +1274,7 @@ rule processFP_group44:
         '{path}footprints/operations/processed/{mergedsample}.MEX3C.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.RNASEH2C.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group44.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group44.done'
     shell:
         'touch {output}'
 rule processFP_group45:
@@ -1301,7 +1300,7 @@ rule processFP_group45:
         '{path}footprints/operations/processed/{mergedsample}.SMCR7L.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.SMPX.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group45.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group45.done'
     shell:
         'touch {output}'
 rule processFP_group46:
@@ -1327,7 +1326,7 @@ rule processFP_group46:
         '{path}footprints/operations/processed/{mergedsample}.STUB1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.SUCLG1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group46.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group46.done'
     shell:
         'touch {output}'
 rule processFP_group47:
@@ -1353,7 +1352,7 @@ rule processFP_group47:
         '{path}footprints/operations/processed/{mergedsample}.TPI1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.TPPP.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group47.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group47.done'
     shell:
         'touch {output}'
 rule processFP_group48:
@@ -1379,7 +1378,7 @@ rule processFP_group48:
         '{path}footprints/operations/processed/{mergedsample}.VPS4B.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.NELFA.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group48.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group48.done'
     shell:
         'touch {output}'
 rule processFP_group49:
@@ -1405,7 +1404,7 @@ rule processFP_group49:
         '{path}footprints/operations/processed/{mergedsample}.ZMAT4.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZNF124.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group49.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group49.done'
     shell:
         'touch {output}'
 rule processFP_group50:
@@ -1431,7 +1430,7 @@ rule processFP_group50:
         '{path}footprints/operations/processed/{mergedsample}.ZNF671.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZNF695.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group50.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group50.done'
     shell:
         'touch {output}'
 rule processFP_group51:
@@ -1457,7 +1456,7 @@ rule processFP_group51:
         '{path}footprints/operations/processed/{mergedsample}.FOXP1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.POU2F2.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group51.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group51.done'
     shell:
         'touch {output}'
 rule processFP_group52:
@@ -1483,7 +1482,7 @@ rule processFP_group52:
         '{path}footprints/operations/processed/{mergedsample}.HOXA13.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HOXC11.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group52.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group52.done'
     shell:
         'touch {output}'
 rule processFP_group53:
@@ -1509,7 +1508,7 @@ rule processFP_group53:
         '{path}footprints/operations/processed/{mergedsample}.POU1F1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.POU2F1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group53.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group53.done'
     shell:
         'touch {output}'
 rule processFP_group54:
@@ -1535,7 +1534,7 @@ rule processFP_group54:
         '{path}footprints/operations/processed/{mergedsample}.NFATC2.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ASCL1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group54.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group54.done'
     shell:
         'touch {output}'
 rule processFP_group55:
@@ -1561,7 +1560,7 @@ rule processFP_group55:
         '{path}footprints/operations/processed/{mergedsample}.ZNF306.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZNF524.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group55.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group55.done'
     shell:
         'touch {output}'
 rule processFP_group56:
@@ -1587,7 +1586,7 @@ rule processFP_group56:
         '{path}footprints/operations/processed/{mergedsample}.Trp73.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZBTB49.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group56.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group56.done'
     shell:
         'touch {output}'
 rule processFP_group57:
@@ -1613,7 +1612,7 @@ rule processFP_group57:
         '{path}footprints/operations/processed/{mergedsample}.GTF2F1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.GTF2I.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group57.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group57.done'
     shell:
         'touch {output}'
 rule processFP_group58:
@@ -1639,7 +1638,7 @@ rule processFP_group58:
         '{path}footprints/operations/processed/{mergedsample}.HOXC6.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.HOXC8.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group58.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group58.done'
     shell:
         'touch {output}'
 rule processFP_group59:
@@ -1665,7 +1664,7 @@ rule processFP_group59:
         '{path}footprints/operations/processed/{mergedsample}.PML.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.PRDM14.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group59.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group59.done'
     shell:
         'touch {output}'
 rule processFP_group60:
@@ -1691,7 +1690,7 @@ rule processFP_group60:
         '{path}footprints/operations/processed/{mergedsample}.TAF1.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.TBL1XR1.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group60.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group60.done'
     shell:
         'touch {output}'
 rule processFP_group61:
@@ -1717,7 +1716,7 @@ rule processFP_group61:
         '{path}footprints/operations/processed/{mergedsample}.ZNF35.processFP.bamcopy19.done', 
         '{path}footprints/operations/processed/{mergedsample}.ZNF423.processFP.bamcopy20.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group61.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group61.done'
     shell:
         'touch {output}'
 rule processFP_group62:
@@ -1728,6 +1727,7 @@ rule processFP_group62:
         '{path}footprints/operations/processed/{mergedsample}.ZNF8.processFP.bamcopy4.done', 
         '{path}footprints/operations/processed/{mergedsample}.Sox4.processFP.bamcopy5.done'
     output:
-        '{path}footprints/operations/{mergedsample}.rawTF.group62.done'
+        '{path}footprints/operations/groups/{mergedsample}.processFP.group62.done'
     shell:
         'touch {output}'
+
