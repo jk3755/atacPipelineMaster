@@ -1118,6 +1118,10 @@ rule run_pantf_h508wt02a:
     input:
         expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
 
+rule pantf_COADMR_h508wt02a:
+	input:
+		"h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
+
 rule pantf_aggregator_h508wt02a:
 	input:
 		"h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
