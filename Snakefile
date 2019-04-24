@@ -1202,6 +1202,7 @@ rule PANTF_process_footprint_analysis:
         "scripts/panTF/snakeProcessFootprint.R"
 
 ## Remove the extra copies of the bam files once they are no longer needed
+## Not currently working due to method of running footprinting pipeline
 rule PANTF_remove_bamcopy:
     input:
         "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
@@ -1214,7 +1215,6 @@ rule PANTF_remove_bamcopy:
          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
          touch {output}
          """
-
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
