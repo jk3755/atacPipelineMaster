@@ -21,6 +21,9 @@ dirPath <- snakemake@wildcards[["path"]]
 bamCopy <- snakemake@wildcards[["bamcopy"]]
 
 ## Load the current parsed footprintData object
+cat("Loading parsed footprint file...", "\n")
+inputPath <- gsub("operations/parse", "data/parsed", inputPath)
+inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
 load(inputPath)
 
 #### MERGE AND DEDUPLICATE ALL BINDING SITES ####
@@ -260,8 +263,7 @@ processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
 
 ## Save the data
 gc()
-dataOutPath <- gsub("operations", "data", inputPath)
-dataOutPath <- gsub("done", "Rdata", dataOutPath)
+dataOutPath <- gsub("parsed", "processed", inputPath)
 save(processedFootprintData, file = dataOutPath)
 ##
 file.create(outPath)
