@@ -10,6 +10,7 @@ options(warn = -1)
 ## Load libraries
 cat("Loading libraries...", "\n")
 suppressMessages(library(GenomicRanges))
+suppressMessages(library(rlist))
 
 ## Set snakemake variables
 cat("Setting snakemake variables...", "\n")
@@ -26,9 +27,15 @@ inputPath <- gsub("operations/parse", "data/parsed", inputPath)
 inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
 load(inputPath)
 
+tryCatch({
+  
 #### MERGE AND DEDUPLICATE ALL BINDING SITES ####
 ## At this point, the footprints have already been parsed into bound and unbound sites
 ## Transfer data for both to the new storage object, for downstream analysis
+  
+## To avoid errors, clear the list of any empty sub-lists first
+footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
+##
 numMotifs <- length(footprintData)
 
 # If there is only one motif available, there is no need to merge and deduplicate the identified sites
@@ -265,7 +272,14 @@ processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
 gc()
 dataOutPath <- gsub("parsed", "processed", inputPath)
 save(processedFootprintData, file = dataOutPath)
+
+}, # end try
+error=function(cond){
+  message(cond)
+  return(NA)},
+finally={})
+
+
 ##
 file.create(outPath)
 cat("Finished!", "\n")
-
