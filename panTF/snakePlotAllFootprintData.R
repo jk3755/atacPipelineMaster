@@ -49,7 +49,6 @@ for (a in 1:numGenes){
 
 
 #### ADD VIPER NES SCORE VALUES TO THE DF ####
-
 load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
 curVIPER <- msviper(curExp, regul)
 curNES <- curVIPER[["es"]][["nes"]]
@@ -70,67 +69,272 @@ for (b in 1:numGenes){
     footprintData[b,22] <- curNES[[curMap]]
   }} # end for (b in 1:numGenes)
 
-#### GENERATE PLOTS ####
+##### TO ADD A NEW COLUMN TO DF ####
+## bound ratio
+#x <- footprintData[,4]/footprintData[,3]
+#footprintData["Ratio"] <- x
 
-## plot the graph with RNA expression
+
+
+#### COAD MR PLOTS ##########################################################################################
+
+## Set cell line name
+cellName <- "MDST8"
+
+## All sites, RNA exp
 ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
   geom_point() + 
-  scale_color_gradient(low="blue", high="red")
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle(paste0("COAD MR Depth vs Flank, RNA exp ", cellName)) +
+  geom_label_repel(aes(label = Gene),
+                   box.padding   = 0.35, 
+                   point.padding = 0.5,
+                   segment.color = 'black',
+                   label.size = NA) +
+  theme_classic()
 
-## plot the graph with viper values
+## All sites, VIPER
 ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) + 
   geom_point() + 
-  scale_color_gradient(low="blue", high="red")
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("COAD MR Depth vs Flank, VIPER NES, MDST8")
+
+#### GENERATE PLOTS #########################################################################################
 
 
-## Plot RNA exp and NES against flank and depth individually
-ggplot(footprintData, aes(peak.log2Depth, RNAexp)) + 
-  geom_point()
+# TEST
+## All sites, RNA exp
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank)) + 
+  geom_point() + 
+  ggtitle("Depth vs Flank, RNA exp, MDST8")
 
-ggplot(footprintData, aes(peak.log2Flank, RNAexp)) + 
-  geom_point()
 
-ggplot(footprintData, aes(peak.log2Depth, viperNES)) + 
-  geom_point()
 
-ggplot(footprintData, aes(peak.log2Flank, viperNES)) + 
-  geom_point()
+## All sites, RNA exp
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Depth vs Flank, RNA exp, MDST8")
 
-## bound ratio
-x <- footprintData[,4]/footprintData[,3]
-footprintData["Ratio"] <- x
 
+## All sites, VIPER
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Depth vs Flank, VIPER NES, MDST8")
+
+
+## Bound ratio vs Exp
 ggplot(footprintData, aes(Ratio, RNAexp)) + 
-  geom_point()
+  geom_point() +
+  ggtitle("Percent bound sites, RNA exp, MDST8")
+
+
+## Bound ratio vs VIPER
 ggplot(footprintData, aes(Ratio, viperNES)) + 
-  geom_point()
+  geom_point() +
+  ggtitle("Percent bound sites, VIPER NES, MDST8")
+
+
+## RNA exp vs Depth
+ggplot(footprintData, aes(peak.log2Depth, RNAexp)) + 
+  geom_point() +
+  ggtitle("RNA exp vs Depth, MDST8")
+
+
+## RNA exp vs Flank
+ggplot(footprintData, aes(peak.log2Flank, RNAexp)) + 
+  geom_point() +
+  ggtitle("RNA exp vs Flank, MDST8")
+
+
+## VIPER vs Depth
+ggplot(footprintData, aes(peak.log2Depth, viperNES)) + 
+  geom_point() +
+  ggtitle("VIPER NES vs Depth, MDST8")
+
+
+## VIPER vs Flank
+ggplot(footprintData, aes(peak.log2Flank, viperNES)) + 
+  geom_point() +
+  ggtitle("VIPER NES vs Flank, MDST8")
+
+
+#### PROMOTERS AND DISTAL ####
+
+## Promoter sites, RNA exp
+ggplot(footprintData, aes(promoterPeak.log2Depth, promoterPeak.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Promoter sites, Depth vs Flank, RNA exp, MDST8")
+
+## Promoter sites, VIPER
+ggplot(footprintData, aes(promoterPeak.log2Depth, promoterPeak.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Promoter sites, Depth vs Flank, VIPER NES, MDST8")
+
+
+## Promoter sites, RNA exp vs Depth
+ggplot(footprintData, aes(promoterPeak.log2Depth, RNAexp)) + 
+  geom_point() +
+  ggtitle("Promoter sites, RNA exp vs Depth, MDST8")
+
+
+## Promoter sites, RNA exp vs Flank
+ggplot(footprintData, aes(promoterPeak.log2Flank, RNAexp)) + 
+  geom_point() +
+  ggtitle("Promoter sites, RNA exp vs Flank, MDST8")
+
+
+## Promoter sites, VIPER vs Depth
+ggplot(footprintData, aes(promoterPeak.log2Depth, viperNES)) + 
+  geom_point() +
+  ggtitle("Promoter sites, VIPER NES vs Depth, MDST8")
+
+
+## Promoter sites, VIPER vs Flank
+ggplot(footprintData, aes(promoterPeak.log2Flank, viperNES)) + 
+  geom_point() +
+  ggtitle("Promoter sites, VIPER NES vs Flank, MDST8")
+
+
+## Distal
+## Distal sites, RNA exp
+ggplot(footprintData, aes(distalPeak.log2Depth, distalPeak.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Distal sites, Depth vs Flank, RNA exp, MDST8")
+
+## Distal sites, VIPER
+ggplot(footprintData, aes(distalPeak.log2Depth, distalPeak.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Distal sites, Depth vs Flank, VIPER NES, MDST8")
+
+
+## Distal sites, RNA exp vs Depth
+ggplot(footprintData, aes(distalPeak.log2Depth, RNAexp)) + 
+  geom_point() +
+  ggtitle("Distal sites, RNA exp vs Depth, MDST8")
+
+
+## Distal sites, RNA exp vs Flank
+ggplot(footprintData, aes(distalPeak.log2Flank, RNAexp)) + 
+  geom_point() +
+  ggtitle("Distal sites, RNA exp vs Flank, MDST8")
+
+
+## Distal sites, VIPER vs Depth
+ggplot(footprintData, aes(distalPeak.log2Depth, viperNES)) + 
+  geom_point() +
+  ggtitle("Distal sites, VIPER NES vs Depth, MDST8")
+
+
+## Distal sites, VIPER vs Flank
+ggplot(footprintData, aes(distalPeak.log2Flank, viperNES)) + 
+  geom_point() +
+  ggtitle("Distal sites, VIPER NES vs Flank, MDST8")
+
+
+## Bound promoter
+## Bound Promoter sites, RNA exp
+ggplot(footprintData, aes(promoterBound.log2Depth, promoterBound.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Bound Promoter sites, Depth vs Flank, RNA exp, MDST8")
+
+## Bound Promoter sites, VIPER
+ggplot(footprintData, aes(promoterBound.log2Depth, promoterBound.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Bound Promoter sites, Depth vs Flank, VIPER NES, MDST8")
+
+
+## Bound Distal
+## Bound Distal sites, RNA exp
+ggplot(footprintData, aes(distalBound.log2Depth, distalBound.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Bound Distal sites, Depth vs Flank, RNA exp, MDST8")
+
+## Bound Distal sites, VIPER
+ggplot(footprintData, aes(distalBound.log2Depth, distalBound.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Bound Distal sites, Depth vs Flank, VIPER NES, MDST8")
+
+
+####### PLOT COAD MRs, ALL THREE CELL LINES IN SAME PLOT ########
+
+## Create new dataframe
+aggregateFootprintData <- data.frame(matrix(vector(), 0, 4,
+                                            dimnames=list(c(), c(
+                                              "Gene", "Type", "peak.log2Depth", "peak.log2Flank", "RNAexp", "viperNES"))),
+                                     stringsAsFactors=F)
+
+
+
+## Transfer info to new dataframe
+numPoints <- length(footprintData[,1])
+cellLine <- "MDST8"
+
+## Xfer data
+for (x in 1:numPoints){
+  
+  aggregateFootprintData[x,1] <- footprintData[x,1]
+  aggregateFootprintData[x,2] <- cellLine
+  aggregateFootprintData[x,3] <- footprintData["peak.log2Depth"]
+  aggregateFootprintData[x,4] <- footprintData["peak.log2Flank"]
+  aggregateFootprintData[x,5] <- footprintData["RNAexp"]
+  aggregateFootprintData[x,6] <- footprintData["viperNES"]
+  
+}
+
+
+geom_point(aes(colour = factor(cyl)))
+
+## All cell lines, RNA exp
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Depth vs Flank, RNA exp, MDST8")
+
+
+## All cell lines, VIPER
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle("Depth vs Flank, VIPER NES, MDST8")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ggplot(footprintData, aes(Ratio, viperNES)) + 
   geom_point() +
   geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
-## Plot 1 - Depth vs Flank
-
-# Peaks
-ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank)) + 
-  geom_point()
-
-# Bound
-ggplot(footprintData, aes(bound.log2Depth, bound.log2Flank)) + 
-  geom_point()
-
-# Unbound
-ggplot(footprintData, aes(unbound.log2Depth, unbound.log2Flank)) + 
-  geom_point()
-
-## Plot 2 - Num unboud vs bound sites
+#### PLOT SINGLE TF SITES ####
 ggplot(footprintData, aes(log(numBoundSites), log(numUnboundSites))) + 
   geom_point() +
   geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
+ggplot(footprintData, aes(log(numBoundSites), log(numUnboundSites))) + 
+  geom_point() +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
-
-#### PLOT SINGLE TF SITES ####
 peakMetrics <- data.frame(footprintMetrics[["ATF1"]][["rawPeakFootprintMetrics"]])
 boundMetrics <- data.frame(footprintMetrics[["ATF1"]][["boundSitesMetrics"]])
 unboundMetrics <- data.frame(footprintMetrics[["ATF1"]][["unboundSitesMetrics"]])

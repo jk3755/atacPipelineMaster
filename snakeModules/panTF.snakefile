@@ -134,7 +134,6 @@ rule PANTF_TFgroup_aggregator:
 #### PARSE FP ANALYSIS #################################################################################################################
 ########################################################################################################################################
 
-
 rule processFP_COAD_MRs:
     input:
         '{path}footprints/operations/processed/{mergedsample}.TCF7.processFP.bamcopy1.done',

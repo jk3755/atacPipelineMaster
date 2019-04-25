@@ -1112,7 +1112,7 @@ rule run_pantf_h508wt01:
 
 rule run_pantf_ls1034wt01:
     input:
-        expand("ls1034/wt01/footprints/operations/groups/LS1034-WT-01.parseTF.group{param}.done", param=config["group"])
+        expand("ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.group{param}.done", param=config["group"])
 
 rule run_pantf_h508wt02a:
     input:
@@ -1125,6 +1125,14 @@ rule pantf_COADMR_h508wt02a:
 rule pantf_aggregator_h508wt02a:
 	input:
 		"h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
+
+rule run_pantf_mdst8wt01:
+    input:
+        expand("mdst8/wt01/footprints/operations/groups/MDST8-WT-01.processFP.group{param}.done", param=config["group"])
+
+rule pantf_aggregator_mdst8wt01:
+	input:
+		"mdst8/wt01/footprints/operations/aggregated/MDST8-WT-01.aggregated.done"
 
 
 # You can also use this rule to run everything at once
