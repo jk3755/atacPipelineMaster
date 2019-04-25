@@ -22,6 +22,7 @@ inputPath <- gsub("operations/parse", "data/parsed", inputPath)
 inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
 dataOutPath <- gsub("parsed", "processed", inputPath)
 
+
 tryCatch({
 
 ##
@@ -34,6 +35,7 @@ if (file.exists(dataOutPath) == TRUE){
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(rlist))
   suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
+  txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
   
   ## Load the current parsed footprintData object
   cat("Loading parsed footprint file", "\n")
@@ -189,7 +191,6 @@ if (file.exists(dataOutPath) == TRUE){
     
     ##### promoter peak sites
     promoterPeakFootprintMetrics <- rawPeakFootprintMetrics[promoterIdx,]
-    promoterPeakInsertionMatrix <- peakInsertionMatrix[promoterIdx,]
     promoterPeakMotifSignal <- (mean(promoterPeakFootprintMetrics[,3], trim = 0.10) / motifWidth)
     promoterPeakFlankSignal <- (mean(promoterPeakFootprintMetrics[,2], trim = 0.10) / 100)
     promoterPeakBackgroundSignal <- (mean(promoterPeakFootprintMetrics[,1], trim = 0.10) / 100)
@@ -198,7 +199,6 @@ if (file.exists(dataOutPath) == TRUE){
     
     ## distalPeakSites
     distalPeakFootprintMetrics <- rawPeakFootprintMetrics[-promoterIdx,]
-    distalPeakInsertionMatrix <- peakInsertionMatrix[-promoterIdx,]
     distalPeakMotifSignal <- (mean(distalPeakFootprintMetrics[,3], trim = 0.10) / motifWidth)
     distalPeakFlankSignal <- (mean(distalPeakFootprintMetrics[,2], trim = 0.10) / 100)
     distalPeakBackgroundSignal <- (mean(distalPeakFootprintMetrics[,1], trim = 0.10) / 100)
@@ -207,7 +207,6 @@ if (file.exists(dataOutPath) == TRUE){
     
     ## promoter Bound
     promoterBoundFootprintMetrics <- rawPeakFootprintMetrics[promoterBoundIdx,]
-    promoterBoundInsertionMatrix <- peakInsertionMatrix[promoterBoundIdx,]
     promoterBoundMotifSignal <- (mean(promoterBoundFootprintMetrics[,3], trim = 0.10) / motifWidth)
     promoterBoundFlankSignal <- (mean(promoterBoundFootprintMetrics[,2], trim = 0.10) / 100)
     promoterBoundBackgroundSignal <- (mean(promoterBoundFootprintMetrics[,1], trim = 0.10) / 100)
@@ -216,7 +215,6 @@ if (file.exists(dataOutPath) == TRUE){
     
     ## promoter unbound
     promoterUnboundFootprintMetrics <- rawPeakFootprintMetrics[promoterUnboundIdx,]
-    promoterUnboundInsertionMatrix <- peakInsertionMatrix[promoterUnboundIdx,]
     promoterUnboundMotifSignal <- (mean(promoterUnboundFootprintMetrics[,3], trim = 0.10) / motifWidth)
     promoterUnboundFlankSignal <- (mean(promoterUnboundFootprintMetrics[,2], trim = 0.10) / 100)
     promoterUnboundBackgroundSignal <- (mean(promoterUnboundFootprintMetrics[,1], trim = 0.10) / 100)
@@ -225,7 +223,6 @@ if (file.exists(dataOutPath) == TRUE){
     
     ## distal Bound
     distalBoundFootprintMetrics <- rawPeakFootprintMetrics[distalBoundIdx,]
-    distalBoundInsertionMatrix <- peakInsertionMatrix[distalBoundIdx,]
     distalBoundMotifSignal <- (mean(distalBoundFootprintMetrics[,3], trim = 0.10) / motifWidth)
     distalBoundFlankSignal <- (mean(distalBoundFootprintMetrics[,2], trim = 0.10) / 100)
     distalBoundBackgroundSignal <- (mean(distalBoundFootprintMetrics[,1], trim = 0.10) / 100)
@@ -234,7 +231,6 @@ if (file.exists(dataOutPath) == TRUE){
     
     ## distal unbound
     distalUnboundFootprintMetrics <- rawPeakFootprintMetrics[distalUnboundIdx,]
-    distalUnboundInsertionMatrix <- peakInsertionMatrix[distalUnboundIdx,]
     distalUnboundMotifSignal <- (mean(distalUnboundFootprintMetrics[,3], trim = 0.10) / motifWidth)
     distalUnboundFlankSignal <- (mean(distalUnboundFootprintMetrics[,2], trim = 0.10) / 100)
     distalUnboundBackgroundSignal <- (mean(distalUnboundFootprintMetrics[,1], trim = 0.10) / 100)
@@ -290,10 +286,6 @@ if (file.exists(dataOutPath) == TRUE){
     processedFootprintData$"distalUnbound.log2Flank" <- distalUnbound.log2Flank
     processedFootprintData$"distalUnbound.log2Depth" <- distalUnbound.log2Depth
  
-  
-    
-    
-    
     ## Save the data
     save(processedFootprintData, file = dataOutPath)
     
@@ -502,6 +494,134 @@ if (file.exists(dataOutPath) == TRUE){
   processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
   processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
   processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
+  
+  #### CODE TESTING - PROMOTER/DISTAL groups ####
+  ## Pull promoters from txdb, define promoter region as -1000/+100 in accordance with TCGA paper
+  promoters <- promoters(txdb, upstream = 1000, downstream = 100)
+  ## Trim the GRanges object to keep standard entries only
+  scope <- paste0("chr", c(1:22, "X", "Y"))
+  promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
+  promoters <- keepSeqlevels(promoters, scope, pruning.mode="coarse")
+  
+  ## Subset based on the overlaps
+  promoterOverlaps <- findOverlaps(promoters, peakSites, ignore.strand = TRUE)
+  promoterIdx <- unique(promoterOverlaps@to)
+  ##
+  promoterPeakSites <- peakSites[promoterIdx]
+  distalPeakSites <- peakSites[-promoterIdx]
+  ##
+  promoterBoundOverlaps <- findOverlaps(promoterPeakSites, boundSites)
+  promoterUnboundOverlaps <- findOverlaps(promoterPeakSites, unboundSites)
+  promoterBoundIdx <- unique(promoterBoundOverlaps@from)
+  promoterUnboundIdx <- unique(promoterUnboundOverlaps@from)
+  ##
+  promoterBoundSites <- peakSites[promoterBoundIdx]
+  promoterUnboundSites <- peakSites[promoterUnboundIdx]
+  ##
+  distalBoundOverlaps <- findOverlaps(distalPeakSites, boundSites)
+  distalUnboundOverlaps <- findOverlaps(distalPeakSites, unboundSites)
+  distalBoundIdx <- unique(distalBoundOverlaps@from)
+  distalUnboundIdx <- unique(distalUnboundOverlaps@from)
+  ##
+  distalBoundSites <- peakSites[distalBoundIdx]
+  distalUnboundSites <- peakSites[distalUnboundIdx]
+  
+  ##### promoter peak sites
+  promoterPeakFootprintMetrics <- rawPeakFootprintMetrics[promoterIdx,]
+  promoterPeakMotifSignal <- (mean(promoterPeakFootprintMetrics[,3], trim = 0.10) / motifWidth)
+  promoterPeakFlankSignal <- (mean(promoterPeakFootprintMetrics[,2], trim = 0.10) / 100)
+  promoterPeakBackgroundSignal <- (mean(promoterPeakFootprintMetrics[,1], trim = 0.10) / 100)
+  promoterPeak.log2Flank <- log2(promoterPeakFlankSignal / promoterPeakBackgroundSignal)
+  promoterPeak.log2Depth <- log2(promoterPeakMotifSignal / promoterPeakFlankSignal)
+  
+  ## distalPeakSites
+  distalPeakFootprintMetrics <- rawPeakFootprintMetrics[-promoterIdx,]
+  distalPeakMotifSignal <- (mean(distalPeakFootprintMetrics[,3], trim = 0.10) / motifWidth)
+  distalPeakFlankSignal <- (mean(distalPeakFootprintMetrics[,2], trim = 0.10) / 100)
+  distalPeakBackgroundSignal <- (mean(distalPeakFootprintMetrics[,1], trim = 0.10) / 100)
+  distalPeak.log2Flank <- log2(distalPeakFlankSignal / distalPeakBackgroundSignal)
+  distalPeak.log2Depth <- log2(distalPeakMotifSignal / distalPeakFlankSignal)
+  
+  ## promoter Bound
+  promoterBoundFootprintMetrics <- rawPeakFootprintMetrics[promoterBoundIdx,]
+  promoterBoundMotifSignal <- (mean(promoterBoundFootprintMetrics[,3], trim = 0.10) / motifWidth)
+  promoterBoundFlankSignal <- (mean(promoterBoundFootprintMetrics[,2], trim = 0.10) / 100)
+  promoterBoundBackgroundSignal <- (mean(promoterBoundFootprintMetrics[,1], trim = 0.10) / 100)
+  promoterBound.log2Flank <- log2(promoterBoundFlankSignal / promoterBoundBackgroundSignal)
+  promoterBound.log2Depth <- log2(promoterBoundMotifSignal / promoterBoundFlankSignal)
+  
+  ## promoter unbound
+  promoterUnboundFootprintMetrics <- rawPeakFootprintMetrics[promoterUnboundIdx,]
+  promoterUnboundMotifSignal <- (mean(promoterUnboundFootprintMetrics[,3], trim = 0.10) / motifWidth)
+  promoterUnboundFlankSignal <- (mean(promoterUnboundFootprintMetrics[,2], trim = 0.10) / 100)
+  promoterUnboundBackgroundSignal <- (mean(promoterUnboundFootprintMetrics[,1], trim = 0.10) / 100)
+  promoterUnbound.log2Flank <- log2(promoterUnboundFlankSignal / promoterUnboundBackgroundSignal)
+  promoterUnbound.log2Depth <- log2(promoterUnboundMotifSignal / promoterUnboundFlankSignal)
+  
+  ## distal Bound
+  distalBoundFootprintMetrics <- rawPeakFootprintMetrics[distalBoundIdx,]
+  distalBoundMotifSignal <- (mean(distalBoundFootprintMetrics[,3], trim = 0.10) / motifWidth)
+  distalBoundFlankSignal <- (mean(distalBoundFootprintMetrics[,2], trim = 0.10) / 100)
+  distalBoundBackgroundSignal <- (mean(distalBoundFootprintMetrics[,1], trim = 0.10) / 100)
+  distalBound.log2Flank <- log2(distalBoundFlankSignal / distalBoundBackgroundSignal)
+  distalBound.log2Depth <- log2(distalBoundMotifSignal / distalBoundFlankSignal)
+  
+  ## distal unbound
+  distalUnboundFootprintMetrics <- rawPeakFootprintMetrics[distalUnboundIdx,]
+  distalUnboundMotifSignal <- (mean(distalUnboundFootprintMetrics[,3], trim = 0.10) / motifWidth)
+  distalUnboundFlankSignal <- (mean(distalUnboundFootprintMetrics[,2], trim = 0.10) / 100)
+  distalUnboundBackgroundSignal <- (mean(distalUnboundFootprintMetrics[,1], trim = 0.10) / 100)
+  distalUnbound.log2Flank <- log2(distalUnboundFlankSignal / distalUnboundBackgroundSignal)
+  distalUnbound.log2Depth <- log2(distalUnboundMotifSignal / distalUnboundFlankSignal)
+  
+  ## STORE THE DATA
+  processedFootprintData$"promoterPeakSites" <- promoterPeakSites
+  processedFootprintData$"promoterPeakFootprintMetrics" <- promoterPeakFootprintMetrics
+  processedFootprintData$"promoterPeakMotifSignal" <- promoterPeakMotifSignal
+  processedFootprintData$"promoterPeakFlankSignal" <- promoterPeakFlankSignal
+  processedFootprintData$"promoterPeakBackgroundSignal" <- promoterPeakBackgroundSignal
+  processedFootprintData$"promoterPeak.log2Flank" <- promoterPeak.log2Flank
+  processedFootprintData$"promoterPeak.log2Depth" <- promoterPeak.log2Depth
+  ##
+  processedFootprintData$"distalpeakSites" <- distalPeakSites
+  processedFootprintData$"distalPeakFootprintMetrics" <- distalPeakFootprintMetrics
+  processedFootprintData$"distalPeakMotifSignal" <- distalPeakMotifSignal
+  processedFootprintData$"distalPeakFlankSignal" <- distalPeakFlankSignal
+  processedFootprintData$"distalPeakBackgroundSignal" <- distalPeakBackgroundSignal
+  processedFootprintData$"distalPeak.log2Flank" <- distalPeak.log2Flank
+  processedFootprintData$"distalPeak.log2Depth" <- distalPeak.log2Depth
+  ##
+  processedFootprintData$"promoterBoundSites" <- promoterBoundSites
+  processedFootprintData$"promoterBoundFootprintMetrics" <- promoterBoundFootprintMetrics
+  processedFootprintData$"promoterBoundMotifSignal" <- promoterBoundMotifSignal
+  processedFootprintData$"promoterBoundFlankSignal" <- promoterBoundFlankSignal
+  processedFootprintData$"promoterBoundBackgroundSignal" <- promoterBoundBackgroundSignal
+  processedFootprintData$"promoterBound.log2Flank" <- promoterBound.log2Flank
+  processedFootprintData$"promoterBound.log2Depth" <- promoterBound.log2Depth
+  ##
+  processedFootprintData$"promoterUnboundSites" <- promoterUnboundSites
+  processedFootprintData$"promoterUnboundFootprintMetrics" <- promoterUnboundFootprintMetrics
+  processedFootprintData$"promoterUnboundMotifSignal" <- promoterUnboundMotifSignal
+  processedFootprintData$"promoterUnboundFlankSignal" <- promoterUnboundFlankSignal
+  processedFootprintData$"promoterUnboundBackgroundSignal" <- promoterUnboundBackgroundSignal
+  processedFootprintData$"promoterUnbound.log2Flank" <- promoterUnbound.log2Flank
+  processedFootprintData$"promoterUnbound.log2Depth" <- promoterUnbound.log2Depth
+  ##
+  processedFootprintData$"distalBoundSites" <- distalBoundSites
+  processedFootprintData$"distalBoundFootprintMetrics" <- distalBoundFootprintMetrics
+  processedFootprintData$"distalBoundMotifSignal" <- distalBoundMotifSignal
+  processedFootprintData$"distalBoundFlankSignal" <- distalBoundFlankSignal
+  processedFootprintData$"distalBoundBackgroundSignal" <- distalBoundBackgroundSignal
+  processedFootprintData$"distalBound.log2Flank" <- distalBound.log2Flank
+  processedFootprintData$"distalBound.log2Depth" <- distalBound.log2Depth
+  ##
+  processedFootprintData$"distalUnboundSites" <- distalUnboundSites
+  processedFootprintData$"distalUnboundFootprintMetrics" <- distalUnboundFootprintMetrics
+  processedFootprintData$"distalUnboundMotifSignal" <- distalUnboundMotifSignal
+  processedFootprintData$"distalUnboundFlankSignal" <- distalUnboundFlankSignal
+  processedFootprintData$"distalUnboundBackgroundSignal" <- distalUnboundBackgroundSignal
+  processedFootprintData$"distalUnbound.log2Flank" <- distalUnbound.log2Flank
+  processedFootprintData$"distalUnbound.log2Depth" <- distalUnbound.log2Depth
   
   ## Save the data
   save(processedFootprintData, file = dataOutPath)
