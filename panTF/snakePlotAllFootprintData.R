@@ -76,21 +76,10 @@ H508_data <- footprintData
 save(H508_data, file = "C:\\Users\\jsk33\\Desktop\\H508_data.Rdata")
 
 ## Set cell line name
-cellName <- "H508"
-
-
-
-
-##### TO ADD A NEW COLUMN TO DF ####
-## bound ratio
-#x <- footprintData[,4]/footprintData[,3]
-#footprintData["Ratio"] <- x
-
-
+cellName <- "MDST8"
+footprintData <- MDST8_data
 
 #### GENERATE PLOTS #########################################################################################
-
-
 
 ## All sites, RNA exp
 ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = log2(RNAexp))) + 
@@ -295,15 +284,16 @@ coadmr <- c("CDX2", "TCF7", "MNX1", "POU5F1B", "ESRRA", "HNF4A", "GMEB2", "HOXA3
 mrIdx <- which(footprintData[,1] %in% coadmr)
 
 ## Create new dataframe
-MRdata <- data.frame(matrix(vector(), 0, 6,
+MRdata <- data.frame(matrix(vector(), 0, 10,
                                             dimnames=list(c(), c(
                                               "Gene", "Type", "peak.log2Depth", "peak.log2Flank", "RNAexp", "viperNES",
-                                              "promoterPeak.log2Depth", "promoterPeak.log2Flank"))),
+                                              "promoterPeak.log2Depth", "promoterPeak.log2Flank", "bound.log2Depth", "bound.log2Flank"))),
                                      stringsAsFactors=F)
 
 ## Transfer info to new dataframe
 numPoints <- length(mrIdx)
-cellLine <- "H508"
+cellLine <- "MDST8"
+cellName <- "MDST8"
 
 ## Xfer data
 for (d in 1:numPoints){
@@ -318,6 +308,8 @@ for (d in 1:numPoints){
   MRdata[d,6] <- footprintData[Idx,"viperNES"]
   MRdata[d,7] <- footprintData[Idx,"promoterPeak.log2Depth"]
   MRdata[d,8] <- footprintData[Idx,"promoterPeak.log2Flank"]
+  MRdata[d,9] <- footprintData[Idx,"bound.log2Depth"]
+  MRdata[d,10] <- footprintData[Idx,"bound.log2Flank"]
 }
 
 
@@ -347,7 +339,7 @@ ggplot(MRdata, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) +
                    label.size = NA)
 
 #### PROMOTERS
-ggplot(MRdata, aes(peak.log2Depth, peak.log2Flank, color = log2(RNAexp))) + 
+ggplot(MRdata, aes(promoterPeak.log2Depth, promoterPeak.log2Flank, color = log2(RNAexp))) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red") +
   ggtitle(paste0("Promoters COAD MR, Depth vs Flank, RNA exp ", cellName)) +
@@ -357,7 +349,7 @@ ggplot(MRdata, aes(peak.log2Depth, peak.log2Flank, color = log2(RNAexp))) +
                    segment.color = 'black',
                    label.size = NA)
 
-ggplot(MRdata, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) + 
+ggplot(MRdata, aes(promoterPeak.log2Depth, promoterPeak.log2Flank, color = viperNES)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red") +
   ggtitle(paste0("Promoters COAD MR, Depth vs Flank, VIPER NES ", cellName)) +
@@ -368,4 +360,23 @@ ggplot(MRdata, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) +
                    label.size = NA)
 
 
+### Bound sites
+ggplot(MRdata, aes(bound.log2Depth, bound.log2Flank, color = log2(RNAexp))) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle(paste0("Bound COAD MR, Depth vs Flank, RNA exp ", cellName)) +
+  geom_label_repel(aes(label = Gene),
+                   box.padding   = 0.35, 
+                   point.padding = 0.5,
+                   segment.color = 'black',
+                   label.size = NA)
 
+ggplot(MRdata, aes(bound.log2Depth, bound.log2Flank, color = viperNES)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red") +
+  ggtitle(paste0("Bound COAD MR, Depth vs Flank, VIPER NES ", cellName)) +
+  geom_label_repel(aes(label = Gene),
+                   box.padding   = 0.35, 
+                   point.padding = 0.5,
+                   segment.color = 'black',
+                   label.size = NA)
