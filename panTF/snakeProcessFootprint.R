@@ -241,7 +241,6 @@ if (file.exists(dataOutPath) == TRUE){
     distalUnbound.log2Flank <- log2(distalUnboundFlankSignal / distalUnboundBackgroundSignal)
     distalUnbound.log2Depth <- log2(distalUnboundMotifSignal / distalUnboundFlankSignal)
     
-    
     ## STORE THE DATA
     processedFootprintData$"promoterPeakSites" <- promoterPeakSites
     processedFootprintData$"promoterPeakFootprintMetrics" <- promoterPeakFootprintMetrics
@@ -280,7 +279,6 @@ if (file.exists(dataOutPath) == TRUE){
     processedFootprintData$"distalBoundMotifSignal" <- distalBoundMotifSignal
     processedFootprintData$"distalBoundFlankSignal" <- distalBoundFlankSignal
     processedFootprintData$"distalBoundBackgroundSignal" <- distalBoundBackgroundSignal
-    processedFootprintData$"promoterUnboundBackgroundSignal" <- promoterUnboundBackgroundSignal
     processedFootprintData$"distalBound.log2Flank" <- distalBound.log2Flank
     processedFootprintData$"distalBound.log2Depth" <- distalBound.log2Depth
     ##
