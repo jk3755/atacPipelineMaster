@@ -164,36 +164,33 @@ if (file.exists(dataOutPath) == TRUE){
     promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
     promoters <- keepSeqlevels(promoters, scope, pruning.mode="coarse")
     
-    x <- findOverlaps(promoters, footprintData[["motif1"]][["peakSites"]], ignore.strand = TRUE)
-    length(unique(x@from))
-    length(unique(x@to))
-    
     ## Subset based on the overlaps
-    # Index of the peak sites that are at promoters
-    promoterIdx <- unique(x@to)
+    promoterOverlaps <- findOverlaps(promoters, peakSites, ignore.strand = TRUE)
+    promoterIdx <- unique(promoterOverlaps@to)
     
+    ##
     promoterPeakSites <- peakSites[promoterIdx]
     distalPeakSites <- peakSites[-promoterIdx]
     
     ##
-    x2 <- findOverlaps(promoterPeakSites, boundSites)
-    x3 <- findOverlaps(promoterPeakSites, unboundSites)
-    
-    gg2 <- unique(x2@from)
-    gg3 <- unique(x3@from)
-    
-    promoterBoundSites <- peakSites[gg2]
-    promoterUnboundSites <- peakSites[gg3]
+    promoterBoundOverlaps <- findOverlaps(promoterPeakSites, boundSites)
+    promoterUnboundOverlaps <- findOverlaps(promoterPeakSites, unboundSites)
+    promoterBoundIdx <- unique(promoterBoundOverlaps@from)
+    promoterUnboundIdx <- unique(promoterUnboundOverlaps@from)
     
     ##
-    mm <- findOverlaps(distalPeakSites, boundSites)
-    mm2 <- findOverlaps(distalPeakSites, unboundSites)
+    promoterBoundSites <- peakSites[promoterBoundIdx]
+    promoterUnboundSites <- peakSites[promoterUnboundIdx]
     
-    hg2 <- unique(mm@from)
-    hg3 <- unique(mm2@from)
+    ##
+    distalBoundOverlaps <- findOverlaps(distalPeakSites, boundSites)
+    distalUnboundOverlaps <- findOverlaps(distalPeakSites, unboundSites)
+    distalBoundIdx <- unique(distalBoundOverlaps@from)
+    distalUnboundIdx <- unique(distalUnboundOverlaps@from)
     
-    distalBoundSites <- peakSites[hg2]
-    distalUnboundSites <- peakSites[hg3]
+    ##
+    distalBoundSites <- peakSites[distalBoundIdx]
+    distalUnboundSites <- peakSites[distalUnboundIdx]
     
     ####
     length(peakSites)
