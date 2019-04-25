@@ -169,10 +169,18 @@ if (file.exists(dataOutPath) == TRUE){
     length(unique(x@to))
     
     ## Subset based on the overlaps
+    # Index of the peak sites that are at promoters
     promoterIdx <- unique(x@to)
     
     promoterPeakSites <- peakSites[promoterIdx]
     distalPeakSites <- peakSites[-promoterIdx]
+    
+    ##
+    se <- intersect(boundSiteIndex, promoterIdx)
+    se2 <- setdiff(boundSiteIndex, promoterIdx)
+    
+    promoterBoundSites <- peakSites[se]
+    promoterUnboundSites <- peakSites[se2]
     
     
     
