@@ -44,7 +44,7 @@ if (file.exists(dataOutPath) == TRUE){
   cat("Found", numMotifs, "motifs", "\n")
   ## Because some motifs may be removed due to errors, pull the motif names to be used in downstream commands (can't just go sequentially)
   motifNames <- names(footprintData)
-
+  
   #### MERGE AND DEDUPLICATE ALL BINDING SITES ####
   ## At this point, the footprints have already been parsed into bound and unbound sites
   ## Transfer data for both to the new storage object, for downstream analysis
@@ -85,45 +85,45 @@ if (file.exists(dataOutPath) == TRUE){
     cat("Processing multiple motifs", "\n")
     ##
     for (z in 1:numMotifs){
-        ## Pull the basic data
-        cat("Pulling peak sites", "\n")
-        com <- paste0("peakSites", z, " <- footprintData[['", motifNames[z], "']][['peakSites']]")
-        eval(parse(text = com))
-        cat("Pulling insertion matrix", "\n")
-        com <- paste0("peakInsertionMatrix", z, " <- footprintData[['", motifNames[z], "']][['insMatrix']]")
-        eval(parse(text = com))
-        cat("Pulling footprint metrics", "\n")
-        com <- paste0("rawPeakFootprintMetrics", z, " <- footprintData[['", motifNames[z], "']][['rawFootprintMetrics']]")
-        eval(parse(text = com))
-        ## Perform the bound/unbound split
-        cat("Finding bound overlaps", "\n")
-        com <- paste0("boundSiteOverlaps", z, " <- findOverlaps(footprintData[['", motifNames[z], "']][['parseData']][['bfSites']], footprintData[['", motifNames[z], "']][['peakSites']])")
-        eval(parse(text = com))
-        cat("Setting bound index", "\n")
-        com <- paste0("boundSiteIndex", z, " <- boundSiteOverlaps", z, "@to")
-        eval(parse(text = com))
-        ## Bound sites
-        cat("Setting bound site data", "\n")
-        com <- paste0("boundSites", z, " <- peakSites", z, "[boundSiteIndex", z, ",]")
-        eval(parse(text = com))
-        com <- paste0("boundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[boundSiteIndex", z, ",]")
-        eval(parse(text = com))
-        com <- paste0("boundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[boundSiteIndex", z, ",]")
-        eval(parse(text = com))
-        com <- paste0("numBoundSites", z, " <- length(boundSites", z, ")")
-        eval(parse(text = com))
-        ## Unbound sites
-        cat("Setting unbound site data", "\n")
-        com <- paste0("unboundSites", z, " <- peakSites", z, "[-boundSiteIndex", z, ",]")
-        eval(parse(text = com))
-        com <- paste0("unboundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[-boundSiteIndex", z, ",]")
-        eval(parse(text = com))
-        com <- paste0("unboundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[-boundSiteIndex", z, ",]")
-        eval(parse(text = com))
-        com <- paste0("numUnboundSites", z, " <- length(unboundSites", z, ")")
-        eval(parse(text = com))
+      ## Pull the basic data
+      cat("Pulling peak sites", "\n")
+      com <- paste0("peakSites", z, " <- footprintData[['", motifNames[z], "']][['peakSites']]")
+      eval(parse(text = com))
+      cat("Pulling insertion matrix", "\n")
+      com <- paste0("peakInsertionMatrix", z, " <- footprintData[['", motifNames[z], "']][['insMatrix']]")
+      eval(parse(text = com))
+      cat("Pulling footprint metrics", "\n")
+      com <- paste0("rawPeakFootprintMetrics", z, " <- footprintData[['", motifNames[z], "']][['rawFootprintMetrics']]")
+      eval(parse(text = com))
+      ## Perform the bound/unbound split
+      cat("Finding bound overlaps", "\n")
+      com <- paste0("boundSiteOverlaps", z, " <- findOverlaps(footprintData[['", motifNames[z], "']][['parseData']][['bfSites']], footprintData[['", motifNames[z], "']][['peakSites']])")
+      eval(parse(text = com))
+      cat("Setting bound index", "\n")
+      com <- paste0("boundSiteIndex", z, " <- boundSiteOverlaps", z, "@to")
+      eval(parse(text = com))
+      ## Bound sites
+      cat("Setting bound site data", "\n")
+      com <- paste0("boundSites", z, " <- peakSites", z, "[boundSiteIndex", z, ",]")
+      eval(parse(text = com))
+      com <- paste0("boundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[boundSiteIndex", z, ",]")
+      eval(parse(text = com))
+      com <- paste0("boundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[boundSiteIndex", z, ",]")
+      eval(parse(text = com))
+      com <- paste0("numBoundSites", z, " <- length(boundSites", z, ")")
+      eval(parse(text = com))
+      ## Unbound sites
+      cat("Setting unbound site data", "\n")
+      com <- paste0("unboundSites", z, " <- peakSites", z, "[-boundSiteIndex", z, ",]")
+      eval(parse(text = com))
+      com <- paste0("unboundSitesInsertionMatrix", z, " <- peakInsertionMatrix", z, "[-boundSiteIndex", z, ",]")
+      eval(parse(text = com))
+      com <- paste0("unboundSitesMetrics", z, " <- rawPeakFootprintMetrics", z, "[-boundSiteIndex", z, ",]")
+      eval(parse(text = com))
+      com <- paste0("numUnboundSites", z, " <- length(unboundSites", z, ")")
+      eval(parse(text = com))
     } # end for (z in 1:numMotif)
-      
+    
     #### Perform the merging and deduplication ####
     for (b in 2:numMotifs){
       ## Find overlaps and generate selection indices
@@ -177,89 +177,89 @@ if (file.exists(dataOutPath) == TRUE){
         com <- paste0("unboundSitesMetrics1 <- rbind(unboundSitesMetrics1, unboundSitesMetrics", b, "[-mergeIdx,])")
         eval(parse(text = com))
       } # end if (length(tempOverlapsUnbound@from) == 0)
-  } # end for (b in 2:numMotifs)
-  
-  ## Because the code is written to use the first motif to merge everything into,
-  ## transfer the data at this stage to make it consistent with numMotifs == 1
-  peakSites <- peakSites1
-  rawPeakFootprintMetrics <- rawPeakFootprintMetrics1
-  numPeakSites <- length(peakSites)
-  ##
-  boundSites <- boundSites1
-  boundSitesMetrics <- boundSitesMetrics1
-  numBoundSites <- length(boundSites)
-  ##
-  unboundSites <- unboundSites1
-  unboundSitesMetrics <- unboundSitesMetrics1
-  numUnboundSites <- length(unboundSites)
-  
-} # end if (numMotifs == 1)
+    } # end for (b in 2:numMotifs)
+    
+    ## Because the code is written to use the first motif to merge everything into,
+    ## transfer the data at this stage to make it consistent with numMotifs == 1
+    peakSites <- peakSites1
+    rawPeakFootprintMetrics <- rawPeakFootprintMetrics1
+    numPeakSites <- length(peakSites)
+    ##
+    boundSites <- boundSites1
+    boundSitesMetrics <- boundSitesMetrics1
+    numBoundSites <- length(boundSites)
+    ##
+    unboundSites <- unboundSites1
+    unboundSitesMetrics <- unboundSitesMetrics1
+    numUnboundSites <- length(unboundSites)
+    
+  } # end if (numMotifs == 1)
   
   #### Calculate footprint characteristics on merged data ####
-    
-    ## Calculate the 10% trimmed mean of all insertions in the motif sites
-    peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
-    boundMotifSignal <- mean(boundSitesMetrics1[,3], trim = 0.10)
-    unboundMotifSignal <- mean(unboundSitesMetrics1[,3], trim = 0.10)
-    
-    ## Calculate the mean of all insertions in the flank region
-    peakFlankSignal <- mean(rawPeakFootprintMetrics[,2], trim = 0.10)
-    boundFlankSignal <- mean(boundSitesMetrics1[,2], trim = 0.10)
-    unboundFlankSignal <- mean(unboundSitesMetrics1[,2], trim = 0.10)
-    
-    ## Calculate the mean of background insertions
-    peakBackgroundSignal <- mean(rawPeakFootprintMetrics[,1], trim = 0.10)
-    boundBackgroundSignal <- mean(boundSitesMetrics1[,1], trim = 0.10)
-    unboundBackgroundSignal <- mean(unboundSitesMetrics1[,1], trim = 0.10)
-    
-    ## Calculate flanking accessibility (log2 fold change between flank and background)
-    peak.log2Flank <- log2(peakFlankSignal / peakBackgroundSignal)
-    bound.log2Flank <- log2(boundFlankSignal / boundBackgroundSignal)
-    unbound.log2Flank <- log2(unboundFlankSignal / unboundBackgroundSignal)
-    
-    ## Calculate footprint depth (log2 fold change between flank and background)
-    peak.log2Depth <- log2(peakMotifSignal / peakFlankSignal)
-    bound.log2Depth <- log2(boundMotifSignal / boundFlankSignal)
-    unbound.log2Depth <- log2(unboundMotifSignal / unboundFlankSignal)
-    
-    #### TRANSFER DATA TO STORAGE OBJECT ####
-    ## Initialize a new list object to store the processed data
-    processedFootprintData <- list()
-    ##
-    processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
-    processedFootprintData$"numMotifs" <- numMotifs
-    processedFootprintData$"numPeakSites" <- numPeakSites
-    processedFootprintData$"numBoundSites" <- numBoundSites
-    processedFootprintData$"numUnboundSites" <- numUnboundSites
-    ##
-    processedFootprintData$"peakSites" <- peakSites
-    processedFootprintData$"rawPeakFootprintMetrics" <- rawPeakFootprintMetrics
-    processedFootprintData$"peakMotifSignal" <- peakMotifSignal
-    processedFootprintData$"peakFlankSignal" <- peakFlankSignal
-    processedFootprintData$"peakBackgroundSignal" <- peakBackgroundSignal
-    processedFootprintData$"peak.log2Flank" <- peak.log2Flank
-    processedFootprintData$"peak.log2Depth" <- peak.log2Depth
-    ##
-    processedFootprintData$"boundSites" <- boundSites
-    processedFootprintData$"boundSitesMetrics" <- boundSitesMetrics
-    processedFootprintData$"boundMotifSignal" <- boundMotifSignal
-    processedFootprintData$"boundFlankSignal" <- boundFlankSignal
-    processedFootprintData$"boundBackgroundSignal" <- boundBackgroundSignal
-    processedFootprintData$"bound.log2Flank" <- bound.log2Flank
-    processedFootprintData$"bound.log2Depth" <- bound.log2Depth
-    ##
-    processedFootprintData$"unboundSites" <- unboundSites
-    processedFootprintData$"unboundSitesMetrics" <- unboundSitesMetrics
-    processedFootprintData$"unboundMotifSignal" <- unboundMotifSignal
-    processedFootprintData$"unboundFlankSignal" <- unboundFlankSignal
-    processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
-    processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
-    processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
- 
   
-## Save the data
-save(processedFootprintData, file = dataOutPath)
-
+  ## Calculate the 10% trimmed mean of all insertions in the motif sites
+  peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
+  boundMotifSignal <- mean(boundSitesMetrics[,3], trim = 0.10)
+  unboundMotifSignal <- mean(unboundSitesMetrics[,3], trim = 0.10)
+  
+  ## Calculate the mean of all insertions in the flank region
+  peakFlankSignal <- mean(rawPeakFootprintMetrics[,2], trim = 0.10)
+  boundFlankSignal <- mean(boundSitesMetrics[,2], trim = 0.10)
+  unboundFlankSignal <- mean(unboundSitesMetrics[,2], trim = 0.10)
+  
+  ## Calculate the mean of background insertions
+  peakBackgroundSignal <- mean(rawPeakFootprintMetrics[,1], trim = 0.10)
+  boundBackgroundSignal <- mean(boundSitesMetrics[,1], trim = 0.10)
+  unboundBackgroundSignal <- mean(unboundSitesMetrics[,1], trim = 0.10)
+  
+  ## Calculate flanking accessibility (log2 fold change between flank and background)
+  peak.log2Flank <- log2(peakFlankSignal / peakBackgroundSignal)
+  bound.log2Flank <- log2(boundFlankSignal / boundBackgroundSignal)
+  unbound.log2Flank <- log2(unboundFlankSignal / unboundBackgroundSignal)
+  
+  ## Calculate footprint depth (log2 fold change between flank and background)
+  peak.log2Depth <- log2(peakMotifSignal / peakFlankSignal)
+  bound.log2Depth <- log2(boundMotifSignal / boundFlankSignal)
+  unbound.log2Depth <- log2(unboundMotifSignal / unboundFlankSignal)
+  
+  #### TRANSFER DATA TO STORAGE OBJECT ####
+  ## Initialize a new list object to store the processed data
+  processedFootprintData <- list()
+  ##
+  processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
+  processedFootprintData$"numMotifs" <- numMotifs
+  processedFootprintData$"numPeakSites" <- numPeakSites
+  processedFootprintData$"numBoundSites" <- numBoundSites
+  processedFootprintData$"numUnboundSites" <- numUnboundSites
+  ##
+  processedFootprintData$"peakSites" <- peakSites
+  processedFootprintData$"rawPeakFootprintMetrics" <- rawPeakFootprintMetrics
+  processedFootprintData$"peakMotifSignal" <- peakMotifSignal
+  processedFootprintData$"peakFlankSignal" <- peakFlankSignal
+  processedFootprintData$"peakBackgroundSignal" <- peakBackgroundSignal
+  processedFootprintData$"peak.log2Flank" <- peak.log2Flank
+  processedFootprintData$"peak.log2Depth" <- peak.log2Depth
+  ##
+  processedFootprintData$"boundSites" <- boundSites
+  processedFootprintData$"boundSitesMetrics" <- boundSitesMetrics
+  processedFootprintData$"boundMotifSignal" <- boundMotifSignal
+  processedFootprintData$"boundFlankSignal" <- boundFlankSignal
+  processedFootprintData$"boundBackgroundSignal" <- boundBackgroundSignal
+  processedFootprintData$"bound.log2Flank" <- bound.log2Flank
+  processedFootprintData$"bound.log2Depth" <- bound.log2Depth
+  ##
+  processedFootprintData$"unboundSites" <- unboundSites
+  processedFootprintData$"unboundSitesMetrics" <- unboundSitesMetrics
+  processedFootprintData$"unboundMotifSignal" <- unboundMotifSignal
+  processedFootprintData$"unboundFlankSignal" <- unboundFlankSignal
+  processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
+  processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
+  processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
+  
+  
+  ## Save the data
+  save(processedFootprintData, file = dataOutPath)
+  
 } # end if (file.exists(dataOutPath) == TRUE)
 
 ##
