@@ -217,81 +217,73 @@ if (numMotifs == 1){
   
 } # end if (numMotifs == 1)
 
-#### Calculate footprint characteristics on merged data ####
-tryCatch({
-  
-  ## Calculate the 10% trimmed mean of all insertions in the motif sites
-  peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
-  boundMotifSignal <- mean(boundSitesMetrics1[,3], trim = 0.10)
-  unboundMotifSignal <- mean(unboundSitesMetrics1[,3], trim = 0.10)
-  
-  ## Calculate the mean of all insertions in the flank region
-  peakFlankSignal <- mean(rawPeakFootprintMetrics[,2], trim = 0.10)
-  boundFlankSignal <- mean(boundSitesMetrics1[,2], trim = 0.10)
-  unboundFlankSignal <- mean(unboundSitesMetrics1[,2], trim = 0.10)
-  
-  ## Calculate the mean of background insertions
-  peakBackgroundSignal <- mean(rawPeakFootprintMetrics[,1], trim = 0.10)
-  boundBackgroundSignal <- mean(boundSitesMetrics1[,1], trim = 0.10)
-  unboundBackgroundSignal <- mean(unboundSitesMetrics1[,1], trim = 0.10)
-  
-  ## Calculate flanking accessibility (log2 fold change between flank and background)
-  peak.log2Flank <- log2(peakFlankSignal / peakBackgroundSignal)
-  bound.log2Flank <- log2(boundFlankSignal / boundBackgroundSignal)
-  unbound.log2Flank <- log2(unboundFlankSignal / unboundBackgroundSignal)
-  
-  ## Calculate footprint depth (log2 fold change between flank and background)
-  peak.log2Depth <- log2(peakMotifSignal / peakFlankSignal)
-  bound.log2Depth <- log2(boundMotifSignal / boundFlankSignal)
-  unbound.log2Depth <- log2(unboundMotifSignal / unboundFlankSignal)
-  
-}, # end try
-error=function(cond){
-  message(cond)
-  return(NA)
-},
-finally={})
-
-#### TRANSFER DATA TO STORAGE OBJECT ####
-## Initialize a new list object to store the processed data
-processedFootprintData <- list()
-##
-processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
-processedFootprintData$"numMotifs" <- numMotifs
-processedFootprintData$"numPeakSites" <- numPeakSites
-processedFootprintData$"numBoundSites" <- numBoundSites
-processedFootprintData$"numUnboundSites" <- numUnboundSites
-##
-processedFootprintData$"peakSites" <- peakSites
-processedFootprintData$"rawPeakFootprintMetrics" <- rawPeakFootprintMetrics
-processedFootprintData$"peakMotifSignal" <- peakMotifSignal
-processedFootprintData$"peakFlankSignal" <- peakFlankSignal
-processedFootprintData$"peakBackgroundSignal" <- peakBackgroundSignal
-processedFootprintData$"peak.log2Flank" <- peak.log2Flank
-processedFootprintData$"peak.log2Depth" <- peak.log2Depth
-##
-processedFootprintData$"boundSites" <- boundSites
-processedFootprintData$"boundSitesMetrics" <- boundSitesMetrics
-processedFootprintData$"boundMotifSignal" <- boundMotifSignal
-processedFootprintData$"boundFlankSignal" <- boundFlankSignal
-processedFootprintData$"boundBackgroundSignal" <- boundBackgroundSignal
-processedFootprintData$"bound.log2Flank" <- bound.log2Flank
-processedFootprintData$"bound.log2Depth" <- bound.log2Depth
-##
-processedFootprintData$"unboundSites" <- unboundSites
-processedFootprintData$"unboundSitesMetrics" <- unboundSitesMetrics
-processedFootprintData$"unboundMotifSignal" <- unboundMotifSignal
-processedFootprintData$"unboundFlankSignal" <- unboundFlankSignal
-processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
-processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
-processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
-
-
-}, # end try
-error=function(cond){
-  message(cond)
-  return(NA)},
-finally={})
+  #### Calculate footprint characteristics on merged data ####
+  tryCatch({
+    
+    ## Calculate the 10% trimmed mean of all insertions in the motif sites
+    peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
+    boundMotifSignal <- mean(boundSitesMetrics1[,3], trim = 0.10)
+    unboundMotifSignal <- mean(unboundSitesMetrics1[,3], trim = 0.10)
+    
+    ## Calculate the mean of all insertions in the flank region
+    peakFlankSignal <- mean(rawPeakFootprintMetrics[,2], trim = 0.10)
+    boundFlankSignal <- mean(boundSitesMetrics1[,2], trim = 0.10)
+    unboundFlankSignal <- mean(unboundSitesMetrics1[,2], trim = 0.10)
+    
+    ## Calculate the mean of background insertions
+    peakBackgroundSignal <- mean(rawPeakFootprintMetrics[,1], trim = 0.10)
+    boundBackgroundSignal <- mean(boundSitesMetrics1[,1], trim = 0.10)
+    unboundBackgroundSignal <- mean(unboundSitesMetrics1[,1], trim = 0.10)
+    
+    ## Calculate flanking accessibility (log2 fold change between flank and background)
+    peak.log2Flank <- log2(peakFlankSignal / peakBackgroundSignal)
+    bound.log2Flank <- log2(boundFlankSignal / boundBackgroundSignal)
+    unbound.log2Flank <- log2(unboundFlankSignal / unboundBackgroundSignal)
+    
+    ## Calculate footprint depth (log2 fold change between flank and background)
+    peak.log2Depth <- log2(peakMotifSignal / peakFlankSignal)
+    bound.log2Depth <- log2(boundMotifSignal / boundFlankSignal)
+    unbound.log2Depth <- log2(unboundMotifSignal / unboundFlankSignal)
+    
+    #### TRANSFER DATA TO STORAGE OBJECT ####
+    ## Initialize a new list object to store the processed data
+    processedFootprintData <- list()
+    ##
+    processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
+    processedFootprintData$"numMotifs" <- numMotifs
+    processedFootprintData$"numPeakSites" <- numPeakSites
+    processedFootprintData$"numBoundSites" <- numBoundSites
+    processedFootprintData$"numUnboundSites" <- numUnboundSites
+    ##
+    processedFootprintData$"peakSites" <- peakSites
+    processedFootprintData$"rawPeakFootprintMetrics" <- rawPeakFootprintMetrics
+    processedFootprintData$"peakMotifSignal" <- peakMotifSignal
+    processedFootprintData$"peakFlankSignal" <- peakFlankSignal
+    processedFootprintData$"peakBackgroundSignal" <- peakBackgroundSignal
+    processedFootprintData$"peak.log2Flank" <- peak.log2Flank
+    processedFootprintData$"peak.log2Depth" <- peak.log2Depth
+    ##
+    processedFootprintData$"boundSites" <- boundSites
+    processedFootprintData$"boundSitesMetrics" <- boundSitesMetrics
+    processedFootprintData$"boundMotifSignal" <- boundMotifSignal
+    processedFootprintData$"boundFlankSignal" <- boundFlankSignal
+    processedFootprintData$"boundBackgroundSignal" <- boundBackgroundSignal
+    processedFootprintData$"bound.log2Flank" <- bound.log2Flank
+    processedFootprintData$"bound.log2Depth" <- bound.log2Depth
+    ##
+    processedFootprintData$"unboundSites" <- unboundSites
+    processedFootprintData$"unboundSitesMetrics" <- unboundSitesMetrics
+    processedFootprintData$"unboundMotifSignal" <- unboundMotifSignal
+    processedFootprintData$"unboundFlankSignal" <- unboundFlankSignal
+    processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
+    processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
+    processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
+    
+  },
+  error=function(cond){
+    message(cond)
+    return(NA)},
+  finally={})
 
 
 tryCatch({
@@ -299,7 +291,7 @@ tryCatch({
 gc()
 dataOutPath <- gsub("parsed", "processed", inputPath)
 save(processedFootprintData, file = dataOutPath)
-}, # end try
+},
 error=function(cond){
   message(cond)
   return(NA)},
