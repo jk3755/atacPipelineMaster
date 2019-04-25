@@ -16,19 +16,6 @@
 ## Disable scientific notation in variables
 options(scipen = 999)
 
-## Load libraries
-cat("Loading libraries...", "\n")
-suppressMessages(library(GenomicRanges))
-suppressMessages(library(stats4))
-suppressMessages(library(BiocGenerics))
-suppressMessages(library(parallel))
-suppressMessages(library(Rsamtools))
-suppressMessages(library(GenomicAlignments))
-suppressMessages(library(genomation))
-suppressMessages(library(seqLogo))
-suppressMessages(library(ChIPpeakAnno))
-suppressMessages(library(rlist))
-
 ## Set snakemake variables
 cat("Setting snakemake vars...", "\n")
 footprintDataPath <- snakemake@input[[1]]
@@ -38,13 +25,27 @@ geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output filepath for the Rdata object and perform a filecheck
-dataOutPath <- gsub("raw", "parsed", footprintDataPath)
+dataOutPath <- gsub("operations/parse", "data/parsed", outPath)
+dataOutPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", dataOutPath, perl = TRUE)
+
+cat("Output path for parsed data:", dataOutPath, "\n")
 
 if (file.exists(dataOutPath) == TRUE){
-  
-  cat("File already exists, skipping", "\n")
-  
+    cat("File already exists, skipping", "\n")
 } else {
+  
+  ## Load libraries
+  cat("Loading libraries...", "\n")
+  suppressMessages(library(GenomicRanges))
+  suppressMessages(library(stats4))
+  suppressMessages(library(BiocGenerics))
+  suppressMessages(library(parallel))
+  suppressMessages(library(Rsamtools))
+  suppressMessages(library(GenomicAlignments))
+  suppressMessages(library(genomation))
+  suppressMessages(library(seqLogo))
+  suppressMessages(library(ChIPpeakAnno))
+  suppressMessages(library(rlist))
   
   ## Build functions
   cat("Building functions...", "\n")

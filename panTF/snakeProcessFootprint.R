@@ -7,11 +7,6 @@
 options(scipen = 999)
 options(warn = -1)
 
-## Load libraries
-cat("Loading libraries", "\n")
-suppressMessages(library(GenomicRanges))
-suppressMessages(library(rlist))
-
 ## Set snakemake variables
 cat("Setting snakemake variables", "\n")
 inputPath <- snakemake@input[[1]]
@@ -27,10 +22,17 @@ inputPath <- gsub("operations/parse", "data/parsed", inputPath)
 inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
 dataOutPath <- gsub("parsed", "processed", inputPath)
 
+tryCatch({
+
 ##
 if (file.exists(dataOutPath) == TRUE){
   cat("File already exists, skipping", "\n")
 } else {
+  
+  ## Load libraries
+  cat("Loading libraries", "\n")
+  suppressMessages(library(GenomicRanges))
+  suppressMessages(library(rlist))
   
   ## Load the current parsed footprintData object
   cat("Loading parsed footprint file", "\n")
@@ -42,6 +44,14 @@ if (file.exists(dataOutPath) == TRUE){
   footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 15L, TRUE)
   numMotifs <- length(footprintData)
   cat("Found", numMotifs, "motifs", "\n")
+  
+  ## Error handling
+  if (numMotifs == 0){
+    
+    cat("No motifs found. Exiting", "\n")
+    
+  } else if (numMotifs == 1){
+
   ## Because some motifs may be removed due to errors, pull the motif names to be used in downstream commands (can't just go sequentially)
   motifNames <- names(footprintData)
   
@@ -49,7 +59,6 @@ if (file.exists(dataOutPath) == TRUE){
   ## At this point, the footprints have already been parsed into bound and unbound sites
   ## Transfer data for both to the new storage object, for downstream analysis
   # If there is only one motif available, there is no need to merge and deduplicate the identified sites
-  if (numMotifs == 1){
     cat("Processing 1 motif", "\n")
     cat("Setting peak sites", "\n")
     com <- paste0("peakSites <- footprintData[['", motifNames[1], "']][['peakSites']]")
@@ -78,7 +87,73 @@ if (file.exists(dataOutPath) == TRUE){
     unboundSitesInsertionMatrix <- peakInsertionMatrix[-boundSiteIndex,]
     unboundSitesMetrics <- rawPeakFootprintMetrics[-boundSiteIndex,]
     numUnboundSites <- length(unboundSites)
+    
+    #### Calculate footprint characteristics on merged data ####
+    ## Calculate the 10% trimmed mean of all insertions in the motif sites
+    peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
+    boundMotifSignal <- mean(boundSitesMetrics[,3], trim = 0.10)
+    unboundMotifSignal <- mean(unboundSitesMetrics[,3], trim = 0.10)
+    
+    ## Calculate the mean of all insertions in the flank region
+    peakFlankSignal <- mean(rawPeakFootprintMetrics[,2], trim = 0.10)
+    boundFlankSignal <- mean(boundSitesMetrics[,2], trim = 0.10)
+    unboundFlankSignal <- mean(unboundSitesMetrics[,2], trim = 0.10)
+    
+    ## Calculate the mean of background insertions
+    peakBackgroundSignal <- mean(rawPeakFootprintMetrics[,1], trim = 0.10)
+    boundBackgroundSignal <- mean(boundSitesMetrics[,1], trim = 0.10)
+    unboundBackgroundSignal <- mean(unboundSitesMetrics[,1], trim = 0.10)
+    
+    ## Calculate flanking accessibility (log2 fold change between flank and background)
+    peak.log2Flank <- log2(peakFlankSignal / peakBackgroundSignal)
+    bound.log2Flank <- log2(boundFlankSignal / boundBackgroundSignal)
+    unbound.log2Flank <- log2(unboundFlankSignal / unboundBackgroundSignal)
+    
+    ## Calculate footprint depth (log2 fold change between flank and background)
+    peak.log2Depth <- log2(peakMotifSignal / peakFlankSignal)
+    bound.log2Depth <- log2(boundMotifSignal / boundFlankSignal)
+    unbound.log2Depth <- log2(unboundMotifSignal / unboundFlankSignal)
+    
+    #### TRANSFER DATA TO STORAGE OBJECT ####
+    ## Initialize a new list object to store the processed data
+    processedFootprintData <- list()
+    ##
+    processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
+    processedFootprintData$"numMotifs" <- numMotifs
+    processedFootprintData$"numPeakSites" <- numPeakSites
+    processedFootprintData$"numBoundSites" <- numBoundSites
+    processedFootprintData$"numUnboundSites" <- numUnboundSites
+    ##
+    processedFootprintData$"peakSites" <- peakSites
+    processedFootprintData$"rawPeakFootprintMetrics" <- rawPeakFootprintMetrics
+    processedFootprintData$"peakMotifSignal" <- peakMotifSignal
+    processedFootprintData$"peakFlankSignal" <- peakFlankSignal
+    processedFootprintData$"peakBackgroundSignal" <- peakBackgroundSignal
+    processedFootprintData$"peak.log2Flank" <- peak.log2Flank
+    processedFootprintData$"peak.log2Depth" <- peak.log2Depth
+    ##
+    processedFootprintData$"boundSites" <- boundSites
+    processedFootprintData$"boundSitesMetrics" <- boundSitesMetrics
+    processedFootprintData$"boundMotifSignal" <- boundMotifSignal
+    processedFootprintData$"boundFlankSignal" <- boundFlankSignal
+    processedFootprintData$"boundBackgroundSignal" <- boundBackgroundSignal
+    processedFootprintData$"bound.log2Flank" <- bound.log2Flank
+    processedFootprintData$"bound.log2Depth" <- bound.log2Depth
+    ##
+    processedFootprintData$"unboundSites" <- unboundSites
+    processedFootprintData$"unboundSitesMetrics" <- unboundSitesMetrics
+    processedFootprintData$"unboundMotifSignal" <- unboundMotifSignal
+    processedFootprintData$"unboundFlankSignal" <- unboundFlankSignal
+    processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
+    processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
+    processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
+    
+    ## Save the data
+    save(processedFootprintData, file = dataOutPath)
+    
   } else {
+    
+    motifNames <- names(footprintData)
     ## The insertion matrices cannot be concatenated because they have different numbers of columns
     ## Initialize list objects here to store the insertion matrices separately (not concatenated)
     ## Pull the data for each individual motif and perform the bound/unbound split
@@ -193,10 +268,7 @@ if (file.exists(dataOutPath) == TRUE){
     unboundSitesMetrics <- unboundSitesMetrics1
     numUnboundSites <- length(unboundSites)
     
-  } # end if (numMotifs == 1)
-  
   #### Calculate footprint characteristics on merged data ####
-  
   ## Calculate the 10% trimmed mean of all insertions in the motif sites
   peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
   boundMotifSignal <- mean(boundSitesMetrics[,3], trim = 0.10)
@@ -256,12 +328,19 @@ if (file.exists(dataOutPath) == TRUE){
   processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
   processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
   
-  
   ## Save the data
   save(processedFootprintData, file = dataOutPath)
   
+  } # end if (numMotifs == 0)
 } # end if (file.exists(dataOutPath) == TRUE)
 
+}, # end try
+error=function(cond){
+  message(cond)
+  return(NA)
+},
+finally={})
+  
 ##
 file.create(outPath)
 cat("Finished!", "\n")
