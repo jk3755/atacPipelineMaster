@@ -1122,6 +1122,10 @@ rule pantf_COADMR_h508wt02a:
 	input:
 		"h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
 
+rule pantf_COADMR_ls1034wt01:
+	input:
+		"ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.COADMR.done"
+
 rule pantf_aggregator_h508wt02a:
 	input:
 		"h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
@@ -1133,6 +1137,10 @@ rule run_pantf_mdst8wt01:
 rule pantf_aggregator_mdst8wt01:
 	input:
 		"mdst8/wt01/footprints/operations/aggregated/MDST8-WT-01.aggregated.done"
+
+rule pantf_aggregator_ls1034wt01:
+	input:
+		"ls1034/wt01/footprints/operations/aggregated/LS1034-WT-01.aggregated.done"
 
 
 # You can also use this rule to run everything at once
