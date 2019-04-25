@@ -10,15 +10,12 @@ suppressMessages(library(ggrepel))
 options(warn = -1)
 options(scipen = 999)
 
-
 #### GET THE DATA ####
 footprintData <- aggregateData[["aggregateFootprintData"]]
 footprintMetrics <- aggregateData[["aggregateFootprintMetricsData"]]
 numGenes <- length(footprintData[,1])
 
-
 #### ADD RNA EXPRESSION VALUES TO THE DF ####
-
 ## Load the RNA expression data from ccle
 load("~/git/atacPipelineMaster/atacVIPER/expressionData/ccle/cclecounts.rda")
 coadCounts <- cclecounts[["large_intestine_bat1"]]
@@ -55,48 +52,39 @@ for (a in 1:numGenes){
 
 load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
 curVIPER <- msviper(curExp, regul)
+curNES <- curVIPER[["es"]][["nes"]]
+viperNames <- names(curNES)
+viperMap <- queryMany(viperNames, scopes="entrezgene", fields="symbol", species="human")
+viperSym <- viperMap@listData[["symbol"]]
+viperIdx <- which(viperSym %in% footprintData[,"Gene"])
 
-##
-plot(x, cex=.7)
-##
-nex <- x[["es"]][["nes"]]
-##
-nexname <- names(nex)
-nexmappings <- queryMany(nexname, scopes="entrezgene", fields="symbol", species="human")
-nexgenemaps <- nexmappings@listData[["symbol"]]
-##
-idx <- which(nexgenemaps %in% genex)
-
-
-
-## Collect the viper values
-addmex <- c()
-for (m in 1:numPoints){
-  f <- which(nexgenemaps %in% genex[m])
-  if (length(f)==0){
-    addmex[m] <- -10
+## Add the VIEPR NES value of each TF to the dataframe
+addExp <- c()
+for (b in 1:numGenes){
+  ## Get the mapping index corresponding to current gene
+  curMap <- which(viperSym %in% footprintData[b,1])
+  ## If it doesnt exist, set RNAexp to 0
+  if (length(curMap) == 0){
+    footprintData[b,22] <- 0
   } else {
-    addmex[m] <- nex[[f]]
-  }}
+    footprintData[b,22] <- curNES[[curMap]]
+  }} # end for (b in 1:numGenes)
 
+#### GENERATE PLOTS ####
+
+## plot the graph with RNA expression
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
+  geom_point() + 
+  scale_color_gradient(low="blue", high="red")
 
 ## plot the graph with viper values
-ggplot(dfFootprints, aes(depth, flank, color=nex)) + 
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red")
 
-## plot footprint depth against viper activity
-ggplot(dfFootprints, aes(nex, depth, color=flank)) + 
-  geom_point() + 
-  scale_color_gradient(low="blue", high="red")
+## Plot RNA exp and NES against flank and depth individually
 
 
-
-
-
-
-
-#### PLOTS ####
 
 ## Plot 1 - Depth vs Flank
 
