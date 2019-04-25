@@ -82,9 +82,32 @@ ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) +
   geom_point() + 
   scale_color_gradient(low="blue", high="red")
 
+
 ## Plot RNA exp and NES against flank and depth individually
+ggplot(footprintData, aes(peak.log2Depth, RNAexp)) + 
+  geom_point()
 
+ggplot(footprintData, aes(peak.log2Flank, RNAexp)) + 
+  geom_point()
 
+ggplot(footprintData, aes(peak.log2Depth, viperNES)) + 
+  geom_point()
+
+ggplot(footprintData, aes(peak.log2Flank, viperNES)) + 
+  geom_point()
+
+## bound ratio
+x <- footprintData[,4]/footprintData[,3]
+footprintData["Ratio"] <- x
+
+ggplot(footprintData, aes(Ratio, RNAexp)) + 
+  geom_point()
+ggplot(footprintData, aes(Ratio, viperNES)) + 
+  geom_point()
+
+ggplot(footprintData, aes(Ratio, viperNES)) + 
+  geom_point() +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
 ## Plot 1 - Depth vs Flank
 
