@@ -27,7 +27,7 @@ mdst8Exp <- coadCounts[,"MDST8"]
 ls1034Exp <- coadCounts[,"LS1034"]
 
 ##
-curExp <- h508Exp
+curExp <- mdst8Exp
 geneList <- names(curExp)
 mappings <- queryMany(geneList, scopes="entrezgene", fields="symbol", species="human")
 genemaps <- mappings@listData[["symbol"]]
@@ -42,9 +42,9 @@ for (a in 1:numGenes){
   curMap <- which(genemaps %in% footprintData[a,1])
   ## If it doesnt exist, set RNAexp to 0
   if (length(curMap) == 0){
-    footprintData[a,21] <- 1
+    footprintData[a,52] <- 0
   } else {
-    footprintData[a,21] <- curExp[[curMap]]
+    footprintData[a,52] <- curExp[[curMap]]
   }} # end for (a in 1:numGenes)
 
 
@@ -64,10 +64,21 @@ for (b in 1:numGenes){
   curMap <- which(viperSym %in% footprintData[b,1])
   ## If it doesnt exist, set RNAexp to 0
   if (length(curMap) == 0){
-    footprintData[b,22] <- 0
+    footprintData[b,53] <- 0
   } else {
-    footprintData[b,22] <- curNES[[curMap]]
+    footprintData[b,53] <- curNES[[curMap]]
   }} # end for (b in 1:numGenes)
+
+
+## Transfer to new
+MDST8_data <- footprintData
+
+
+## Set cell line name
+cellName <- "MDST8"
+
+
+
 
 ##### TO ADD A NEW COLUMN TO DF ####
 ## bound ratio
@@ -78,8 +89,6 @@ for (b in 1:numGenes){
 
 #### COAD MR PLOTS ##########################################################################################
 
-## Set cell line name
-cellName <- "MDST8"
 
 ## All sites, RNA exp
 ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
@@ -102,19 +111,12 @@ ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) +
 #### GENERATE PLOTS #########################################################################################
 
 
-# TEST
-## All sites, RNA exp
-ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank)) + 
-  geom_point() + 
-  ggtitle("Depth vs Flank, RNA exp, MDST8")
-
-
 
 ## All sites, RNA exp
 ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red") +
-  ggtitle("Depth vs Flank, RNA exp, MDST8")
+  ggtitle(paste0("Depth vs Flank, RNA exp ", cellName))
 
 
 ## All sites, VIPER
