@@ -72,6 +72,7 @@ for (b in 1:numGenes){
 
 ## Transfer to new
 MDST8_data <- footprintData
+save(MDST8_data, file = "C:\\Users\\jsk33\\Desktop\\MDST8_data.Rdata")
 
 
 ## Set cell line name
@@ -113,53 +114,57 @@ ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) +
 
 
 ## All sites, RNA exp
-ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = RNAexp)) + 
+ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = log2(RNAexp))) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red") +
-  ggtitle(paste0("Depth vs Flank, RNA exp ", cellName))
+  ggtitle(paste0("All sites, Depth vs Flank, RNA exp ", cellName))
 
 
 ## All sites, VIPER
 ggplot(footprintData, aes(peak.log2Depth, peak.log2Flank, color = viperNES)) + 
   geom_point() + 
   scale_color_gradient(low="blue", high="red") +
-  ggtitle("Depth vs Flank, VIPER NES, MDST8")
+  ggtitle(paste0("All sites, Depth vs Flank, VIPER NES ", cellName))
 
 
 ## Bound ratio vs Exp
-ggplot(footprintData, aes(Ratio, RNAexp)) + 
+ggplot(footprintData, aes(boundRatio, log2(RNAexp))) + 
   geom_point() +
-  ggtitle("Percent bound sites, RNA exp, MDST8")
+  ggtitle(paste0("Percent bound sites, RNA exp ", cellName))
 
 
 ## Bound ratio vs VIPER
-ggplot(footprintData, aes(Ratio, viperNES)) + 
+ggplot(footprintData, aes(boundRatio, viperNES)) + 
   geom_point() +
-  ggtitle("Percent bound sites, VIPER NES, MDST8")
+  ggtitle(paste0("Percent bound sites, VIPER NES ", cellName))
 
 
 ## RNA exp vs Depth
-ggplot(footprintData, aes(peak.log2Depth, RNAexp)) + 
+ggplot(footprintData, aes(peak.log2Depth, log2(RNAexp))) + 
   geom_point() +
-  ggtitle("RNA exp vs Depth, MDST8")
+  ggtitle(paste0("RNA exp vs Depth ", cellName)) +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
 
 ## RNA exp vs Flank
-ggplot(footprintData, aes(peak.log2Flank, RNAexp)) + 
+ggplot(footprintData, aes(peak.log2Flank, log2(RNAexp))) + 
   geom_point() +
-  ggtitle("RNA exp vs Flank, MDST8")
+  ggtitle(paste0("RNA exp vs Flank ", cellName)) +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
 
 ## VIPER vs Depth
 ggplot(footprintData, aes(peak.log2Depth, viperNES)) + 
   geom_point() +
-  ggtitle("VIPER NES vs Depth, MDST8")
+  ggtitle(paste0("VIPER vs Depth ", cellName)) +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
 
 ## VIPER vs Flank
 ggplot(footprintData, aes(peak.log2Flank, viperNES)) + 
   geom_point() +
-  ggtitle("VIPER NES vs Flank, MDST8")
+  ggtitle(paste0("VIPER vs Flank ", cellName)) +
+  geom_smooth(method ="lm", se = FALSE) # se controls the confidence band
 
 
 #### PROMOTERS AND DISTAL ####
