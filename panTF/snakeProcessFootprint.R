@@ -47,22 +47,22 @@ tryCatch({
 if (numMotifs == 1){
   
   ##
-  com <- paste0("footprintData[['", motifNames[1], "']][['peakSites']]")
+  com <- paste0("peakSites <- footprintData[['", motifNames[1], "']][['peakSites']]")
   eval(parse(text = com))
   
   ##
-  com <- paste0("footprintData[['", motifNames[1], "']][['insMatrix']]")
+  com <- paste0("peakInsertionMatrix <- footprintData[['", motifNames[1], "']][['insMatrix']]")
   eval(parse(text = com))
   
   ##
-  com <- paste0("footprintData[['", motifNames[1], "']][['rawFootprintMetrics']]")
+  com <- paste0("rawPeakFootprintMetrics <- footprintData[['", motifNames[1], "']][['rawFootprintMetrics']]")
   eval(parse(text = com))
   
   ##
   numPeakSites <- length(peakSites)
   
   ## Split the sites into bound and unbound as determined by null model with bonferroni correction
-  com <- paste0("boundSiteOverlaps <- findOverlaps(footprintData[['", motifNames[1], "']][['parseData']][['bfSites']], footprintData[['", motifNames[1], "]][['peakSites']])")
+  com <- paste0("boundSiteOverlaps <- findOverlaps(footprintData[['", motifNames[1], "']][['parseData']][['bfSites']], footprintData[['", motifNames[1], "']][['peakSites']])")
   eval(parse(text = com))
   
   ##
@@ -91,8 +91,10 @@ if (numMotifs == 1){
       ## Pull the basic data
       com <- paste0("peakSites", z, " <- footprintData[['", motifNames[z], "']][['peakSites']]")
       eval(parse(text = com))
+      
       com <- paste0("peakInsertionMatrix", z, " <- footprintData[['", motifNames[z], "']][['insMatrix']]")
       eval(parse(text = com))
+      
       com <- paste0("rawPeakFootprintMetrics", z, " <- footprintData[['", motifNames[z], "']][['rawFootprintMetrics']]")
       eval(parse(text = com))
       
