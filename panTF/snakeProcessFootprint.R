@@ -176,11 +176,33 @@ if (file.exists(dataOutPath) == TRUE){
     distalPeakSites <- peakSites[-promoterIdx]
     
     ##
-    se <- intersect(boundSiteIndex, promoterIdx)
-    se2 <- setdiff(boundSiteIndex, promoterIdx)
+    x2 <- findOverlaps(promoterPeakSites, boundSites)
+    x3 <- findOverlaps(promoterPeakSites, unboundSites)
     
-    promoterBoundSites <- peakSites[se]
-    promoterUnboundSites <- peakSites[se2]
+    gg2 <- unique(x2@from)
+    gg3 <- unique(x3@from)
+    
+    promoterBoundSites <- peakSites[gg2]
+    promoterUnboundSites <- peakSites[gg3]
+    
+    ##
+    mm <- findOverlaps(distalPeakSites, boundSites)
+    mm2 <- findOverlaps(distalPeakSites, unboundSites)
+    
+    hg2 <- unique(mm@from)
+    hg3 <- unique(mm2@from)
+    
+    distalBoundSites <- peakSites[hg2]
+    distalUnboundSites <- peakSites[hg3]
+    
+    ####
+    length(peakSites)
+    length(promoterPeakSites)
+    length(distalPeakSites)
+    length(promoterBoundSites)
+    length(promoterUnboundSites)
+    length(distalBoundSites)
+    length(distalUnboundSites)
     
     
     
