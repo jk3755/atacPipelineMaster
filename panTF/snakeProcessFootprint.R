@@ -33,6 +33,7 @@ if (file.exists(dataOutPath) == TRUE){
   cat("Loading libraries", "\n")
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(rlist))
+  suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
   
   ## Load the current parsed footprintData object
   cat("Loading parsed footprint file", "\n")
@@ -124,7 +125,7 @@ if (file.exists(dataOutPath) == TRUE){
     ## Initialize a new list object to store the processed data
     processedFootprintData <- list()
     ##
-    processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
+    processedFootprintData$"geneName" <- geneName
     processedFootprintData$"numMotifs" <- numMotifs
     processedFootprintData$"numPeakSites" <- numPeakSites
     processedFootprintData$"numBoundSites" <- numBoundSites
@@ -153,6 +154,30 @@ if (file.exists(dataOutPath) == TRUE){
     processedFootprintData$"unboundBackgroundSignal" <- unboundBackgroundSignal
     processedFootprintData$"unbound.log2Flank" <- unbound.log2Flank
     processedFootprintData$"unbound.log2Depth" <- unbound.log2Depth
+    
+    
+    #### CODE TESTING - PROMOTER/DISTAL groups ####
+    ## Pull promoters from txdb, define promoter region as -1000/+100 in accordance with TCGA paper
+    promoters <- promoters(txdb, upstream = 1000, downstream = 100)
+    ## Trim the GRanges object to keep standard entries only
+    scope <- paste0("chr", c(1:22, "X", "Y"))
+    promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
+    promoters <- keepSeqlevels(promoters, scope, pruning.mode="coarse")
+    
+    x <- findOverlaps(promoters, footprintData[["motif1"]][["peakSites"]], ignore.strand = TRUE)
+    length(unique(x@from))
+    length(unique(x@to))
+    
+    ## Subset based on the overlaps
+    promoterIdx <- unique(x@to)
+    
+    promoterPeakSites <- peakSites[promoterIdx]
+    distalPeakSites <- peakSites[-promoterIdx]
+    
+    
+    
+    
+    
     
     ## Save the data
     save(processedFootprintData, file = dataOutPath)
@@ -333,7 +358,7 @@ if (file.exists(dataOutPath) == TRUE){
   ## Initialize a new list object to store the processed data
   processedFootprintData <- list()
   ##
-  processedFootprintData$"geneName" <- footprintData[["motif1"]][["geneName"]]
+  processedFootprintData$"geneName" <- geneName
   processedFootprintData$"numMotifs" <- numMotifs
   processedFootprintData$"numPeakSites" <- numPeakSites
   processedFootprintData$"numBoundSites" <- numBoundSites

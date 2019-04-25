@@ -18,9 +18,9 @@ cat("Found", numFiles, "footprint data files. Processing...", "\n")
 
 ## Initialize a data frame that will store the aggregated data for all TFs
 ## Will make plot generation much easier
-aggregateFootprintData <- data.frame(matrix(vector(), 0, 22,
+aggregateFootprintData <- data.frame(matrix(vector(), 0, 23,
                           dimnames=list(c(), c(
-                          "Gene", "numMotifs", "numPeakSites", "numBoundSites", "numUnboundSites",
+                          "Gene", "numMotifs", "numPeakSites", "numBoundSites", "numUnboundSites", "boundRatio",
                           "peakMotifSignal", "peakFlankSignal", "peakBackgroundSignal", "peak.log2Flank", "peak.log2Depth",
                           "boundMotifSignal", "boundFlankSignal", "boundBackgroundSignal", "bound.log2Flank", "bound.log2Depth",
                           "unboundMotifSignal", "unboundFlankSignal", "unboundBackgroundSignal", "unbound.log2Flank", "unbound.log2Depth",
