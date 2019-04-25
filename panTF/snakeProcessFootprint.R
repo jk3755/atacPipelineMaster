@@ -21,10 +21,20 @@ geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 bamCopy <- snakemake@wildcards[["bamcopy"]]
 
-## Load the current parsed footprintData object
-cat("Loading parsed footprint file...", "\n")
+## Set the filepaths and perform a filecheck
 inputPath <- gsub("operations/parse", "data/parsed", inputPath)
 inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
+dataOutPath <- gsub("parsed", "processed", inputPath)
+
+if (file.exists(dataOutPath) == TRUE){
+  
+  cat("File already exists, skipping", "\n")
+
+} else {
+  
+## Load the current parsed footprintData object
+cat("Loading parsed footprint file...", "\n")
+
 load(inputPath)
 
 ## To avoid errors, clear the list of any empty sub-lists first
@@ -37,8 +47,6 @@ numMotifs <- length(footprintData)
 ## Because some motifs may be removed due to errors, pull the motif names to be used in downstream commands (can't just go sequentially)
 motifNames <- names(footprintData)
 
-tryCatch({
-  
 #### MERGE AND DEDUPLICATE ALL BINDING SITES ####
 ## At this point, the footprints have already been parsed into bound and unbound sites
 ## Transfer data for both to the new storage object, for downstream analysis
@@ -287,15 +295,17 @@ if (numMotifs == 1){
 
 
 tryCatch({
+  
 ## Save the data
-gc()
-dataOutPath <- gsub("parsed", "processed", inputPath)
 save(processedFootprintData, file = dataOutPath)
 },
+
 error=function(cond){
   message(cond)
   return(NA)},
 finally={})
+
+} # end if (file.exists(dataOutPath) == TRUE)
 
 ##
 file.create(outPath)
