@@ -28,7 +28,7 @@ mdst8Exp <- coadCounts[,"MDST8"]
 ls1034Exp <- coadCounts[,"LS1034"]
 
 ##
-curExp <- h508Exp
+curExp <- ls1034Exp
 geneList <- names(curExp)
 mappings <- queryMany(geneList, scopes="entrezgene", fields="symbol", species="human")
 genemaps <- mappings@listData[["symbol"]]
@@ -72,12 +72,12 @@ for (b in 1:numGenes){
 
 
 ## Transfer to new
-H508_data <- footprintData
-save(H508_data, file = "C:\\Users\\jsk33\\Desktop\\H508_data.Rdata")
+LS1034_data <- footprintData
+save(LS1034_data, file = "C:\\Users\\jsk33\\Desktop\\LS1034_data.Rdata")
 
 ## Set cell line name
 cellName <- "MDST8"
-footprintData <- MDST8_data
+footprintData <- LS1034_data
 
 #### GENERATE PLOTS #########################################################################################
 
@@ -292,8 +292,8 @@ MRdata <- data.frame(matrix(vector(), 0, 10,
 
 ## Transfer info to new dataframe
 numPoints <- length(mrIdx)
-cellLine <- "MDST8"
-cellName <- "MDST8"
+cellLine <- "LS1034"
+cellName <- "LS1034"
 
 ## Xfer data
 for (d in 1:numPoints){
