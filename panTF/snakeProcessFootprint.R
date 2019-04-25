@@ -90,19 +90,25 @@ if (file.exists(dataOutPath) == TRUE){
     
     #### Calculate footprint characteristics on merged data ####
     ## Calculate the 10% trimmed mean of all insertions in the motif sites
-    peakMotifSignal <- mean(rawPeakFootprintMetrics[,3], trim = 0.10)
-    boundMotifSignal <- mean(boundSitesMetrics[,3], trim = 0.10)
-    unboundMotifSignal <- mean(unboundSitesMetrics[,3], trim = 0.10)
+    
+    ## I am going to add in code here to convert these values to a per bp average
+    ## Should move the code to parse script at some point
+    com <- paste0("motifWidth <- footprintData[['", motifNames[1], "']][['motifWidth']]")
+    eval(parse(text = com))
+    ##
+    peakMotifSignal <- (mean(rawPeakFootprintMetrics[,3], trim = 0.10) / motifWidth)
+    boundMotifSignal <- (mean(boundSitesMetrics[,3], trim = 0.10) / motifWidth)
+    unboundMotifSignal <- (mean(unboundSitesMetrics[,3], trim = 0.10) / motifWidth)
     
     ## Calculate the mean of all insertions in the flank region
-    peakFlankSignal <- mean(rawPeakFootprintMetrics[,2], trim = 0.10)
-    boundFlankSignal <- mean(boundSitesMetrics[,2], trim = 0.10)
-    unboundFlankSignal <- mean(unboundSitesMetrics[,2], trim = 0.10)
+    peakFlankSignal <- (mean(rawPeakFootprintMetrics[,2], trim = 0.10) / 100)
+    boundFlankSignal <- (mean(boundSitesMetrics[,2], trim = 0.10) / 100)
+    unboundFlankSignal <- (mean(unboundSitesMetrics[,2], trim = 0.10) / 100)
     
     ## Calculate the mean of background insertions
-    peakBackgroundSignal <- mean(rawPeakFootprintMetrics[,1], trim = 0.10)
-    boundBackgroundSignal <- mean(boundSitesMetrics[,1], trim = 0.10)
-    unboundBackgroundSignal <- mean(unboundSitesMetrics[,1], trim = 0.10)
+    peakBackgroundSignal <- (mean(rawPeakFootprintMetrics[,1], trim = 0.10) / 100)
+    boundBackgroundSignal <- (mean(boundSitesMetrics[,1], trim = 0.10) / 100)
+    unboundBackgroundSignal <- (mean(unboundSitesMetrics[,1], trim = 0.10) / 100)
     
     ## Calculate flanking accessibility (log2 fold change between flank and background)
     peak.log2Flank <- log2(peakFlankSignal / peakBackgroundSignal)
@@ -198,6 +204,35 @@ if (file.exists(dataOutPath) == TRUE){
       com <- paste0("numUnboundSites", z, " <- length(unboundSites", z, ")")
       eval(parse(text = com))
     } # end for (z in 1:numMotif)
+    
+    #### FIX THIS CODE LATER ####
+    #### ADJUSTING VALUES TO PER BP ####
+    for (m in 1:numMotifs){
+      
+      com <- paste0("motifWidth <- footprintData[['", motifNames[m], "']][['motifWidth']]")
+      eval(parse(text = com))
+      
+      com <- paste0("boundSitesMetrics", m, "[,1] <- boundSitesMetrics", m, "[,1] / 100")
+      eval(parse(text = com))
+      com <- paste0("boundSitesMetrics", m, "[,2] <- boundSitesMetrics", m, "[,2] / 100")
+      eval(parse(text = com))
+      com <- paste0("boundSitesMetrics", m, "[,3] <- boundSitesMetrics", m, "[,3] / motifWidth")
+      eval(parse(text = com))
+      
+      com <- paste0("rawPeakFootprintMetrics", m, "[,1] <- rawPeakFootprintMetrics", m, "[,1] / 100")
+      eval(parse(text = com))
+      com <- paste0("rawPeakFootprintMetrics", m, "[,2] <- rawPeakFootprintMetrics", m, "[,2] / 100")
+      eval(parse(text = com))
+      com <- paste0("rawPeakFootprintMetrics", m, "[,3] <- rawPeakFootprintMetrics", m, "[,3] / motifWidth")
+      eval(parse(text = com))
+      
+      com <- paste0("unboundSitesMetrics", m, "[,1] <- unboundSitesMetrics", m, "[,1] / 100")
+      eval(parse(text = com))
+      com <- paste0("unboundSitesMetrics", m, "[,2] <- unboundSitesMetrics", m, "[,2] / 100")
+      eval(parse(text = com))
+      com <- paste0("unboundSitesMetrics", m, "[,3] <- unboundSitesMetrics", m, "[,3] / motifWidth")
+      eval(parse(text = com))
+    }
     
     #### Perform the merging and deduplication ####
     for (b in 2:numMotifs){
