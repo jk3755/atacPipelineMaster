@@ -6,6 +6,8 @@ suppressMessages(library(mygene))
 suppressMessages(library(viper))
 suppressMessages(library(ggrepel))
 suppressMessages(library(ggpubr))
+suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 ##
 options(warn = -1)
 options(scipen = 999)
@@ -30,6 +32,23 @@ matchedRegulatorIdx <- which(coadMaps %in% names(footprintMetrics))
 numMatched <- length(matchedRegulatorIdx)
 
 
+#### CODE TESTING - PROMOTER/DISTAL groups ####
+## Pull promoters from txdb, define promoter region as -1000/+100 in accordance with TCGA paper
+## This modified what metadata is returned from the Txdb database regarding the promoters
+#cols <- c("gene_id", "tx_id", "tx_name", "tx_chrom", "tx_strand")
+cols <- c("gene_id")
+promoters <- promoters(txdb, upstream = 1000, downstream = 500, use.names = TRUE, columns = cols)
+## Trim the GRanges object to keep standard entries only
+scope <- paste0("chr", c(1:22, "X", "Y"))
+promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
+promoters <- keepSeqlevels(promoters, scope, pruning.mode="coarse")
+#### "unlisting the returned geneids" 
+## might need to look at this more closely at some point
+## use this code to get a flattened list of the Entrez IDs
+#za <- as.matrix(a@listData[["gene_id"]])
+promoterIDs <- drop(promoters@elementMetadata@listData[["gene_id"]])
+
+
 #### Setup a loop to iterate through all regulators also in our ATAC dataset
 overlapData <- matrix(data = NA, ncol = 2, nrow = numMatched)
 
@@ -49,24 +68,35 @@ for (a in 1:numMatched){
   com <- paste0("curTargets <- names(coad_interactome[['", curEntrezID, "']][['tfmode']])")
   eval(parse(text = com))
   
+  ## Get the Granges from the peaks of TF footprints for current gene
+  com <- paste0("curFootprintsPeaks <- footprintMetrics[['", curName, "']][['peakSites']]")
+  eval(parse(text = com))
+  
+  
+  ## Which of the returned promoter ranges match to the current target genes? 
+  targetPromoterIdx <- which(promoterIDs %in% curTargets)
+  ## Subset that Granges for target promoters
+  targetPromoters <- promoters[targetPromoterIdx]
+  
   
 }
 
-a <- which(names(footprintMetrics) == coadMaps[2])
+
+ov <- findOverlaps(newPromoters, curFootprintsPeaks, ignore.strand = TRUE)
+ov <- findOverlaps(newPromoters, peakSites, ignore.strand = TRUE)
 
 
 
 
 
-#### CODE TESTING - PROMOTER/DISTAL groups ####
-## Pull promoters from txdb, define promoter region as -1000/+100 in accordance with TCGA paper
-suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
-txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
-promoters <- promoters(txdb, upstream = 1000, downstream = 500, use.names = TRUE, columns = cols)
-## Trim the GRanges object to keep standard entries only
-scope <- paste0("chr", c(1:22, "X", "Y"))
-promoters <- keepStandardChromosomes(promoters, pruning.mode="coarse")
-promoters <- keepSeqlevels(promoters, scope, pruning.mode="coarse")
+
+##
+newPromoters <- promoters[id]
+
+##
+
+
+
 
 ## Subset based on the overlaps
 promoterOverlaps <- findOverlaps(promoters, peakSites, ignore.strand = TRUE)
@@ -75,26 +105,6 @@ promoterIdx <- unique(promoterOverlaps@to)
 promoterPeakSites <- peakSites[promoterIdx]
 distalPeakSites <- peakSites[-promoterIdx]
 
-## This modified what metadata is returned from the Txdb database regarding the promoters
-#cols <- c("gene_id", "tx_id", "tx_name", "tx_chrom", "tx_strand")
-cols <- c("gene_id")
 
 
-#### "unlisting the returned geneids" 
-## might need to look at this more closely at some point
-#
-ll <- drop(a@listData[["gene_id"]])
-#za <- as.matrix(a@listData[["gene_id"]])
 
-
-##
-id <- which(targets %in% ll)
-id <- which(ll %in% targets)
-
-
-##
-newPromoters <- promoters[id]
-
-##
-peakSites <- footprintMetrics[["ZBTB33"]][["peakSites"]]
-ov <- findOverlaps(newPromoters, peakSites, ignore.strand = TRUE)
