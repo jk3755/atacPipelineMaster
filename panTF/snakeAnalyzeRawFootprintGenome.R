@@ -195,6 +195,11 @@ if (file.exists(footprintDataPath) == TRUE){
     
   } # end for (b in 1:numMotif)
   
+  ## To avoid errors, clear the list of any empty sub-lists first
+  ## Should this result in an object with no data, that can be output
+  ## as a dummy file to keep the pipeline running smoothly
+  footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
+  
   ## Save the raw footprint data
   cat("Saving finished data for", geneName, "\n")
   save(footprintData, file = footprintDataPath)

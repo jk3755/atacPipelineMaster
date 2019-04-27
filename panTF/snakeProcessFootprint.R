@@ -18,10 +18,9 @@ bamCopy <- snakemake@wildcards[["bamcopy"]]
 
 ## Set the filepaths and perform a filecheck
 cat("Setting filepaths and checking for output file", "\n")
-inputPath <- gsub("operations/parse", "data/parsed", inputPath)
+inputPath <- gsub("operations", "data", inputPath)
 inputPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", inputPath, perl = TRUE)
 dataOutPath <- gsub("parsed", "processed", inputPath)
-
 
 tryCatch({
 

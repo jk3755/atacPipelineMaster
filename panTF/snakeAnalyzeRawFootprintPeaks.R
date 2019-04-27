@@ -24,7 +24,7 @@ geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/peaks/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
 
 if (file.exists(footprintDataPath) == TRUE){
   
@@ -41,6 +41,7 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(Rsamtools))
   suppressMessages(library(GenomicAlignments))
   suppressMessages(library(genomation))
+  suppressMessages(library(rlist))
   
   ##
   cat("Loading binding sites...", "\n")
@@ -85,6 +86,7 @@ if (file.exists(footprintDataPath) == TRUE){
     
     if (numPeakSites == 0){
       
+      cat("No binding motifs found in accessible regions for current motif, skipping", "\n")
       next
       
     } else {
@@ -194,6 +196,11 @@ if (file.exists(footprintDataPath) == TRUE){
     } # end if (numPeakSites = 0)
     
   } # end for (b in 1:numMotif)
+  
+  ## To avoid errors, clear the list of any empty sub-lists first
+  ## Should this result in an object with no data, that can be output
+  ## as a dummy file to keep the pipeline running smoothly
+  footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
   
   ## Save the raw footprint data
   cat("Saving finished data for", geneName, "\n")

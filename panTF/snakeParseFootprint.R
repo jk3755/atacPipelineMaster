@@ -25,15 +25,33 @@ geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output filepath for the Rdata object and perform a filecheck
-dataOutPath <- gsub("operations/parse", "data/parsed", outPath)
+dataOutPath <- gsub("operations", "data", outPath)
 dataOutPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", dataOutPath, perl = TRUE)
 
 cat("Output path for parsed data:", dataOutPath, "\n")
 
 if (file.exists(dataOutPath) == TRUE){
-    cat("File already exists, skipping", "\n")
-} else {
   
+    cat("File already exists, skipping", "\n")
+  
+  } else {
+  
+  ## Load the footprintData file
+  cat("Loading footprintData file...", "\n")
+  footprintDataPath <- gsub("operations", "data", footprintDataPath)
+  footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
+  load(footprintDataPath)
+  
+  ## To avoid errors, clear the list of any empty sub-lists first
+  footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
+  
+  ## If the data object is empty, skip the parse operation and output a dummy file
+  if (length(footprintData) == 0){
+    
+    cat("No data found in footprint object. Skipping", "\n")
+    
+  } else {
+    
   ## Load libraries
   cat("Loading libraries...", "\n")
   suppressMessages(library(GenomicRanges))
@@ -171,15 +189,6 @@ if (file.exists(dataOutPath) == TRUE){
     grid.text(ylab, x=unit(1, 'line'), rot = 90)
     
   } # end plotInsProb function
-  
-  ## Load the footprintData file
-  cat("Loading footprintData file...", "\n")
-  footprintDataPath <- gsub("operations", "data", footprintDataPath)
-  footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
-  load(footprintDataPath)
-  
-  ## To avoid errors, clear the list of any empty sub-lists first
-  footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
   
   ## The number of unique motifs for the current gene
   numMotif <- length(footprintData)
@@ -367,7 +376,10 @@ if (file.exists(dataOutPath) == TRUE){
   } # end for (a in 1:numMotif)
   gc()
   
+  } # end if (length(footprintData) == 0)
+  
   ## Finish the script and create the output file for snakemake
+  ## or a dummy file if no data was found
   save(footprintData, file = dataOutPath)
   
 } # end if (file.exists(dataOutPath) == TRUE)
