@@ -47,7 +47,7 @@ promoterIDs <- drop(promoters@elementMetadata@listData[["gene_id"]])
 
 
 #### Setup a loop to iterate through all regulators also in our ATAC dataset
-overlapData <- matrix(data = NA, ncol = 2, nrow = numMatched)
+overlapData <- matrix(data = NA, ncol = 3, nrow = numMatched)
 
 for (a in 1:numMatched){
   
@@ -81,7 +81,8 @@ for (a in 1:numMatched){
     
     ## Record the extent of the overlap
     overlapData[a,1] <- length(targetPromoters)
-    overlapData[a,2] <- length(targetOverlaps@from)
+    overlapData[a,2] <- length(unique(targetOverlaps@to))
+    overlapData[a,3] <- (overlapData[a,2] / overlapData[a,1])*100
     
   }, # end try
   error=function(cond){
@@ -89,9 +90,11 @@ for (a in 1:numMatched){
     return(NA)
   },
   finally={})
-  
 }
 
+## Plot the overlap data
+plot(density(overlapData[,3]))
+#plot(hist(overlapData[,3]))
 
 
 
