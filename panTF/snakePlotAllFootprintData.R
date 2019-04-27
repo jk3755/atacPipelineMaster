@@ -76,7 +76,7 @@ LS1034_data <- footprintData
 save(LS1034_data, file = "C:\\Users\\jsk33\\Desktop\\LS1034_data.Rdata")
 
 ## Set cell line name
-cellName <- "MDST8"
+cellName <- "LS1034"
 footprintData <- LS1034_data
 
 #### GENERATE PLOTS #########################################################################################
