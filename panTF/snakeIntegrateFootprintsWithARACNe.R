@@ -7,6 +7,7 @@ suppressMessages(library(viper))
 suppressMessages(library(ggrepel))
 suppressMessages(library(ggpubr))
 suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
+suppressMessages(library(aracne.networks))
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
 ##
 options(warn = -1)
@@ -111,7 +112,34 @@ df <- data.frame(overlapData[,5])
 p <- ggplot(df, aes(x=1, y=df[,1])) + geom_jitter(position=position_jitter(0.3)) + theme_bw()
 p
 
-p <- ggplot(df, aes(x=1, y=df[,1])) + geom_violin(trim=FALSE) + geom_boxplot(width=0.1) + theme_bw()
+p <- ggplot(df, aes(x=1, y=df[,1])) + geom_violin(trim=FALSE) + geom_boxplot(width=0.1) + theme_classic()
 p
 
+## Modify the COAD interactome according to Footprint data
+data("reguloncoad")
+write.regulon(regulonblca,file="C:\Users\jsk33\Desktop\aggregate data")
 
+
+#### MODIFY THE COAD REGULON ####
+#### THE FOLLOWING CODE IS ADAPTED FROM CODE ORIGINALLY WRITTEN BY AJAY NAIR ####
+
+
+# save(dset,regulon_motifMI, file = "dset_motifMIregulon.RData")
+
+load(file = "dset_motifMIregulon.RData")#get the dset and regulon_motifMI
+geneId <- "4089" #smad4
+interactome_tinker <- read.table(file = "network_coad_tfCotf_3col_sorted.txt", sep = "\t")
+regulon_req <- interactome_tinker[which(interactome_tinker[,1]==geneId),]#getting req regulon to tinker
+interactome_tinker <- interactome_tinker[-(which(interactome_tinker[,1]==geneId)),]# removing the req regulon from interactome
+colnames(regulon_motifMI) <- colnames(regulon_req)
+regulon_req <- rbind(regulon_req,regulon_motifMI)
+regulon_req <- regulon_req[order(regulon_req[,3], decreasing = TRUE),]
+write.table(interactome_tinker, file = "network_coad_tfCotf_3col_tinkered.txt", sep = "\t", append = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(regulon_req, file = "network_coad_tfCotf_3col_tinkered.txt", sep = "\t", append = TRUE, row.names = FALSE, col.names = FALSE)
+regul <- aracne2regulon("network_coad_tfCotf_3col_tinkered.txt", dset, format = "3col", verbose = TRUE)#regulon
+print(regul)
+coadViper <- viper(dset, regul, method = "scale") #the viper algorithm
+dim(coadViper)
+
+
+#### THE ABOVE CODE IS ADAPTED FROM CODE ORIGINALLY WRITTEN BY AJAY NAIR ####
