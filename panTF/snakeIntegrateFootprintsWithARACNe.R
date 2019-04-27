@@ -28,7 +28,6 @@ coadMaps <- coadMappings@listData[["symbol"]]
 matchedRegulatorIdx <- which(coadMaps %in% names(footprintMetrics))
 numMatched <- length(matchedRegulatorIdx)
 
-
 #### CODE TESTING - PROMOTER/DISTAL groups ####
 ## Pull promoters from txdb, define promoter region as -1000/+100 in accordance with TCGA paper
 ## This modified what metadata is returned from the Txdb database regarding the promoters
@@ -47,7 +46,8 @@ promoterIDs <- drop(promoters@elementMetadata@listData[["gene_id"]])
 
 
 #### Setup a loop to iterate through all regulators also in our ATAC dataset
-overlapData <- matrix(data = NA, ncol = 3, nrow = numMatched)
+overlapData <- matrix(data = NA, ncol = 5, nrow = numMatched)
+colnames(overlapData) <- c("Total targets", "Peak overlaps", "Bound site overlaps", "Unbound site overlaps", "Percent total overlap")
 
 for (a in 1:numMatched){
   
@@ -70,6 +70,12 @@ for (a in 1:numMatched){
     ## Get the Granges from the peaks of TF footprints for current gene
     com <- paste0("curFootprintsPeaks <- footprintMetrics[['", curName, "']][['peakSites']]")
     eval(parse(text = com))
+    ## Get bound ranges
+    com <- paste0("curFootprintsBound <- footprintMetrics[['", curName, "']][['boundSites']]")
+    eval(parse(text = com))
+    ## Get unbound ranges
+    com <- paste0("curFootprintsUnbound <- footprintMetrics[['", curName, "']][['unboundSites']]")
+    eval(parse(text = com))
     
     ## Which of the returned promoter ranges match to the current target genes? 
     targetPromoterIdx <- which(promoterIDs %in% curTargets)
@@ -77,12 +83,16 @@ for (a in 1:numMatched){
     targetPromoters <- promoters[targetPromoterIdx]
     
     ## Find which of the ATAC peak motifs overlap with promoters of any targets for current gene
-    targetOverlaps <- findOverlaps(targetPromoters, curFootprintsPeaks, ignore.strand = TRUE)
+    targetPeakOverlaps <- findOverlaps(targetPromoters, curFootprintsPeaks, ignore.strand = TRUE)
+    targetBoundOverlaps <- findOverlaps(targetPromoters, curFootprintsBound, ignore.strand = TRUE)
+    targetUnboundOverlaps <- findOverlaps(targetPromoters, curFootprintsUnbound, ignore.strand = TRUE)
     
     ## Record the extent of the overlap
     overlapData[a,1] <- length(targetPromoters)
-    overlapData[a,2] <- length(unique(targetOverlaps@to))
-    overlapData[a,3] <- (overlapData[a,2] / overlapData[a,1])*100
+    overlapData[a,2] <- length(unique(targetPeakOverlaps@to))
+    overlapData[a,3] <- length(unique(targetBoundOverlaps@to))
+    overlapData[a,4] <- length(unique(targetUnboundOverlaps@to))
+    overlapData[a,5] <- (overlapData[a,2] / overlapData[a,1])*100
     
   }, # end try
   error=function(cond){
@@ -93,8 +103,10 @@ for (a in 1:numMatched){
 }
 
 ## Plot the overlap data
-plot(density(overlapData[,3]))
+#plot(density(overlapData[,3]))
 #plot(hist(overlapData[,3]))
+
+
 
 
 
