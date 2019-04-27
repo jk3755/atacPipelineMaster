@@ -1,39 +1,61 @@
 
-## Load libraries
+## Load libraries and setup
 suppressMessages(library(ggplot2))
 suppressMessages(library(ggsci))
 suppressMessages(library(mygene))
 suppressMessages(library(viper))
 suppressMessages(library(ggrepel))
 suppressMessages(library(ggpubr))
-
 ##
 options(warn = -1)
 options(scipen = 999)
 
 #### GET THE DATA ####
+load("C://Users//jsk33//Desktop//aggregate data//H508A-WT-02.aggregated.Rdata") # for testing only
 footprintData <- aggregateData[["aggregateFootprintData"]]
 footprintMetrics <- aggregateData[["aggregateFootprintMetricsData"]]
 numGenes <- length(footprintData[,1])
-
 ## Load the regulon
 load("~/git/atacPipelineMaster/atacVIPER/regulons/coad-tcga-regulon.rda")
 coad_interactome <- regul
 
 ## Get symbols of regulator
 coadRegulators <- names(coad_interactome)
-coadMappings <- queryMany(coadRegulators, scopes="entrezgene", fields="ensembl.transcript", species="human")
+coadMappings <- queryMany(coadRegulators, scopes="entrezgene", fields="symbol", species="human")
 coadMaps <- coadMappings@listData[["symbol"]]
 
 
 ## Which of our TFs with footprints are in the interactome?
-matchIdx <- which(coadMaps %in% names(footprintMetrics))
+matchedRegulatorIdx <- which(coadMaps %in% names(footprintMetrics))
+numMatched <- length(matchedRegulatorIdx)
+
+
+#### Setup a loop to iterate through all regulators also in our ATAC dataset
+overlapData <- matrix(data = NA, ncol = 2, nrow = numMatched)
+
+for (a in 1:numMatched){
+  
+  ## Get the name of the current matched regulator
+  curName <- names(footprintMetrics)[matchedRegulatorIdx[1]]
+  
+  ## Translate that to Entrez ID
+  curNameIdx <- which(coadMaps == curName)
+  curEntrezID <- coadRegulators[curNameIdx]
+  
+  ## Pull the targets of the current gene using the Entez ID
+  ## For each regulator that has a cooresponding TF footprint,
+  ## calculate what percent of the targets are captured by the motif binding sites
+  ## Will need to grab the promoter region - extend TSS from -1000/+500 for each gene
+  com <- paste0("curTargets <- names(coad_interactome[['", curEntrezID, "']][['tfmode']])")
+  eval(parse(text = com))
+  
+  
+}
+
 a <- which(names(footprintMetrics) == coadMaps[2])
 
 
-## For each regulator that has a cooresponding TF footprint, calculate what percent of the targets are captured by the motif binding sites
-## Will need to grab the promoter region - extend TSS from -1000/+500 for each gene
-targets <- names(coad_interactome[["10009"]][["tfmode"]])
+
 
 
 #### CODE TESTING - PROMOTER/DISTAL groups ####
@@ -72,3 +94,7 @@ id <- which(ll %in% targets)
 
 ##
 newPromoters <- promoters[id]
+
+##
+peakSites <- footprintMetrics[["ZBTB33"]][["peakSites"]]
+ov <- findOverlaps(newPromoters, peakSites, ignore.strand = TRUE)
