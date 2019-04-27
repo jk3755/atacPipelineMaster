@@ -106,8 +106,12 @@ for (a in 1:numMatched){
 #plot(density(overlapData[,3]))
 #plot(hist(overlapData[,3]))
 
+df <- data.frame(overlapData[,5])
+#stip plot
+p <- ggplot(df, aes(x=1, y=df[,1])) + geom_jitter(position=position_jitter(0.3)) + theme_bw()
+p
 
-
-
+p <- ggplot(df, aes(x=1, y=df[,1])) + geom_violin(trim=FALSE) + geom_boxplot(width=0.1) + theme_bw()
+p
 
 
