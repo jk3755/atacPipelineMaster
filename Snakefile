@@ -1122,7 +1122,7 @@ rule run_pantf_ls1034wt01:
 
 rule run_pantf_h508wt02a:
     input:
-        expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
+        expand("h508/wt02a/footprints/operations/peaks/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
 
 rule pantf_COADMR_h508wt02a:
 	input:
@@ -1157,8 +1157,6 @@ rule pantf_aggregator_ls1034wt01:
 #    input:
 #        "ls1034/wt01/footprints/operations/LS1034-WT-01.parseFP.allgroups.done"
 
-
-
 ## Pipeline TF rules ###################################################################################################################
 rule PANTF_run_aggregator:
 	input:
@@ -1174,8 +1172,7 @@ rule PANTF_copy_bam:
     # To significantly speed this analysis up, temporarily make 20 copies of the bam file
     # And assign each individual process a unique file to access
     input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        "{path}preprocessing/operations/dirtree.built.done"
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
     output:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam"
     shell:
@@ -1197,7 +1194,7 @@ rule PANTF_copy_bai:
 #### PEAKS ####
 
 ## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
-rule PANTF_raw_footprint_analysis:
+rule PANTF_raw_footprint_analysis_peaks:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
@@ -1214,7 +1211,7 @@ rule PANTF_raw_footprint_analysis:
         "scripts/panTF/snakeAnalyzeRawFootprintPeaks.R"
 
 ## Parsing the raw footprints involves identifying which genomic loci have a TF bound
-rule PANTF_parse_footprint_analysis:
+rule PANTF_parse_footprint_analysis_peaks:
     input:
         "{path}footprints/operations/peaks/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     output:
@@ -1227,7 +1224,7 @@ rule PANTF_parse_footprint_analysis:
     	"scripts/panTF/snakeParseFootprint.R"
 
 ## Processing the parsed footprint data to generate plots, etc
-rule PANTF_process_footprint_analysis:
+rule PANTF_process_footprint_analysis_peaks:
     input:
         "{path}footprints/operations/peaks/parsed/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
     output:
@@ -1243,7 +1240,7 @@ rule PANTF_process_footprint_analysis:
 #### WHOLE GENOME ####
 
 ## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
-rule PANTF_raw_footprint_analysis:
+rule PANTF_raw_footprint_analysis_genome:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
@@ -1251,37 +1248,37 @@ rule PANTF_raw_footprint_analysis:
         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
     output:
-        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/genome/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     resources:
         analyzeRawFP=1
     benchmark:
-        '{path}footprints/benchmark/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
+        '{path}footprints/benchmark/genome/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
         "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
 ## Parsing the raw footprints involves identifying which genomic loci have a TF bound
-rule PANTF_parse_footprint_analysis:
+rule PANTF_parse_footprint_analysis_genome:
     input:
-        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/genome/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     output:
-    	"{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    	"{path}footprints/operations/genome/parsed/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
     resources:
         parseFootprint=1
     benchmark:
-        '{path}footprints/benchmark/parse/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+        '{path}footprints/benchmark/genome/parsed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
     	"scripts/panTF/snakeParseFootprint.R"
 
 ## Processing the parsed footprint data to generate plots, etc
-rule PANTF_process_footprint_analysis:
+rule PANTF_process_footprint_analysis_genome:
     input:
-        "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/genome/parsed/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
     output:
-        "{path}footprints/operations/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/genome/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
     resources:
         processFootprint=1
     benchmark:
-        '{path}footprints/benchmark/processed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+        '{path}footprints/benchmark/genome/processed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
