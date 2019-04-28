@@ -9,9 +9,6 @@
 #biocLite("GenomicAlignments", suppressUpdates = TRUE)
 #biocLite("genomation", suppressUpdates = TRUE)
 
-## Disable scientific notation in variables
-options(scipen = 999)
-
 ## Set snakemake variables
 cat("Setting snakemake variables...", "\n")
 bamPath <- snakemake@input[[1]]
@@ -22,6 +19,10 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
+
+##### DEBUGGING #####
+bamPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-repmerged.bam"
+baiPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-repmerged.bai"
 
 ## Set the output path for Rdata file and perform a filecheck
 footprintDataPath <- paste0(dirPath, "footprints/data/genome/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
@@ -58,9 +59,6 @@ if (file.exists(footprintDataPath) == TRUE){
   cat("Analyzing footprints for", geneName, "\n")
   cat("Found", numMotif, "unique motifs", "\n")
   
-  ## Index counter for motif naming, required in case some motifs have no matches in peak sites
-  idxMotif <- 1
-  
   ## Begin analysis
   for (b in 1:numMotif){
     
@@ -74,6 +72,11 @@ if (file.exists(footprintDataPath) == TRUE){
     
     ## Binding Sites
     allSites <- bindingSites[[b]][["sites"]]
+    ## Trim the matched binding sites to the standard chromosomes only
+    scope <- paste0("chr", c(1:22, "X", "Y"))
+    allSites <- keepStandardChromosomes(allSites, pruning.mode="coarse")
+    allSites <- keepSeqlevels(allSites, scope, pruning.mode="coarse")
+    ##
     numSites <- length(allSites)
     cat("Found", numSites, "genome-wide binding sites", "\n")
       
@@ -148,10 +151,6 @@ if (file.exists(footprintDataPath) == TRUE){
       tempData$libSize <- length(bamIn)
       tempData$coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
       tempData$libFactor <- tempData$libSize / tempData$coverageSize
-      ##
-      rm(extSites, insRLE, insViews, insMatrix, rawTotalSignal, rawProfile, bamIn)
-      rm(grIn, grIn2, plusIdx, minusIdx, grPlus, grMinus, grPlusShifted, grMinusShifted)
-      gc()
       
       ## Calculate flanking accessibility and footprint depth data
       cat("Calculating flanking accessibility and footprint depth data", "\n")
@@ -166,17 +165,13 @@ if (file.exists(footprintDataPath) == TRUE){
         rawFootprintMetrics[d,5] <- rawFootprintMetrics[d,3] / rawFootprintMetrics[d,2]
       } # end (for d in 1:length(tempData$insMatrix[,1]))
       
+      ##
       tempData$rawFootprintMetrics <- rawFootprintMetrics
-      rm(rawFootprintMetrics)
-      gc()
       
       #### Transfer all the data for the current motif to the storage object
       cat("Transferring all data to storage object footprintData", "\n")
       com <- paste0("footprintData$motif", idxMotif, " <- tempData")
       eval(parse(text = com))
-      
-      ## Update the motif index
-      idxMotif <- (idxMotif + 1)
       
   } # end for (b in 1:numMotif)
   

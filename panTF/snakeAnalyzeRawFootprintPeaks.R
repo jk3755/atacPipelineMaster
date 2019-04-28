@@ -80,6 +80,11 @@ if (file.exists(footprintDataPath) == TRUE){
     ## Binding Sites
     cat("Subsetting binding sites based on accessibility peaks", "\n")
     allSites <- bindingSites[[b]][["sites"]]
+    ## Trim everything but standard chromosomes
+    scope <- paste0("chr", c(1:22, "X", "Y"))
+    allSites <- keepStandardChromosomes(allSites, pruning.mode="coarse")
+    allSites <- keepSeqlevels(allSites, scope, pruning.mode="coarse")
+    ##
     peakSites <- subsetByOverlaps(allSites, grPeaks)
     numPeakSites <- length(peakSites)
     cat("Found", numPeakSites, "motif binding sites in peak accessibility regions", "\n")

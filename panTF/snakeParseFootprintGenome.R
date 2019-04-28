@@ -17,7 +17,7 @@
 options(scipen = 999)
 
 ## Set snakemake variables
-cat("Setting snakemake vars...", "\n")
+cat("Setting snakemake variables", "\n")
 footprintDataPath <- snakemake@input[[1]]
 outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
@@ -37,7 +37,7 @@ if (file.exists(dataOutPath) == TRUE){
   } else {
     
     ## Load libraries
-    cat("Loading libraries...", "\n")
+    cat("Loading libraries", "\n")
     suppressMessages(library(GenomicRanges))
     suppressMessages(library(stats4))
     suppressMessages(library(BiocGenerics))
@@ -50,7 +50,7 @@ if (file.exists(dataOutPath) == TRUE){
     suppressMessages(library(rlist))
   
   ## Load the footprintData file
-  cat("Loading footprintData file...", "\n")
+  cat("Loading footprintData file", "\n")
   footprintDataPath <- gsub("operations", "data", footprintDataPath)
   footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
   load(footprintDataPath)
@@ -65,9 +65,9 @@ if (file.exists(dataOutPath) == TRUE){
     
   } else {
     
-  
   ## Build functions
-  cat("Building functions...", "\n")
+  cat("Building functions", "\n")
+  
   generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
     # This script will be used to generate indiviudal null models at predicted motif binding sites across the genome when scanning for TF footprinting from ATAC-seq data. To generate these null models, the current model will need to:
     #- Consider the total signal (number of insertions) at each specific ~200 bp locus
@@ -82,6 +82,13 @@ if (file.exists(dataOutPath) == TRUE){
     # analysisWidth = total bp in region of interest (flank + background + motif)
     # motifWidth = motif width
     
+    ##
+    cat("Generating a null footprint model with the following parameters:", "\n")
+    cat("Iterations:", iterations, "\n")
+    cat("Input signal:", inputSignal, "\n")
+    cat("Analysis window (bp):", analysisWidth, "\n")
+    cat("Motif width (bp):", motifWidth, "\n")
+    
     # declare vector of size n to store average motif signal values
     averages <- c()
     
@@ -95,10 +102,10 @@ if (file.exists(dataOutPath) == TRUE){
       # size = the number of values to distribute
       # prob = probability of each site
       # length = length of the generated vector
-      null <- c(as.vector(rmultinom(1, size=inputSignal, prob=rep(1, length(null)))))
+      null <- c(as.vector(rmultinom(1, size = inputSignal, prob = rep(1, length(null)))))
       
       ## Calculate the mean signal in motif region
-      motifStart <- ((analysisWidth - motifWidth)/2)
+      motifStart <- ((analysisWidth - motifWidth) / 2)
       motifEnd <- (motifStart + motifWidth)
       motifAvg <- (sum(null[motifStart:motifEnd])) / motifWidth
       
@@ -191,20 +198,23 @@ if (file.exists(dataOutPath) == TRUE){
     
   } # end plotInsProb function
   
+  #### PARSING ANALYSIS ####
+  
   ## The number of unique motifs for the current gene
   numMotif <- length(footprintData)
-  
-  ## Performing parsing operations
   cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
+  
   ##
   for (a in 1:numMotif){
     
-    ## suppress warnings globally here, as they will disrupt the tryCatch block
+    ##
+    cat("Processing motif", a, "\n")
+    
     ## will need to improve this code at some point
-    options(warn = -1)
-    func <- tryCatch({
+    #tryCatch({
       
       ## Prepare the data
+      cat("Loading data", "\n")
       com <- paste0("tempData <- footprintData$motif", a)
       eval(parse(text = com))
       genomeSites <- tempData[["genomeSites"]]
@@ -226,24 +236,32 @@ if (file.exists(dataOutPath) == TRUE){
       #dev.off()
       
       ## Calculate total signal for each site
+      cat("Calculating total signal at each site", "\n")
+      ##
       for (b in 1:numSites){
-        siteTotalSignal[b] <- sum(tempData[["insMatrix"]][b,])} # end for (b in 1:numSites)
+        siteTotalSignal[b] <- sum(tempData[["insMatrix"]][b,])
+      } # end for (b in 1:numSites)
       
       ## Find the unique values for total signal and generate null models
       uniqueTotalSignals <- unique(siteTotalSignal)
+      ## Remove NA values from uniqueTotalSignals
+      ## (how do they get there???)
+      uniqueTotalSignals <- uniqueTotalSignals[!is.na(uniqueTotalSignals)]
       
       ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
       nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
       colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
       
       ## Calculate the null models
+      cat("Generating null models", "\n")
       for (c in 1:length(uniqueTotalSignals)){
         nullVec <- generateNullFP(1000, uniqueTotalSignals[c], siteWidth, motifWidth)
         nullModels[c,1] <- uniqueTotalSignals[c]
-        nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
+        nullModels[c,2] <- mean(nullVec)
+      } # end for (c in 1:length(uniqueTotalSignals))
       
       ## Perform a one-tailed t-test to generate a p-value for each observed motif site
-      cat("Performing one-tailed t-tests on genome-wide binding sites...", "\n")
+      cat("Performing one-tailed t-tests on genome-wide binding sites", "\n")
       ttestGenome <- list() # list to store the results of the t-tests
       pvalueGenome <- c() # vector to store the p-values
       tvalueGenome <- c() # vector to store the t-value
@@ -261,26 +279,29 @@ if (file.exists(dataOutPath) == TRUE){
       } # for (d in 1:numSites)
       
       ## Get the indices of the sites that are lower than p = 0.05
-      cat("Selecting p-value passing sites...", "\n")
+      cat("Selecting p-value passing sites", "\n")
       idxPvaluePass <- which(pvalueGenome < 0.05)
       genomePvaluePass <- pvalueGenome[idxPvaluePass]
       
       ## Perform bonferroni correction
-      cat("Performing bonferroni correction...", "\n")
+      cat("Performing bonferroni correction", "\n")
       idxbfGenomePass <- which(pvalueGenome < (0.05/numSites))
       bfPvalueGenomePass <- pvalueGenome[idxbfGenomePass]
       
       ## Subset the insertion matrix based on the bonferroni passing sites only
-      cat("Subsetting sites based on bf corrected p-values...", "\n")
+      cat("Subsetting sites based on bf corrected p-values", "\n")
       bfInsMatrix <- insMatrix[idxbfGenomePass,]
+      
       ##
       bfTotalSignal <- sum(bfInsMatrix)
       bfProfile <- matrix(data = NA, ncol = length(bfInsMatrix[1,]), nrow = 2)
       rownames(bfProfile) <- c("Column sums", "Insertion frequency")
+      
       for (e in 1:length(bfInsMatrix[1,])){
         bfProfile[1,e] <- sum(bfInsMatrix[,e])
         bfProfile[2,e] <- (bfProfile[1,e] / bfTotalSignal) * 100
       } # end for (e in 1:length(bfInsMatrix[1,]))
+      
       ##
       bfVector <- bfProfile[2,]
       bfSites <- genomeSites[idxbfGenomePass]
@@ -294,56 +315,52 @@ if (file.exists(dataOutPath) == TRUE){
       #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = bfVector)
       #dev.off()
       
-      #### Make heatmap for bf passing sites ####
-      ## USE THIS STRUCTURE FOR HEATMAPS
-      ## first, combine the signals from plus and minus strand
-      heatSigs <- bfInsMatrix
-      heatNumSites <- bfNumSites
-      heatNumBP <- siteWidth
-      heatSites <- bfSites
-      
-      ## scale each row individually
-      for (f in 1:heatNumSites){
-        maxsig <- max(heatSigs[f,])
-        for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
-      maxsig <- 1
-      ## invert signals
-      for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
-      
-      ## Annotate the combined sublist name which will become the tital of the heatmap plot
-      heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
-      combined <- list()
-      com <- paste0("combined$", heatTitle, " <- heatSigs")
-      eval(parse(text = com))
-      
-      ##
-      svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfgenome.sites.heatmap.svg")
-      svg(file = svgPath)
-      cat("Saving svg footprint image at path:", svgPath, "\n")
-      
-      ## Margin controls
-      # margin(a,b,c,d)
-      # a = size of graph from top to bottom, higher value = smaller. default = 0.1
-      # b = size of graph from left to right, higher value = smaller. default = 0.005
-      # c = flips x axis?
-      # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
-      # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
-      # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
-      
-      ##
-      ChIPpeakAnno::featureAlignedHeatmap(combined,
-                                          feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
-                                          upper.extreme = maxsig, # set this to control the heatmap scale
-                                          annoMcols = "score",
-                                          sortBy = "score",
-                                          n.tile = heatNumBP,
-                                          margin = c(0.1, 0.005, 0.05, 0.2),
-                                          color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
-                                          gp = gpar(fontsize = 10),
-                                          newpage = TRUE)
-      dev.off()
+      # ## HEATMAPS ## CURRENTLY OFF ##
+      # #### Make heatmap for bf passing sites ####
+      # ## USE THIS STRUCTURE FOR HEATMAPS
+      # ## first, combine the signals from plus and minus strand
+      # heatSigs <- bfInsMatrix
+      # heatNumSites <- bfNumSites
+      # heatNumBP <- siteWidth
+      # heatSites <- bfSites
+      # ## scale each row individually
+      # for (f in 1:heatNumSites){
+      #   maxsig <- max(heatSigs[f,])
+      #   for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
+      # maxsig <- 1
+      # ## invert signals
+      # for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
+      # 
+      # ## Annotate the combined sublist name which will become the tital of the heatmap plot
+      # heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
+      # combined <- list()
+      # com <- paste0("combined$", heatTitle, " <- heatSigs")
+      # eval(parse(text = com))
+      # svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
+      # svg(file = svgPath)
+      # cat("Saving svg footprint image at path:", svgPath, "\n")
+      # ## Margin controls
+      # # margin(a,b,c,d)
+      # # a = size of graph from top to bottom, higher value = smaller. default = 0.1
+      # # b = size of graph from left to right, higher value = smaller. default = 0.005
+      # # c = flips x axis?
+      # # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
+      # # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
+      # # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
+      # ChIPpeakAnno::featureAlignedHeatmap(combined,
+      #                                     feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
+      #                                     upper.extreme = maxsig, # set this to control the heatmap scale
+      #                                     annoMcols = "score",
+      #                                     sortBy = "score",
+      #                                     n.tile = heatNumBP,
+      #                                     margin = c(0.1, 0.005, 0.05, 0.2),
+      #                                     color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
+      #                                     gp = gpar(fontsize = 10),
+      #                                     newpage = TRUE)
+      # dev.off()
       
       ## Data transfer to storage object and save
+      cat("Transferring data to storage object", "\n")
       parseData <- list()
       ##
       parseData$numSites <- numSites
@@ -366,26 +383,23 @@ if (file.exists(dataOutPath) == TRUE){
       com <- paste0("footprintData$motif", a, "$parseData <- parseData")
       eval(parse(text = com))
       
-    }, # end try
-    error=function(cond){
-      message(cond)
-      return(NA)
-    },
-    finally={})
-    gc()
-    
+    #}, # end try
+    #error=function(cond){
+    #  message(cond)
+    #  return(NA)
+    #},
+    #finally={})
+      
   } # end for (a in 1:numMotif)
-  gc()
-  
   } # end if (length(footprintData) == 0)
   
-  ## Finish the script and create the output file for snakemake
-  ## or a dummy file if no data was found
+  ## Save data or create dummy file
   save(footprintData, file = dataOutPath)
   
 } # end if (file.exists(dataOutPath) == TRUE)
 
 ##
+gc()
 file.create(outPath)
 cat("Finished!", "\n")
 
