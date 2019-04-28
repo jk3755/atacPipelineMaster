@@ -191,5 +191,8 @@ if (file.exists(footprintDataPath) == TRUE){
   
 } # end if (file.exists(footprintDataPath) == TRUE)
 
+# Display warnings to the terminal
+warnings()
+
 ##
 file.create(outPath)
