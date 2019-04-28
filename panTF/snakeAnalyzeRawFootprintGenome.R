@@ -24,7 +24,7 @@ geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/genome/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
 
 if (file.exists(footprintDataPath) == TRUE){
   
@@ -41,17 +41,13 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(Rsamtools))
   suppressMessages(library(GenomicAlignments))
   suppressMessages(library(genomation))
+  suppressMessages(library(rlist))
   
   ##
   cat("Loading binding sites...", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
   bamFile <- BamFile(bamPath)
-  
-  ## Peaks
-  cat("Loading accessibility peaks...", "\n")
-  grPeaks <- readBed(peakPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
-  grPeaks <- keepStandardChromosomes(grPeaks, pruning.mode="coarse")
   
   ## Initiate an R object to hold all generated data
   footprintData <- list()
@@ -77,27 +73,18 @@ if (file.exists(footprintDataPath) == TRUE){
     cat("Processing binding sites", "\n")
     
     ## Binding Sites
-    cat("Subsetting binding sites based on accessibility peaks", "\n")
     allSites <- bindingSites[[b]][["sites"]]
-    peakSites <- subsetByOverlaps(allSites, grPeaks)
-    numPeakSites <- length(peakSites)
-    cat("Found", numPeakSites, "motif binding sites in peak accessibility regions", "\n")
-    
-    if (numPeakSites == 0){
-      
-      next
-      
-    } else {
+    numSites <- length(allSites)
+    cat("Found", numSites, "genome-wide binding sites", "\n")
       
       ## Transfer the data
       tempData$PWM <- bindingSites[[b]][["PWM"]]
-      tempData$peakSites <- peakSites
-      tempData$numPeakSites <- numPeakSites
+      tempData$genomeSites <- allSites
       tempData$motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
       
       cat("Processing analysis window for each site", "\n")
       ## extend each range +/- 250 bp from motif edges
-      tempData$extSites <- promoters(tempData$peakSites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
+      tempData$extSites <- promoters(tempData$genomeSites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
       ## Read in the data from bam file for current ranges
       param <- ScanBamParam(which = tempData$extSites)
       ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
@@ -191,8 +178,6 @@ if (file.exists(footprintDataPath) == TRUE){
       ## Update the motif index
       idxMotif <- (idxMotif + 1)
       
-    } # end if (numPeakSites = 0)
-    
   } # end for (b in 1:numMotif)
   
   ## To avoid errors, clear the list of any empty sub-lists first

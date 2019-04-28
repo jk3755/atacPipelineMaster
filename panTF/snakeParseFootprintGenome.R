@@ -207,7 +207,7 @@ if (file.exists(dataOutPath) == TRUE){
       ## Prepare the data
       com <- paste0("tempData <- footprintData$motif", a)
       eval(parse(text = com))
-      peakSites <- tempData[["peakSites"]]
+      genomeSites <- tempData[["genomeSites"]]
       numSites <- length(tempData[["insMatrix"]][,1])
       siteWidth <- length(tempData[["insMatrix"]][1,])
       motifWidth <- tempData[["motifWidth"]]
@@ -243,10 +243,10 @@ if (file.exists(dataOutPath) == TRUE){
         nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
       
       ## Perform a one-tailed t-test to generate a p-value for each observed motif site
-      cat("Performing one-tailed t-tests on peak subset...", "\n")
-      ttestPeak <- list() # list to store the results of the t-tests
-      pvaluePeak <- c() # vector to store the p-values
-      tvaluePeak <- c() # vector to store the t-value
+      cat("Performing one-tailed t-tests on genome-wide binding sites...", "\n")
+      ttestGenome <- list() # list to store the results of the t-tests
+      pvalueGenome <- c() # vector to store the p-values
+      tvalueGenome <- c() # vector to store the t-value
       
       ## Perform t-test on all sites
       for (d in 1:numSites){
@@ -255,24 +255,24 @@ if (file.exists(dataOutPath) == TRUE){
         ## Retrieve the appropriate null model
         currentNullModel <- nullModels[which(nullModels[,1]==currentSignal),2]
         ## Perform the t-test
-        ttestPeak[[d]] <- t.test(insMatrix[d,250:(250+motifWidth)], mu=currentNullModel, alternative="less", conf.level = 0.95)
-        pvaluePeak[d] <- ttestPeak[[d]][["p.value"]]
-        tvaluePeak[d] <- ttestPeak[[d]][["statistic"]][["t"]]
+        ttestGenome[[d]] <- t.test(insMatrix[d,250:(250+motifWidth)], mu=currentNullModel, alternative="less", conf.level = 0.95)
+        pvalueGenome[d] <- ttestGenome[[d]][["p.value"]]
+        tvalueGenome[d] <- ttestGenome[[d]][["statistic"]][["t"]]
       } # for (d in 1:numSites)
       
       ## Get the indices of the sites that are lower than p = 0.05
       cat("Selecting p-value passing sites...", "\n")
-      idxPvaluePass <- which(pvaluePeak < 0.05)
-      peakPvaluePass <- pvaluePeak[idxPvaluePass]
+      idxPvaluePass <- which(pvalueGenome < 0.05)
+      genomePvaluePass <- pvalueGenome[idxPvaluePass]
       
       ## Perform bonferroni correction
       cat("Performing bonferroni correction...", "\n")
-      idxbfPeakPass <- which(pvaluePeak < (0.05/numSites))
-      bfPvaluePeakPass <- pvaluePeak[idxbfPeakPass]
+      idxbfGenomePass <- which(pvalueGenome < (0.05/numSites))
+      bfPvalueGenomePass <- pvalueGenome[idxbfGenomePass]
       
       ## Subset the insertion matrix based on the bonferroni passing sites only
       cat("Subsetting sites based on bf corrected p-values...", "\n")
-      bfInsMatrix <- insMatrix[idxbfPeakPass,]
+      bfInsMatrix <- insMatrix[idxbfGenomePass,]
       ##
       bfTotalSignal <- sum(bfInsMatrix)
       bfProfile <- matrix(data = NA, ncol = length(bfInsMatrix[1,]), nrow = 2)
@@ -283,8 +283,8 @@ if (file.exists(dataOutPath) == TRUE){
       } # end for (e in 1:length(bfInsMatrix[1,]))
       ##
       bfVector <- bfProfile[2,]
-      bfSites <- peakSites[idxbfPeakPass]
-      bfNumSites <- length(idxbfPeakPass)
+      bfSites <- genomeSites[idxbfGenomePass]
+      bfNumSites <- length(idxbfGenomePass)
       
       ## Make a plot for the bf passing sites
       #svgPath <- paste0(dirPath, "footprints/graphs/bf/", sampleName, ".", geneName, ".", "motif", a, ".bf.sites.svg")
@@ -317,7 +317,7 @@ if (file.exists(dataOutPath) == TRUE){
       eval(parse(text = com))
       
       ##
-      svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
+      svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfgenome.sites.heatmap.svg")
       svg(file = svgPath)
       cat("Saving svg footprint image at path:", svgPath, "\n")
       
@@ -351,11 +351,11 @@ if (file.exists(dataOutPath) == TRUE){
       parseData$siteTotalSignal <- siteTotalSignal
       parseData$uniqueTotalSignals <- uniqueTotalSignals
       parseData$nullModels <- nullModels
-      parseData$ttestPeak <- ttestPeak
-      parseData$pvaluePeak <- pvaluePeak
-      parseData$tvaluePeak <- tvaluePeak
-      parseData$peakPvaluePass <- peakPvaluePass
-      parseData$bfPvaluePeakPass <- bfPvaluePeakPass
+      parseData$ttestGenome <- ttestGenome
+      parseData$pvalueGenome <- pvalueGenome
+      parseData$tvalueGenome <- tvalueGenome
+      parseData$genomePvaluePass <- genomePvaluePass
+      parseData$bfPvalueGenomePass <- bfPvalueGenomePass
       parseData$bfInsMatrix <- bfInsMatrix
       parseData$bfTotalSignal <- bfTotalSignal
       parseData$bfProfile <- bfProfile

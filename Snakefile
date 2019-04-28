@@ -1124,6 +1124,10 @@ rule run_pantf_h508wt02a:
     input:
         expand("h508/wt02a/footprints/operations/peaks/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
 
+rule run_pantf_genome_h508wt02a:
+    input:
+        expand("h508/wt02a/footprints/operations/genome/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
+
 rule pantf_COADMR_h508wt02a:
 	input:
 		"h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
@@ -1254,7 +1258,7 @@ rule PANTF_raw_footprint_analysis_genome:
     benchmark:
         '{path}footprints/benchmark/genome/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
-        "scripts/panTF/snakeAnalyzeRawFootprint.R"
+        "scripts/panTF/snakeAnalyzeRawFootprintGenome.R"
 
 ## Parsing the raw footprints involves identifying which genomic loci have a TF bound
 rule PANTF_parse_footprint_analysis_genome:
@@ -1267,7 +1271,7 @@ rule PANTF_parse_footprint_analysis_genome:
     benchmark:
         '{path}footprints/benchmark/genome/parsed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
-    	"scripts/panTF/snakeParseFootprint.R"
+    	"scripts/panTF/snakeParseFootprintGenome.R"
 
 ## Processing the parsed footprint data to generate plots, etc
 rule PANTF_process_footprint_analysis_genome:
