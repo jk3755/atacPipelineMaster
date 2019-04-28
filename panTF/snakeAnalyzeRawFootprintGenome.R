@@ -88,30 +88,38 @@ if (file.exists(footprintDataPath) == TRUE){
       cat("Processing analysis window for each site", "\n")
       ## extend each range +/- 250 bp from motif edges
       tempData$extSites <- promoters(tempData$genomeSites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
+      
       ## Read in the data from bam file for current ranges
       param <- ScanBamParam(which = tempData$extSites)
+      
       ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
       ## Consider each read as a unique element (insertion), not paired end
       cat("Loading relevant reads", "\n")
       bamIn <- readGAlignments(bamFile, param = param)
+      
       ## Convert GAlignments to GRanges
       cat("Converting reads to insertions", "\n")
       grIn <- granges(bamIn)
+      
       ## Trim everything but standard chromosomes, trim out of bounds ranges
       grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
       grIn <- trim(grIn)
+      
       ## Convert the reads to insertions with width = 1
       grIn2 <- resize(grIn, width = 1)
+      
       ## Subset the Granges object into plus and minus strands for shifting
       cat("Shifting insertions +4/-5 bp", "\n")
       plusIdx <- which(strand(grIn2) == "+")
       minusIdx <- which(strand(grIn2) == "-")
       grPlus <- grIn2[plusIdx]
       grMinus <- grIn2[minusIdx]
+      
       ## Shift the ATACseq reads to account for Tn5 insertion mechanism 
       ## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
       grPlusShifted <- shift(grPlus, shift=4L)
       grMinusShifted <- shift(grMinus, shift=-5L)
+      
       ## Merge the plus and minus strand shifted Granges
       grMerged <- c(grPlusShifted, grMinusShifted)
       tempData$shiftedInsertions <- grMerged
@@ -120,12 +128,17 @@ if (file.exists(footprintDataPath) == TRUE){
       ## Convert Tn5 insertions corrected Granges to Rle object
       cat("Generating insertion matrix", "\n")
       insRLE <- coverage(grMerged)
+      ## Get rid of the mitochondrial data
+      insRLE@listData <- insRLE@listData[which(names(insRLE@listData) != "chrM")]
+      
       ## Get the matching sites
       extSites <- tempData$extSites
       extSites <- keepStandardChromosomes(extSites, pruning.mode="coarse")
       extSites <- trim(extSites)
+      
       ## Create a views object for the Rle list using the Granges sites data
       insViews <- Views(insRLE, extSites)
+      
       ## Convert to a matrix
       insMatrix <- as.matrix(insViews)
       
@@ -134,6 +147,7 @@ if (file.exists(footprintDataPath) == TRUE){
       rawTotalSignal <- sum(insMatrix)
       rawProfile <- matrix(data = NA, ncol = length(insMatrix[1,]), nrow = 2)
       rownames(rawProfile) <- c("Column sums", "Insertion frequency")
+      
       ##
       for (c in 1:length(insMatrix[1,])){
         rawProfile[1,c] <- sum(insMatrix[,c])

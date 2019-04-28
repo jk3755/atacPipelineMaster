@@ -137,6 +137,9 @@ if (file.exists(footprintDataPath) == TRUE){
       ## Convert Tn5 insertions corrected Granges to Rle object
       cat("Generating insertion matrix", "\n")
       insRLE <- coverage(grMerged)
+      ## Get rid of the mitochondrial data
+      insRLE@listData <- insRLE@listData[which(names(insRLE@listData) != "chrM")]
+      
       ## Get the matching sites
       extSites <- tempData$extSites
       extSites <- keepStandardChromosomes(extSites, pruning.mode="coarse")
