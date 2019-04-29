@@ -9,15 +9,6 @@ dirPath <- snakemake@wildcards[["path"]]
 ##
 cat("Processing raw footprint data for gene", geneName, "from sample", sampleName, "\n")
 
-#### REMOVE ME #####
-sitesPath <- "C:/Users/jsk33/Desktop/bug/MAFF.bindingSites.Rdata"
-geneName <- "TEST"
-sampleName <- "STEST"
-bamPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-repmerged.bam"
-baiPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-repmerged.bai"
-#### REMOVE ME #####
-
-
 ## Set the output path for Rdata file and perform a filecheck
 footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
 cat("Output path for data is set as:", footprintDataPath, "\n")
@@ -41,6 +32,9 @@ if (file.exists(footprintDataPath) == TRUE){
   ## Load the binding sites for current gene
   cat("Loading binding sites", "\n")
   load(sitesPath)
+  ##
+  numMotif <- length(bindingSites)
+  cat("Found", numMotif, "motifs", "\n")
   
   ## Remove motifs with 0 binding sites
   cat("Removing motifs that matched 0 genomic loci", "\n")
@@ -48,37 +42,16 @@ if (file.exists(footprintDataPath) == TRUE){
   numSites <- c()
   ##
   for (l in 1:numMotif){numSites[l] <- length(bindingSites[[l]][["sites"]]@ranges)}
+  ##
   zeroIdx <- which(numSites == 0)
-  bindingSites <- bindingSites[-zeroIdx]
+  if (length(zeroIdx) != 0){
+    bindingSites <- bindingSites[-zeroIdx]
+  }
+  ##
   numMotif <- length(bindingSites)
+  cat(numMotif, "motifs remain", "\n")
   
-  ## Subset to unique PWM only ##
-  cat("Removing duplicate motifs", "\n")
-  uniqueBindingSites <- list()
-  uniqueBindingSites[1] <- bindingSites[1]
-  PWMidx <- 2
-  ##
-  for (x in 2:numMotif){
-    addPWM <- "YES"
-    curNumPWM <- length(uniqueBindingSites)
-    curBindingSites <- bindingSites[[x]][["sites"]]
-    ##
-    for (z in 1:curNumPWM){
-      compBindingSites <- uniqueBindingSites[[z]][["sites"]]
-      cat(addPWM, "\n")
-      ##
-      if (identical(curBindingSites, compBindingSites)){
-        cat("sites are identical", "\n")
-        addPWM <- "NO"}} # end for (z in 1:curNumPWM)}
-    
-    if (addPWM == "YES"){
-      uniqueBindingSites[PWMidx] <- bindingSites[x]
-      PWMidx <- (PWMidx + 1)}
-  } # end for (x in 2:numMotif)
-  ##
-  bindingSites <- uniqueBindingSites
-  
-  ## Initiate an R object to hold all generated data
+    ## Initiate an R object to hold all generated data
   ## and set a motif number index
   bamFile <- BamFile(bamPath)
   footprintData <- list()
@@ -196,9 +169,7 @@ if (file.exists(footprintDataPath) == TRUE){
     #   return(NA)
     # },
     # finally={})
-    
-   
-    
+  
   } # end for (b in 1:numMotif)
   
   ## Save the raw footprint data
