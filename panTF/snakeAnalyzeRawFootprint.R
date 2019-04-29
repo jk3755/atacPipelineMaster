@@ -57,6 +57,11 @@ if (file.exists(footprintDataPath) == TRUE){
   footprintData <- list()
   idxMotif <- 1
   
+  ##
+  if (numMotif == 0){
+    cat(numMotif, "No data to analyze. Skipping", "\n")
+  } else {
+
   ## Loop through all the unique motifs and perform the analysis
   cat("Analyzing footprints for", geneName, "with", numMotif, "unique motifs",  "\n")
   for (b in 1:numMotif){
@@ -157,12 +162,7 @@ if (file.exists(footprintDataPath) == TRUE){
     ## Update the motif index counter
     cat("Updating motif index counter", "\n")
     idxMotif <- (idxMotif + 1)
-    
-    ## Cleanup variables
-    rm(tempData, insertionMatrix, insertionViews, extendedSites, insertionRLE, grShiftedInsertions,
-       grMinusShifted, grPlusShifted, grMinus, grPlus, minusIdx, plusIdx, grIn, bamIn, genomeSites)
-    gc()
-    
+
     # }, # end try
     # error = function(cond){
     #   message(cond)
@@ -175,6 +175,8 @@ if (file.exists(footprintDataPath) == TRUE){
   ## Save the raw footprint data
   cat("Saving finished raw footprint data for", geneName, "\n")
   save(footprintData, file = footprintDataPath)
+  
+  } # end if (numMotif == 0)
   
 } # end if (file.exists(footprintDataPath) == TRUE)
 
