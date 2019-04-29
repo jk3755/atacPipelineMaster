@@ -136,19 +136,13 @@ rule PREP_builddirstructure:
         #
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/benchmark
-        mkdir -p -v {wildcards.path}footprints/benchmark/peaks {wildcards.path}footprints/benchmark/genome
-        mkdir -p -v {wildcards.path}footprints/benchmark/peaks/parsed {wildcards.path}footprints/benchmark/peaks/raw {wildcards.path}footprints/benchmark/peaks/processed
-        mkdir -p -v {wildcards.path}footprints/benchmark/genome/parsed {wildcards.path}footprints/benchmark/genome/raw {wildcards.path}footprints/benchmark/genome/processed
+        mkdir -p -v {wildcards.path}footprints/benchmark/parsed {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
         mkdir -p -v {wildcards.path}footprints/data
-        mkdir -p -v {wildcards.path}footprints/data/genome {wildcards.path}footprints/data/peaks
-        mkdir -p -v {wildcards.path}footprints/data/genome/parsed {wildcards.path}footprints/data/genome/raw {wildcards.path}footprints/data/genome/processed {wildcards.path}footprints/data/genome/aggregated
-        mkdir -p -v {wildcards.path}footprints/data/peaks/parsed {wildcards.path}footprints/data/peaks/raw {wildcards.path}footprints/data/peaks/processed {wildcards.path}footprints/data/peaks/aggregated
+        mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/graphs
 		mkdir -p -v {wildcards.path}footprints/graphs/bf {wildcards.path}footprints/graphs/heatmaps {wildcards.path}footprints/graphs/peaks {wildcards.path}footprints/graphs/processed
 		mkdir -p -v {wildcards.path}footprints/operations
-		mkdir -p -v {wildcards.path}footprints/operations/genome {wildcards.path}footprints/operations/peaks
-        mkdir -p -v {wildcards.path}footprints/operations/peaks/groups {wildcards.path}footprints/operations/peaks/parsed {wildcards.path}footprints/operations/peaks/raw {wildcards.path}footprints/operations/peaks/processed {wildcards.path}footprints/operations/peaks/aggregated
-        mkdir -p -v {wildcards.path}footprints/operations/genome/groups {wildcards.path}footprints/operations/genome/parsed {wildcards.path}footprints/operations/genome/raw {wildcards.path}footprints/operations/genome/processed {wildcards.path}footprints/operations/genome/aggregated
+        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parsed {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
         #
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/genrich
@@ -1194,25 +1188,35 @@ rule PANTF_copy_bai:
     shell:
         "cp {input} {output}"
 
+rule PANTF_remove_bamcopy:
+    input:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    output:
+        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
 
-#### PEAKS ####
+###
 
-## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
 rule PANTF_raw_footprint_analysis_peaks:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
         "sites/data/{gene}.bindingSites.Rdata",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
     output:
-        "{path}footprints/operations/peaks/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     resources:
         analyzeRawFP=1
     benchmark:
-        '{path}footprints/benchmark/peaks/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
+        '{path}footprints/benchmark/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
-        "scripts/panTF/snakeAnalyzeRawFootprintPeaks.R"
+        "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
 ## Parsing the raw footprints involves identifying which genomic loci have a TF bound
 rule PANTF_parse_footprint_analysis_peaks:
@@ -1286,18 +1290,3 @@ rule PANTF_process_footprint_analysis_genome:
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
-
-## Remove the extra copies of the bam files once they are no longer needed
-## Not currently working due to method of running footprinting pipeline
-rule PANTF_remove_bamcopy:
-    input:
-        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
-    output:
-        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
-    shell:
-         """
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-         touch {output}
-         """

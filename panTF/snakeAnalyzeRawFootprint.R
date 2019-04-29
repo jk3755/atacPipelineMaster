@@ -45,10 +45,10 @@ if (file.exists(footprintDataPath) == TRUE){
   cat("Analyzing footprints for", geneName, "with", numMotif, "unique motifs",  "\n")
   for (b in 1:numMotif){
     
-    ## Initiate a temporary list object to store data, will be transferred to footprintData list
-    tempData <- list()
-    cat("Analyzing motif", b, "\n")
+    ## Using a tryCatch block, errors in any given motif won't stop pipeline
+    tryCatch({
     
+    cat("Analyzing motif", b, "\n")
     ## Binding Sites
     cat("Processing binding sites", "\n")
     scope <- paste0("chr", c(1:22, "X", "Y"))
@@ -78,125 +78,84 @@ if (file.exists(footprintDataPath) == TRUE){
     ## Convert GAlignments to GRanges
     cat("Converting reads to insertions", "\n")
     grIn <- granges(bamIn)
-      
     ## Trim everything but standard chromosomes, trim out of bounds ranges
     cat("Trimming out of bounds reads and keeping only standard chromosomes", "\n")
     grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
     grIn <- keepSeqlevels(grIn, scope, pruning.mode="coarse")
     grIn <- trim(grIn, use.names = TRUE)
+    ## Convert reads to insertions
+    grIn <- resize(grIn, width = 1)
+
+    ## Subset the Granges object into plus and minus strands for shifting
+    ## Shift the ATACseq reads to account for Tn5 insertion mechanism 
+    ## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
+    cat("Shifting insertions by +4/-5 bp", "\n")
+    plusIdx <- which(strand(grIn) == "+")
+    minusIdx <- which(strand(grIn) == "-")
+    grPlus <- grIn[plusIdx]
+    grMinus <- grIn[minusIdx]
+    grPlusShifted <- shift(grPlus, shift=4L)
+    grMinusShifted <- shift(grMinus, shift=-5L)
+    ## Merge the plus and minus strand shifted Granges
+    grShiftedInsertions <- c(grPlusShifted, grMinusShifted)
+    
+    ## Perform the footprint calculations
+    ## Convert Tn5 insertions corrected Granges to Rle object
+    cat("Generating insertion matrix", "\n")
+    insertionRLE <- coverage(grShiftedInsertions)
+    ## Get rid of the mitochondrial data
+    insertionRLE@listData <- insertionRLE@listData[which(names(insertionRLE@listData) != "chrM")]
+    ## Get the matching sites
+    extendedSites <- keepStandardChromosomes(extendedSites, pruning.mode="coarse")
+    extendedSites <- keepSeqlevels(extendedSites, scope, pruning.mode="coarse")
+    extendedSites <- trim(extendedSites, use.names = TRUE)
+    ## Create a views object for the Rle list using the Granges sites data
+    insertionViews <- Views(insertionRLE, extendedSites)
+    ## Convert to a matrix
+    insertionMatrix <- as.matrix(insertionViews)
       
-      ## Convert the reads to insertions with width = 1
-      grIn2 <- resize(grIn, width = 1)
-      
-      ## Subset the Granges object into plus and minus strands for shifting
-      cat("Shifting insertions +4/-5 bp", "\n")
-      plusIdx <- which(strand(grIn2) == "+")
-      minusIdx <- which(strand(grIn2) == "-")
-      grPlus <- grIn2[plusIdx]
-      grMinus <- grIn2[minusIdx]
-      
-      ## Shift the ATACseq reads to account for Tn5 insertion mechanism 
-      ## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
-      grPlusShifted <- shift(grPlus, shift=4L)
-      grMinusShifted <- shift(grMinus, shift=-5L)
-      
-      ## Merge the plus and minus strand shifted Granges
-      grMerged <- c(grPlusShifted, grMinusShifted)
-      tempData$shiftedInsertions <- grMerged
-      
-      ## Perform the footprint calculations
-      ## Convert Tn5 insertions corrected Granges to Rle object
-      cat("Generating insertion matrix", "\n")
-      insRLE <- coverage(grMerged)
-      ## Get rid of the mitochondrial data
-      insRLE@listData <- insRLE@listData[which(names(insRLE@listData) != "chrM")]
-      
-      ## Get the matching sites
-      extSites <- tempData$extSites
-      extSites <- keepStandardChromosomes(extSites, pruning.mode="coarse")
-      extSites <- trim(extSites)
-      
-      ## Create a views object for the Rle list using the Granges sites data
-      insViews <- Views(insRLE, extSites)
-      
-      ## Convert to a matrix
-      insMatrix <- as.matrix(insViews)
-      
-      ## Calculate the insertion probability at each basepair
-      cat("Calculating insertion probabilies", "\n")
-      rawTotalSignal <- sum(insMatrix)
-      rawProfile <- matrix(data = NA, ncol = length(insMatrix[1,]), nrow = 2)
-      rownames(rawProfile) <- c("Column sums", "Insertion frequency")
-      
-      ##
-      for (c in 1:length(insMatrix[1,])){
-        rawProfile[1,c] <- sum(insMatrix[,c])
-        rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
-      } # end for (c in 1:length(insMatrix[1,]))
-      
-      ## Transfer the data
-      tempData$PWM <- bindingSites[[b]][["PWM"]]
-      tempData$genomeSites <- allSites
-      tempData$motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
-      
-      tempData$extSites <- promoters(tempData$genomeSites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
-      
-      
-      ## Store the data
-      cat("Storing data", "\n")
-      tempData$extSites <- extSites
-      tempData$insRLE <- insRLE
-      tempData$insViews <- insViews
-      tempData$insMatrix <- insMatrix
-      tempData$rawTotalSignal <- rawTotalSignal
-      tempData$rawProfile <- rawProfile
-      tempData$libSize <- length(bamIn)
-      tempData$coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
-      tempData$libFactor <- tempData$libSize / tempData$coverageSize
-      
-      ## Calculate flanking accessibility and footprint depth data
-      cat("Calculating flanking accessibility and footprint depth data", "\n")
-      rawFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = length(tempData$insMatrix[,1]))
-      colnames(rawFootprintMetrics) <- c("Background", "Flanking", "Motif", "Flanking Accessibility", "Footprint Depth")
-      
-      for (d in 1:length(tempData$insMatrix[,1])){
-        rawFootprintMetrics[d,1] <- (sum(tempData$insMatrix[d,1:50]) + sum(tempData$insMatrix[d,(450 + tempData$motifWidth):(500 + tempData$motifWidth)]))
-        rawFootprintMetrics[d,2] <- (sum(tempData$insMatrix[d,200:250]) + sum(tempData$insMatrix[d,(200 + tempData$motifWidth):(250 + tempData$motifWidth)]))
-        rawFootprintMetrics[d,3] <- sum(tempData$insMatrix[d,(250:(250 + tempData$motifWidth))])
-        rawFootprintMetrics[d,4] <- rawFootprintMetrics[d,2] / rawFootprintMetrics[d,1]
-        rawFootprintMetrics[d,5] <- rawFootprintMetrics[d,3] / rawFootprintMetrics[d,2]
-      } # end (for d in 1:length(tempData$insMatrix[,1]))
-      
-      ##
-      tempData$rawFootprintMetrics <- rawFootprintMetrics
-      
-      
-      for (a in 1:numMotif){
-        com <- paste0("footprintData$motif", a, " <- list()")
-        eval(parse(text = com))} # end for (a in 1:numMotif)
-      
-      #### Transfer all the data for the current motif to the storage object
-      cat("Transferring all data to storage object footprintData", "\n")
-      com <- paste0("footprintData$motif", idxMotif, " <- tempData")
-      eval(parse(text = com))
-      
-      idxMotif <- (idxMotif + 1)
+    ## Store and save all the data for downstream analysis
+    cat("Storing data in a list object", "\n")
+    tempData <- list()
+    ## Transfer the data
+    tempData$librarySize <- length(bamIn)
+    tempData$coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
+    tempData$libraryFactor <- (tempData$librarySize / tempData$coverageSize)
+    ##
+    tempData$PWM <- PWM
+    tempData$genomeSites <- genomeSites
+    tempData$motifWidth <- motifWidth
+    tempData$extendedSites <- extendedSites
+    tempData$shiftedInsertions <- grShiftedInsertions
+    tempData$insertionRLE <- insertionRLE
+    tempData$insertionViews <- insertionViews
+    tempData$insertionMatrix <- insertionMatrix
+
+    ## Transfer all the data for the current motif to the storage object
+    cat("Transferring all data to storage object footprintData", "\n")
+    com <- paste0("footprintData$motif", idxMotif, " <- tempData")
+    eval(parse(text = com))
+    
+    ## Update the motif index counter
+    cat("Updating motif index counter", "\n")
+    idxMotif <- (idxMotif + 1)
+    
+    }, # end try
+    error = function(cond){
+      message(cond)
+      return(NA)
+    },
+    finally={})
       
   } # end for (b in 1:numMotif)
   
-  ## To avoid errors, clear the list of any empty sub-lists first
-  ## Should this result in an object with no data, that can be output
-  ## as a dummy file to keep the pipeline running smoothly
-  footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
-  
   ## Save the raw footprint data
-  cat("Saving finished data for", geneName, "\n")
+  cat("Saving finished raw footprint data for", geneName, "\n")
   save(footprintData, file = footprintDataPath)
   
 } # end if (file.exists(footprintDataPath) == TRUE)
 
-# Display warnings to the terminal
-warnings()
-
-##
+## Create the output file for snakemake
+cat("Creating output file for snakemake", geneName, "\n")
 file.create(outPath)
+warnings()

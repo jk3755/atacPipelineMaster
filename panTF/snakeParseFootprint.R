@@ -13,6 +13,47 @@
 #install.packages("ggplot2")
 #install.packages("ggpubr")
 
+
+### ADD THIS CODE HERE INSTEAD OF IN RAW ANALYSIS CODE ###
+## Calculate the insertion probability at each basepair
+cat("Calculating insertion probabilies", "\n")
+rawTotalSignal <- sum(insertionMatrix)
+rawProfile <- matrix(data = NA, ncol = length(insertionMatrix[1,]), nrow = 2)
+rownames(rawProfile) <- c("Column sums", "Insertion frequency")
+
+##
+for (c in 1:length(insertionMatrix[1,])){
+  rawProfile[1,c] <- sum(insertionMatrix[,c])
+  rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
+} # end for (c in 1:length(insMatrix[1,]))
+
+## Calculate flanking accessibility and footprint depth data
+cat("Calculating flanking accessibility and footprint depth data", "\n")
+rawFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = length(tempData$insMatrix[,1]))
+colnames(rawFootprintMetrics) <- c("Background", "Flanking", "Motif", "Flanking Accessibility", "Footprint Depth")
+
+for (d in 1:length(tempData$insMatrix[,1])){
+  rawFootprintMetrics[d,1] <- (sum(tempData$insMatrix[d,1:50]) + sum(tempData$insMatrix[d,(450 + tempData$motifWidth):(500 + tempData$motifWidth)]))
+  rawFootprintMetrics[d,2] <- (sum(tempData$insMatrix[d,200:250]) + sum(tempData$insMatrix[d,(200 + tempData$motifWidth):(250 + tempData$motifWidth)]))
+  rawFootprintMetrics[d,3] <- sum(tempData$insMatrix[d,(250:(250 + tempData$motifWidth))])
+  rawFootprintMetrics[d,4] <- rawFootprintMetrics[d,2] / rawFootprintMetrics[d,1]
+  rawFootprintMetrics[d,5] <- rawFootprintMetrics[d,3] / rawFootprintMetrics[d,2]
+} # end (for d in 1:length(tempData$insMatrix[,1]))
+
+##
+tempData$rawFootprintMetrics <- rawFootprintMetrics
+
+
+## To avoid errors, clear the list of any empty sub-lists first
+## Should this result in an object with no data, that can be output
+## as a dummy file to keep the pipeline running smoothly
+footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
+
+### ADD THIS CODE HERE INSTEAD OF IN RAW ANALYSIS CODE ###
+
+
+
+
 ## Disable scientific notation in variables
 options(scipen = 999)
 
