@@ -42,49 +42,41 @@ if (file.exists(footprintDataPath) == TRUE){
   cat("Loading binding sites", "\n")
   load(sitesPath)
   
-  #### Subset to unique PWM only ####
+  ## Remove motifs with 0 binding sites
+  cat("Removing motifs that matched 0 genomic loci", "\n")
   numMotif <- length(bindingSites)
-  uniqueBindingSites <- list()
-  uniqueBindingSites[[1]] <- bindingSites[[1]]
-  PWMidx <- 2
+  numSites <- c()
+  ##
+  for (l in 1:numMotif){numSites[l] <- length(bindingSites[[l]][["sites"]]@ranges)}
+  zeroIdx <- which(numSites == 0)
+  bindingSites <- bindingSites[-zeroIdx]
+  numMotif <- length(bindingSites)
   
+  ## Subset to unique PWM only ##
+  cat("Removing duplicate motifs", "\n")
+  uniqueBindingSites <- list()
+  uniqueBindingSites[1] <- bindingSites[1]
+  PWMidx <- 2
+  ##
   for (x in 2:numMotif){
     addPWM <- "YES"
     curNumPWM <- length(uniqueBindingSites)
-    curPWM <- bindingSites[[x]][["PWM"]]
-    curPWM <- c(curPWM[1,], curPWM[2,], curPWM[3,], curPWM[4,])
-    
+    curBindingSites <- bindingSites[[x]][["sites"]]
     ##
     for (z in 1:curNumPWM){
-      
-      compPWM <- uniqueBindingSites[[z]][["PWM"]]
-      compPWM <- c(compPWM[1,], compPWM[2,], compPWM[3,], compPWM[4,])
-      
-      ##
+      compBindingSites <- uniqueBindingSites[[z]][["sites"]]
       cat(addPWM, "\n")
-      cat(length(curPWM), "\n")
-      cat(length(compPWM), "\n")
-      
-      if ((length(curPWM)) == (length(compPWM))){
-        cat("Length is equal", "\n")
-        cat(length(unique(curPWM, compPWM)), "\n")
-        cat((length(curPWM)), "\n")
-        
-        if ((length(unique(curPWM, compPWM))) == (length(curPWM))){
-          addPWM <- "NO"
-          cat(addPWM, "\n")
-        }}
-      } # end for (z in 1:curNumPWM)
+      ##
+      if (identical(curBindingSites, compBindingSites)){
+        cat("sites are identical", "\n")
+        addPWM <- "NO"}} # end for (z in 1:curNumPWM)}
     
     if (addPWM == "YES"){
-      uniqueBindingSites[[PWMidx]] <- bindingSites[[x]]
-      PWMidx <- (PWMidx + 1)
-    }
+      uniqueBindingSites[PWMidx] <- bindingSites[x]
+      PWMidx <- (PWMidx + 1)}
   } # end for (x in 2:numMotif)
-  
-  
-  identical(bindingSites[[1]][["sites"]], bindingSites[[5]][["sites"]])
-  
+  ##
+  bindingSites <- uniqueBindingSites
   
   ## Initiate an R object to hold all generated data
   ## and set a motif number index
@@ -106,14 +98,6 @@ if (file.exists(footprintDataPath) == TRUE){
     genomeSites <- keepSeqlevels(genomeSites, scope, pruning.mode="coarse")
     genomeSites <- trim(genomeSites, use.names = TRUE)
     numSites <- length(genomeSites)
-    
-    ## If there are 0 sites, skip this motif
-    if (numSites == 0){
-      
-      cat("Found", numSites, "genome-wide binding sites", "\n")
-      cat("Skipping this motif", "\n")
-      
-    } else {
     
     cat("Found", numSites, "genome-wide binding sites", "\n")
       
@@ -213,7 +197,7 @@ if (file.exists(footprintDataPath) == TRUE){
     # },
     # finally={})
     
-    } # end if (numSites == 0)
+   
     
   } # end for (b in 1:numMotif)
   
