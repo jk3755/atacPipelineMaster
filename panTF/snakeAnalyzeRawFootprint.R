@@ -9,6 +9,15 @@ dirPath <- snakemake@wildcards[["path"]]
 ##
 cat("Processing raw footprint data for gene", geneName, "from sample", sampleName, "\n")
 
+#### REMOVE ME #####
+sitesPath <- "C:/Users/jsk33/Desktop/bug/MAFF.bindingSites.Rdata"
+geneName <- "TEST"
+sampleName <- "STEST"
+bamPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-repmerged.bam"
+baiPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-repmerged.bai"
+#### REMOVE ME #####
+
+
 ## Set the output path for Rdata file and perform a filecheck
 footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
 cat("Output path for data is set as:", footprintDataPath, "\n")
@@ -32,20 +41,60 @@ if (file.exists(footprintDataPath) == TRUE){
   ## Load the binding sites for current gene
   cat("Loading binding sites", "\n")
   load(sitesPath)
+  
+  #### Subset to unique PWM only ####
   numMotif <- length(bindingSites)
-  bamFile <- BamFile(bamPath)
+  uniqueBindingSites <- list()
+  uniqueBindingSites[[1]] <- bindingSites[[1]]
+  PWMidx <- 2
+  
+  for (x in 2:numMotif){
+    addPWM <- "YES"
+    curNumPWM <- length(uniqueBindingSites)
+    curPWM <- bindingSites[[x]][["PWM"]]
+    curPWM <- c(curPWM[1,], curPWM[2,], curPWM[3,], curPWM[4,])
+    
+    ##
+    for (z in 1:curNumPWM){
+      
+      compPWM <- uniqueBindingSites[[z]][["PWM"]]
+      compPWM <- c(compPWM[1,], compPWM[2,], compPWM[3,], compPWM[4,])
+      
+      ##
+      cat(addPWM, "\n")
+      cat(length(curPWM), "\n")
+      cat(length(compPWM), "\n")
+      
+      if ((length(curPWM)) == (length(compPWM))){
+        cat("Length is equal", "\n")
+        cat(length(unique(curPWM, compPWM)), "\n")
+        cat((length(curPWM)), "\n")
+        
+        if ((length(unique(curPWM, compPWM))) == (length(curPWM))){
+          addPWM <- "NO"
+          cat(addPWM, "\n")
+        }}
+      } # end for (z in 1:curNumPWM)
+    
+    if (addPWM == "YES"){
+      uniqueBindingSites[[PWMidx]] <- bindingSites[[x]]
+      PWMidx <- (PWMidx + 1)
+    }
+  } # end for (x in 2:numMotif)
+  
+  
+  
+  
   
   ## Initiate an R object to hold all generated data
   ## and set a motif number index
+  bamFile <- BamFile(bamPath)
   footprintData <- list()
   idxMotif <- 1
   
   ## Loop through all the unique motifs and perform the analysis
   cat("Analyzing footprints for", geneName, "with", numMotif, "unique motifs",  "\n")
   for (b in 1:numMotif){
-    
-    ## Using a tryCatch block, errors in any given motif won't stop pipeline
-    tryCatch({
     
     cat("Analyzing motif", b, "\n")
     ## Binding Sites
@@ -57,7 +106,19 @@ if (file.exists(footprintDataPath) == TRUE){
     genomeSites <- keepSeqlevels(genomeSites, scope, pruning.mode="coarse")
     genomeSites <- trim(genomeSites, use.names = TRUE)
     numSites <- length(genomeSites)
+    
+    ## If there are 0 sites, skip this motif
+    if (numSites == 0){
+      
+      cat("Found", numSites, "genome-wide binding sites", "\n")
+      cat("Skipping this motif", "\n")
+      
+    } else {
+    
     cat("Found", numSites, "genome-wide binding sites", "\n")
+      
+    ## Using a tryCatch block, errors in any given motif won't stop pipeline
+    #tryCatch({
     
     ## Pull binding motif data
     cat("Loading binding motif data", "\n")
@@ -145,13 +206,15 @@ if (file.exists(footprintDataPath) == TRUE){
        grMinusShifted, grPlusShifted, grMinus, grPlus, minusIdx, plusIdx, grIn, bamIn, genomeSites)
     gc()
     
-    }, # end try
-    error = function(cond){
-      message(cond)
-      return(NA)
-    },
-    finally={})
-      
+    # }, # end try
+    # error = function(cond){
+    #   message(cond)
+    #   return(NA)
+    # },
+    # finally={})
+    
+    } # end if (numSites == 0)
+    
   } # end for (b in 1:numMotif)
   
   ## Save the raw footprint data
