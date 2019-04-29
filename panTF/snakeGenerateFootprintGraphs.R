@@ -133,3 +133,11 @@ plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALS
   grid.text(ylab, x=unit(1, 'line'), rot = 90)
   
 } # end plotInsProb function
+
+## Make graph of the raw peak sites
+#svgPath <- paste0(dirPath, "footprints/graphs/peaks/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+#svg(file = svgPath)
+#cat("Saving peaks footprint image at path:", svgPath, "\n")
+#plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
+#plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
+#dev.off()

@@ -15,11 +15,11 @@ generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
   # motifWidth = motif width
   
   ##
-  cat("Generating a null footprint model with the following parameters:", "\n")
-  cat("Iterations:", iterations, "\n")
-  cat("Input signal:", inputSignal, "\n")
-  cat("Analysis window (bp):", analysisWidth, "\n")
-  cat("Motif width (bp):", motifWidth, "\n")
+  #cat("Generating a null footprint model with the following parameters:", "\n")
+  #cat("Iterations:", iterations, "\n")
+  #cat("Input signal:", inputSignal, "\n")
+  #cat("Analysis window (bp):", analysisWidth, "\n")
+  #cat("Motif width (bp):", motifWidth, "\n")
   
   # declare vector of size n to store average motif signal values
   averages <- c()
@@ -47,7 +47,6 @@ generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
   } # end for (a in 1:n)
   return(averages)
 } # end generateNullFP function
-
 
 ## Set snakemake variables
 cat("Setting snakemake variables", "\n")
@@ -89,49 +88,59 @@ if (file.exists(dataOutPath) == TRUE){
   ## To avoid errors, clear the list of any empty sub-lists first
   footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
   
-    ## If the data object is empty, skip the parse operation and output a dummy file
+  ## If the data object is empty, skip the parse operation and output a dummy file
   if (length(footprintData) == 0){
     cat("No data found in footprint object. Skipping", "\n")
   } else {
     
-    
-    
-    
-    ## The number of unique motifs for the current gene
-    numMotif <- length(footprintData)
-    
     ## Performing parsing operations
+    numMotif <- length(footprintData)
+    motifNames <- names(footprintData)
     cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
-    ##
+    
+    ## Load the peaks file
+    cat("Loading accessibility peaks and trimming ranges", "\n")
+    scope <- paste0("chr", c(1:22, "X", "Y"))
+    grPeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
+    grPeaks <- keepStandardChromosomes(grPeaks, pruning.mode="coarse")
+    grPeaks <- keepSeqlevels(grPeaks, scope, pruning.mode="coarse")
+    grPeaks <- trim(grPeaks, use.names = TRUE)
+    
+    ## Loop over all motifs with data
     for (a in 1:numMotif){
       
       ##
       cat("Processing motif", a, "\n")
-      
-      ## suppress warnings globally here, as they will disrupt the tryCatch block
-      ## will need to improve this code at some point
-      func <- tryCatch({
+      #tryCatch({
         
-        ## Prepare the data
-        com <- paste0("tempData <- footprintData$motif", a)
+        ############################################################
+        ## Load the temporary data
+        com <- paste0("tempData <- footprintData$", motifNames[a])
         eval(parse(text = com))
-        peakSites <- tempData[["peakSites"]]
-        numSites <- length(tempData[["insMatrix"]][,1])
-        siteWidth <- length(tempData[["insMatrix"]][1,])
+        ##
+        librarySize <- tempData[["librarySize"]]
+        coverageSize <- tempData[["coverageSize"]]
+        libraryFactor <- tempData[["libraryFactor"]]
+        PWM <- tempData[["PWM"]]
+        genomeSites <- tempData[["genomeSites"]]
+        numGenomeSites <- tempData[["numGenomeSites"]]
         motifWidth <- tempData[["motifWidth"]]
-        PWM <- footprintData[["motif1"]][["PWM"]][a]
-        insMatrix <- tempData[["insMatrix"]]
-        insProfile <- tempData[["rawProfile"]]
+        extendedSites <- tempData[["extendedSites"]]
+        shiftedInsertions <- tempData[["shiftedInsertions"]]
+        insertionRLE <- tempData[["insertionRLE"]]
+        insertionViews <- tempData[["insertionViews"]]
+        insertionMatrix <- tempData[["insertionMatrix"]]
+        ############################################################
+        
+        ## Process all the binding sites, use null model
+        ## Determine which sites are bound and which are not
+        cat("Processing binding sites to find bound TFs", "\n")
+        
+        
         insVector <- insProfile[2,]
         siteTotalSignal <- c()
         
-        ## Make graph of the raw peak sites
-        #svgPath <- paste0(dirPath, "footprints/graphs/peaks/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
-        #svg(file = svgPath)
-        #cat("Saving peaks footprint image at path:", svgPath, "\n")
-        #plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
-        #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
-        #dev.off()
+        
         
         ## Calculate total signal for each site
         for (b in 1:numSites){
@@ -197,6 +206,56 @@ if (file.exists(dataOutPath) == TRUE){
         bfSites <- peakSites[idxbfPeakPass]
         bfNumSites <- length(idxbfPeakPass)
         
+        ## Calculate the insertion probability at each basepair
+        cat("Calculating insertion probabilies", "\n")
+        rawTotalSignal <- sum(insertionMatrix)
+        rawProfile <- matrix(data = NA, ncol = length(insertionMatrix[1,]), nrow = 2)
+        rownames(rawProfile) <- c("Column sums", "Insertion frequency")
+        ##
+        for (c in 1:length(insertionMatrix[1,])){
+          rawProfile[1,c] <- sum(insertionMatrix[,c])
+          rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
+        } # end for (c in 1:length(insMatrix[1,]))
+        ## Calculate flanking accessibility and footprint depth data
+        cat("Calculating flanking accessibility and footprint depth data", "\n")
+        rawFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = length(tempData$insMatrix[,1]))
+        colnames(rawFootprintMetrics) <- c("Background", "Flanking", "Motif", "Flanking Accessibility", "Footprint Depth")
+        for (d in 1:length(tempData$insMatrix[,1])){
+          rawFootprintMetrics[d,1] <- (sum(tempData$insMatrix[d,1:50]) + sum(tempData$insMatrix[d,(450 + tempData$motifWidth):(500 + tempData$motifWidth)]))
+          rawFootprintMetrics[d,2] <- (sum(tempData$insMatrix[d,200:250]) + sum(tempData$insMatrix[d,(200 + tempData$motifWidth):(250 + tempData$motifWidth)]))
+          rawFootprintMetrics[d,3] <- sum(tempData$insMatrix[d,(250:(250 + tempData$motifWidth))])
+          rawFootprintMetrics[d,4] <- rawFootprintMetrics[d,2] / rawFootprintMetrics[d,1]
+          rawFootprintMetrics[d,5] <- rawFootprintMetrics[d,3] / rawFootprintMetrics[d,2]
+        } # end (for d in 1:length(tempData$insMatrix[,1]))
+        ##
+        tempData$rawFootprintMetrics <- rawFootprintMetrics
+        ## To avoid errors, clear the list of any empty sub-lists first
+        ## Should this result in an object with no data, that can be output
+        ## as a dummy file to keep the pipeline running smoothly
+        footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
+        ### ADD THIS CODE HERE INSTEAD OF IN RAW ANALYSIS CODE ########################################################
+        
+        
+        
+        
+        
+        
+        
+        ## Analyze the binding sites in peaks
+        cat("Processing binding sites in accessibility peaks", "\n")
+        peakOverlaps <- findOverlaps(genomeSites, grPeaks)
+        peakIndex <- unique(peakOverlapsIdx@to)
+        peakSites <- genomeSites[peakIndex]
+        peakSites <- keepStandardChromosomes(peakSites, pruning.mode="coarse")
+        peakSites <- keepSeqlevels(peakSites, scope, pruning.mode="coarse")
+        peakSites <- trim(peakSites, use.names = TRUE)
+        numPeakSites <- length(peakSites)
+        cat("Found", numPeakSites, "motif binding sites in peak accessibility regions", "\n")
+        ##
+        peakInsertionMatrix <- insertionMatrix[peakIndex,]
+        
+        
+        
         
         
         ## Data transfer to storage object and save
@@ -223,62 +282,27 @@ if (file.exists(dataOutPath) == TRUE){
         com <- paste0("footprintData$motif", a, "$parseData <- parseData")
         eval(parse(text = com))
         
-      }, # end try
-      error=function(cond){
-        message(cond)
-        return(NA)
-      },
-      finally={})
-      gc()
-      
+      # }, # end try
+      # error=function(cond){
+      #   message(cond)
+      #   return(NA)
+      # },
+      # finally={})
+
     } # end for (a in 1:numMotif)
-    gc()
-    
   } # end if (length(footprintData) == 0)
   
-  ## Finish the script and create the output file for snakemake
-  ## or a dummy file if no data was found
+  ## Save the data
   save(footprintData, file = dataOutPath)
   
 } # end if (file.exists(dataOutPath) == TRUE)
-    
-    
-    
-    
-  ### ADD THIS CODE HERE INSTEAD OF IN RAW ANALYSIS CODE ############################################################
-  ## Calculate the insertion probability at each basepair
-  cat("Calculating insertion probabilies", "\n")
-  rawTotalSignal <- sum(insertionMatrix)
-  rawProfile <- matrix(data = NA, ncol = length(insertionMatrix[1,]), nrow = 2)
-  rownames(rawProfile) <- c("Column sums", "Insertion frequency")
-  ##
-  for (c in 1:length(insertionMatrix[1,])){
-    rawProfile[1,c] <- sum(insertionMatrix[,c])
-    rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
-  } # end for (c in 1:length(insMatrix[1,]))
-  ## Calculate flanking accessibility and footprint depth data
-  cat("Calculating flanking accessibility and footprint depth data", "\n")
-  rawFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = length(tempData$insMatrix[,1]))
-  colnames(rawFootprintMetrics) <- c("Background", "Flanking", "Motif", "Flanking Accessibility", "Footprint Depth")
-  for (d in 1:length(tempData$insMatrix[,1])){
-    rawFootprintMetrics[d,1] <- (sum(tempData$insMatrix[d,1:50]) + sum(tempData$insMatrix[d,(450 + tempData$motifWidth):(500 + tempData$motifWidth)]))
-    rawFootprintMetrics[d,2] <- (sum(tempData$insMatrix[d,200:250]) + sum(tempData$insMatrix[d,(200 + tempData$motifWidth):(250 + tempData$motifWidth)]))
-    rawFootprintMetrics[d,3] <- sum(tempData$insMatrix[d,(250:(250 + tempData$motifWidth))])
-    rawFootprintMetrics[d,4] <- rawFootprintMetrics[d,2] / rawFootprintMetrics[d,1]
-    rawFootprintMetrics[d,5] <- rawFootprintMetrics[d,3] / rawFootprintMetrics[d,2]
-  } # end (for d in 1:length(tempData$insMatrix[,1]))
-  ##
-  tempData$rawFootprintMetrics <- rawFootprintMetrics
-  ## To avoid errors, clear the list of any empty sub-lists first
-  ## Should this result in an object with no data, that can be output
-  ## as a dummy file to keep the pipeline running smoothly
-  footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
-  ### ADD THIS CODE HERE INSTEAD OF IN RAW ANALYSIS CODE ########################################################
-  
-  
-    
 
-##
+
+
+
+
+
+## Create the output file for snakemake
 file.create(outPath)
 cat("Finished!", "\n")
 

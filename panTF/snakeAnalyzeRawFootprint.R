@@ -2,7 +2,6 @@
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 sitesPath <- snakemake@input[[3]]
-peakPath <- snakemake@input[[4]]
 outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
@@ -124,6 +123,7 @@ if (file.exists(footprintDataPath) == TRUE){
     ##
     tempData$PWM <- PWM
     tempData$genomeSites <- genomeSites
+    tempData$numGenomeSites <- numSites
     tempData$motifWidth <- motifWidth
     tempData$extendedSites <- extendedSites
     tempData$shiftedInsertions <- grShiftedInsertions
