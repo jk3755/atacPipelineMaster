@@ -11,7 +11,7 @@ dirPath <- snakemake@wildcards[["path"]]
 cat("Processing raw footprint data for gene", geneName, "from sample", sampleName, "\n")
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/genome/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
 cat("Output path for data is set as:", footprintDataPath, "\n")
 
 ## Perform a filecheck first, skip if already exists
@@ -140,6 +140,11 @@ if (file.exists(footprintDataPath) == TRUE){
     cat("Updating motif index counter", "\n")
     idxMotif <- (idxMotif + 1)
     
+    ## Cleanup variables
+    rm(tempData, insertionMatrix, insertionViews, extendedSites, insertionRLE, grShiftedInsertions,
+       grMinusShifted, grPlusShifted, grMinus, grPlus, minusIdx, plusIdx, grIn, bamIn, genomeSites)
+    gc()
+    
     }, # end try
     error = function(cond){
       message(cond)
@@ -158,4 +163,5 @@ if (file.exists(footprintDataPath) == TRUE){
 ## Create the output file for snakemake
 cat("Creating output file for snakemake", geneName, "\n")
 file.create(outPath)
+gc()
 warnings()
