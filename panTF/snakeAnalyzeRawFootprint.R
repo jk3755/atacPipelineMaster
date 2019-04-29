@@ -149,10 +149,12 @@ if (file.exists(footprintDataPath) == TRUE){
     tempData$numGenomeSites <- numSites
     tempData$motifWidth <- motifWidth
     tempData$extendedSites <- extendedSites
-    tempData$shiftedInsertions <- grShiftedInsertions
-    tempData$insertionRLE <- insertionRLE
-    tempData$insertionViews <- insertionViews
     tempData$insertionMatrix <- insertionMatrix
+    
+    ## Omitting these data will significantly reduce mem and storage reqs
+    #tempData$shiftedInsertions <- grShiftedInsertions
+    #tempData$insertionRLE <- insertionRLE
+    #tempData$insertionViews <- insertionViews
 
     ## Transfer all the data for the current motif to the storage object
     cat("Transferring all data to storage object footprintData", "\n")
