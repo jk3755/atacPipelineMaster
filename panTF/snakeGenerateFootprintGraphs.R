@@ -141,3 +141,30 @@ plotInsProb <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALS
 #plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
 #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
 #dev.off()
+
+## Subset the insertion matrix based on the bonferroni passing sites only
+cat("Subsetting sites based on bf corrected p-values", "\n")
+bfInsMatrix <- insMatrix[idxbfPeakPass,]
+##
+bfTotalSignal <- sum(bfInsMatrix)
+bfProfile <- matrix(data = NA, ncol = length(bfInsMatrix[1,]), nrow = 2)
+rownames(bfProfile) <- c("Column sums", "Insertion frequency")
+for (e in 1:length(bfInsMatrix[1,])){
+  bfProfile[1,e] <- sum(bfInsMatrix[,e])
+  bfProfile[2,e] <- (bfProfile[1,e] / bfTotalSignal) * 100
+} # end for (e in 1:length(bfInsMatrix[1,]))
+##
+bfVector <- bfProfile[2,]
+bfSites <- peakSites[idxbfPeakPass]
+bfNumSites <- length(idxbfPeakPass)
+
+## Calculate the insertion probability at each basepair
+cat("Calculating insertion probabilies", "\n")
+rawTotalSignal <- sum(insertionMatrix)
+rawProfile <- matrix(data = NA, ncol = length(insertionMatrix[1,]), nrow = 2)
+rownames(rawProfile) <- c("Column sums", "Insertion frequency")
+##
+for (c in 1:length(insertionMatrix[1,])){
+  rawProfile[1,c] <- sum(insertionMatrix[,c])
+  rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
+} # end for (c in 1:length(insMatrix[1,]))

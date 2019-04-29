@@ -93,6 +93,16 @@ if (file.exists(dataOutPath) == TRUE){
     cat("No data found in footprint object. Skipping", "\n")
   } else {
     
+    ## REMOVE ME ##
+    geneName <- "TEST"
+    peaksPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-merged_global_normalization_peaks.narrowPeak"
+    ## REMOVE ME ##
+    
+    ## Initialize a list to store the parsed data
+    parsedFootprintData <- list()
+    ##
+    motifIdx <- 1
+    
     ## Performing parsing operations
     numMotif <- length(footprintData)
     motifNames <- names(footprintData)
@@ -134,117 +144,70 @@ if (file.exists(dataOutPath) == TRUE){
         
         ## Process all the binding sites, use null model
         ## Determine which sites are bound and which are not
-        cat("Processing binding sites to find bound TFs", "\n")
-        
-        
-        insVector <- insProfile[2,]
-        siteTotalSignal <- c()
-        
-        
+        cat("Processing sites to find bound loci", "\n")
         
         ## Calculate total signal for each site
-        for (b in 1:numSites){
-          siteTotalSignal[b] <- sum(tempData[["insMatrix"]][b,])} # end for (b in 1:numSites)
+        siteTotalSignal <- c()
+        for (b in 1:numGenomeSites){
+          siteTotalSignal[b] <- sum(insertionMatrix[b,])
+        } # end for (b in 1:numGenomeSites)
         
         ## Find the unique values for total signal and generate null models
-        uniqueTotalSignals <- unique(siteTotalSignal)
+        uniqueTotalSiteSignals <- unique(siteTotalSignal)
         ## Remove NA values from uniqueTotalSignals
         ## (how do they get there???)
-        uniqueTotalSignals <- uniqueTotalSignals[!is.na(uniqueTotalSignals)]
+        uniqueTotalSiteSignals <- uniqueTotalSiteSignals[!is.na(uniqueTotalSiteSignals)]
         
         ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
-        nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
-        colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
+        nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSiteSignals))
+        colnames(nullModels) <- c("Total input signal", "Mean null motif signal")
         
         ## Calculate the null models
-        for (c in 1:length(uniqueTotalSignals)){
-          nullVec <- generateNullFP(1000, uniqueTotalSignals[c], siteWidth, motifWidth)
-          nullModels[c,1] <- uniqueTotalSignals[c]
-          nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
+        for (c in 1:length(uniqueTotalSiteSignals)){
+          nullVec <- generateNullFP(1000, uniqueTotalSiteSignals[c], (500 + motifWidth), motifWidth)
+          nullModels[c,1] <- uniqueTotalSiteSignals[c]
+          nullModels[c,2] <- mean(nullVec)
+        } # end for (c in 1:length(uniqueTotalSignals))
         
         ## Perform a one-tailed t-test to generate a p-value for each observed motif site
-        cat("Performing one-tailed t-tests on peak subset", "\n")
-        ttestPeak <- list() # list to store the results of the t-tests
-        pvaluePeak <- c() # vector to store the p-values
-        tvaluePeak <- c() # vector to store the t-value
+        cat("Performing one-tailed t-tests on binding site mean motif signal against null models", "\n")
+        ttest <- list() # list to store the results of the t-tests
+        pvalue <- c() # vector to store the p-values
+        tvalue <- c() # vector to store the t-value
         
         ## Perform t-test on all sites
-        for (d in 1:numSites){
+        for (d in 1:numGenomeSites){
           ## Retrieve the total signal for the current site
           currentSignal <- c(siteTotalSignal[d])
           ## Retrieve the appropriate null model
-          currentNullModel <- nullModels[which(nullModels[,1]==currentSignal),2]
+          currentNullModel <- nullModels[which(nullModels[,1] == currentSignal),2]
           ## Perform the t-test
-          ttestPeak[[d]] <- t.test(insMatrix[d,250:(250+motifWidth)], mu=currentNullModel, alternative="less", conf.level = 0.95)
-          pvaluePeak[d] <- ttestPeak[[d]][["p.value"]]
-          tvaluePeak[d] <- ttestPeak[[d]][["statistic"]][["t"]]
-        } # for (d in 1:numSites)
+          ttest[[d]] <- t.test(insertionMatrix[d, 250:(250 + motifWidth)], mu = currentNullModel, alternative = "less", conf.level = 0.95)
+          pvalue[d] <- ttest[[d]][["p.value"]]
+          tvalue[d] <- ttest[[d]][["statistic"]][["t"]]
+        } # for (d in 1:numGenomeSites)
         
         ## Get the indices of the sites that are lower than p = 0.05
         cat("Selecting p-value passing sites", "\n")
-        idxPvaluePass <- which(pvaluePeak < 0.05)
-        peakPvaluePass <- pvaluePeak[idxPvaluePass]
-        
+        pvaluePassSiteIdx <- which(pvalue < 0.05)
         ## Perform bonferroni correction
         cat("Performing bonferroni correction", "\n")
-        idxbfPeakPass <- which(pvaluePeak < (0.05/numSites))
-        bfPvaluePeakPass <- pvaluePeak[idxbfPeakPass]
+        bfPvalueSiteIdx <- which(pvalue < (0.05 / numGenomeSites))
         
-        ## Subset the insertion matrix based on the bonferroni passing sites only
-        cat("Subsetting sites based on bf corrected p-values", "\n")
-        bfInsMatrix <- insMatrix[idxbfPeakPass,]
-        ##
-        bfTotalSignal <- sum(bfInsMatrix)
-        bfProfile <- matrix(data = NA, ncol = length(bfInsMatrix[1,]), nrow = 2)
-        rownames(bfProfile) <- c("Column sums", "Insertion frequency")
-        for (e in 1:length(bfInsMatrix[1,])){
-          bfProfile[1,e] <- sum(bfInsMatrix[,e])
-          bfProfile[2,e] <- (bfProfile[1,e] / bfTotalSignal) * 100
-        } # end for (e in 1:length(bfInsMatrix[1,]))
-        ##
-        bfVector <- bfProfile[2,]
-        bfSites <- peakSites[idxbfPeakPass]
-        bfNumSites <- length(idxbfPeakPass)
-        
-        ## Calculate the insertion probability at each basepair
-        cat("Calculating insertion probabilies", "\n")
-        rawTotalSignal <- sum(insertionMatrix)
-        rawProfile <- matrix(data = NA, ncol = length(insertionMatrix[1,]), nrow = 2)
-        rownames(rawProfile) <- c("Column sums", "Insertion frequency")
-        ##
-        for (c in 1:length(insertionMatrix[1,])){
-          rawProfile[1,c] <- sum(insertionMatrix[,c])
-          rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
-        } # end for (c in 1:length(insMatrix[1,]))
-        ## Calculate flanking accessibility and footprint depth data
-        cat("Calculating flanking accessibility and footprint depth data", "\n")
-        rawFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = length(tempData$insMatrix[,1]))
-        colnames(rawFootprintMetrics) <- c("Background", "Flanking", "Motif", "Flanking Accessibility", "Footprint Depth")
-        for (d in 1:length(tempData$insMatrix[,1])){
-          rawFootprintMetrics[d,1] <- (sum(tempData$insMatrix[d,1:50]) + sum(tempData$insMatrix[d,(450 + tempData$motifWidth):(500 + tempData$motifWidth)]))
-          rawFootprintMetrics[d,2] <- (sum(tempData$insMatrix[d,200:250]) + sum(tempData$insMatrix[d,(200 + tempData$motifWidth):(250 + tempData$motifWidth)]))
-          rawFootprintMetrics[d,3] <- sum(tempData$insMatrix[d,(250:(250 + tempData$motifWidth))])
-          rawFootprintMetrics[d,4] <- rawFootprintMetrics[d,2] / rawFootprintMetrics[d,1]
-          rawFootprintMetrics[d,5] <- rawFootprintMetrics[d,3] / rawFootprintMetrics[d,2]
-        } # end (for d in 1:length(tempData$insMatrix[,1]))
-        ##
-        tempData$rawFootprintMetrics <- rawFootprintMetrics
-        ## To avoid errors, clear the list of any empty sub-lists first
-        ## Should this result in an object with no data, that can be output
-        ## as a dummy file to keep the pipeline running smoothly
-        footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
-        ### ADD THIS CODE HERE INSTEAD OF IN RAW ANALYSIS CODE ########################################################
-        
-        
-        
-        
-        
-        
-        
+        ############################################################
+        ## Bound genome sites subset
+        boundGenomeSites <- genomeSites[bfPvalueSiteIdx]
+        numBoundGenomeSites <- length(boundGenomeSites)
+        ## Unbound genome sites subset
+        unboundGenomeSites <- genomeSites[-bfPvalueSiteIdx]
+        numUnboundGenomeSites <- length(boundGenomeSites)
+        ############################################################
+
+        ############################################################
         ## Analyze the binding sites in peaks
         cat("Processing binding sites in accessibility peaks", "\n")
         peakOverlaps <- findOverlaps(genomeSites, grPeaks)
-        peakIndex <- unique(peakOverlapsIdx@to)
+        peakIndex <- unique(peakOverlaps@from)
         peakSites <- genomeSites[peakIndex]
         peakSites <- keepStandardChromosomes(peakSites, pruning.mode="coarse")
         peakSites <- keepSeqlevels(peakSites, scope, pruning.mode="coarse")
@@ -252,35 +215,101 @@ if (file.exists(dataOutPath) == TRUE){
         numPeakSites <- length(peakSites)
         cat("Found", numPeakSites, "motif binding sites in peak accessibility regions", "\n")
         ##
-        peakInsertionMatrix <- insertionMatrix[peakIndex,]
+        boundPeakOverlap <- findOverlaps(peakSites, boundGenomeSites)
+        boundPeakIndex <- unique(boundPeakOverlap@to)
+        boundPeakSites <- boundGenomeSites[boundPeakIndex]
+        ##
+        unboundPeakOverlap <- findOverlaps(peakSites, unboundGenomeSites)
+        unboundPeakIndex <- unique(unboundPeakOverlap@to)
+        unboundPeakSites <- unboundGenomeSites[unboundPeakIndex]
+        ############################################################
         
+        ## Calculate flanking accessibility and footprint depth data
+        cat("Calculating flanking accessibility and footprint depth data", "\n")
+        siteFootprintMetrics <- matrix(data = NA, ncol = 5, nrow = numGenomeSites)
+        ##
+        colnames(siteFootprintMetrics) <- c("Background signal/bp", "Flank signal/bp", "Motif signal/bp",
+                                           "Flanking Accessibility", "Footprint Depth")
         
+        ##
+        for (e in 1:numGenomeSites){
+          
+          ## Backgroup signal per bp
+          siteFootprintMetrics[e,1] <- ((sum(insertionMatrix[e, 1:50]) +
+                                         sum(insertionMatrix[e, (450 + motifWidth):(500 + motifWidth)])) /
+                                         100)
+          
+          ## Flank signal per bp
+          siteFootprintMetrics[e,2] <- ((sum(insertionMatrix[e, 200:250]) +
+                                         sum(insertionMatrix[e, (200 + motifWidth):(250 + motifWidth)])) /
+                                         100)
+          
+          ## Motif signal per bp
+          siteFootprintMetrics[e,3] <- (sum(insertionMatrix[e, (250:(250 + motifWidth))]) /
+                                         motifWidth)
+          
+          ## Flanking accessibility (Flanking signal / backgroun signal)
+          siteFootprintMetrics[e,4] <- (siteFootprintMetrics[e,2] / siteFootprintMetrics[e,1])
+          
+          ## Footprint depth (Motif signal / flank signal)
+          siteFootprintMetrics[e,5] <- (siteFootprintMetrics[e,3] / siteFootprintMetrics[e,2])
+          
+        } # end (for e in 1:numGenomeSites)
         
-        
-        
+        ############################################################
         ## Data transfer to storage object and save
-        cat("Transferring data to storage object", "\n")
-        parseData <- list()
+        cat("Transferring data to parsedFootprintData storage object", "\n")
+        tempData <- list()
         ##
-        parseData$numSites <- numSites
-        parseData$insVector <- insVector
-        parseData$siteTotalSignal <- siteTotalSignal
-        parseData$uniqueTotalSignals <- uniqueTotalSignals
-        parseData$nullModels <- nullModels
-        parseData$ttestPeak <- ttestPeak
-        parseData$pvaluePeak <- pvaluePeak
-        parseData$tvaluePeak <- tvaluePeak
-        parseData$peakPvaluePass <- peakPvaluePass
-        parseData$bfPvaluePeakPass <- bfPvaluePeakPass
-        parseData$bfInsMatrix <- bfInsMatrix
-        parseData$bfTotalSignal <- bfTotalSignal
-        parseData$bfProfile <- bfProfile
-        parseData$bfVector <- bfVector
-        parseData$bfSites <- bfSites
-        parseData$bfNumSites <- bfNumSites
+        tempData$librarySize <- librarySize
+        tempData$coverageSize <- coverageSize
+        tempData$libraryFactor <- libraryFactor
+        tempData$PWM <- PWM
+        tempData$genomeSites <- genomeSites
+        tempData$numGenomeSites <- numGenomeSites
+        tempData$motifWidth <- motifWidth
+        tempData$extendedSites <- extendedSites
+        tempData$shiftedInsertions <- shiftedInsertions
+        tempData$insertionRLE <- insertionRLE
+        tempData$insertionViews <- insertionViews
+        tempData$insertionMatrix <- insertionMatrix
         ##
-        com <- paste0("footprintData$motif", a, "$parseData <- parseData")
+        tempData$siteTotalSignal <- siteTotalSignal
+        tempData$uniqueTotalSiteSignals <- uniqueTotalSiteSignals
+        tempData$nullModels <- nullModels
+        tempData$ttest <- ttest
+        tempData$pvalue <- pvalue
+        tempData$tvalue <- tvalue
+        tempData$pvaluePassSiteIdx <- pvaluePassSiteIdx
+        tempData$bfPvalueSiteIdx <- bfPvalueSiteIdx
+        tempData$tvalue <- tvalue
+        ##
+        tempData$boundGenomeSites <- boundGenomeSites
+        tempData$numBoundGenomeSites <- numBoundGenomeSites
+        ##
+        tempData$unboundGenomeSites <- unboundGenomeSites
+        tempData$numUnboundGenomeSites <- numUnboundGenomeSites
+        ##
+        tempData$peakOverlaps <- peakOverlaps
+        tempData$peakIndex <- peakIndex
+        tempData$peakSites <- peakSites
+        tempData$numPeakSites <- numPeakSites
+        ##
+        tempData$boundPeakOverlap <- boundPeakOverlap
+        tempData$boundPeakIndex <- boundPeakIndex
+        tempData$boundPeakSites <- boundPeakSites
+        ##
+        tempData$unboundPeakOverlap <- unboundPeakOverlap
+        tempData$unboundPeakIndex <- unboundPeakIndex
+        tempData$unboundPeakSites <- unboundPeakSites
+        ##
+        tempData$siteFootprintMetrics <- siteFootprintMetrics
+        
+        ## Transfer to the data storage object
+        com <- paste0("parsedFootprintData$motif", motifIdx, " <- tempData")
         eval(parse(text = com))
+        
+        motifIdx <= (motifIdx + 1)
         
       # }, # end try
       # error=function(cond){
@@ -296,11 +325,6 @@ if (file.exists(dataOutPath) == TRUE){
   save(footprintData, file = dataOutPath)
   
 } # end if (file.exists(dataOutPath) == TRUE)
-
-
-
-
-
 
 ## Create the output file for snakemake
 file.create(outPath)
