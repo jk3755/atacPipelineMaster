@@ -1,16 +1,4 @@
-
-## Install libraries, if necessary
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("GenomicRanges", suppressUpdates = TRUE)
-#biocLite("stats4", suppressUpdates = TRUE)
-#biocLite("BiocGenerics", suppressUpdates = TRUE)
-#biocLite("parallel", suppressUpdates = TRUE)
-#biocLite("Rsamtools", suppressUpdates = TRUE)
-#biocLite("GenomicAlignments", suppressUpdates = TRUE)
-#biocLite("genomation", suppressUpdates = TRUE)
-
 ## Set snakemake variables
-cat("Setting snakemake variables...", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 sitesPath <- snakemake@input[[3]]
@@ -19,90 +7,83 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
+##
+cat("Processing raw footprint data for gene", geneName, "from sample", sampleName, "\n")
 
 ## Set the output path for Rdata file and perform a filecheck
 footprintDataPath <- paste0(dirPath, "footprints/data/genome/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
+cat("Output path for data is set as:", footprintDataPath, "\n")
 
+## Perform a filecheck first, skip if already exists
 if (file.exists(footprintDataPath) == TRUE){
-  
   cat("File already exists, skipping", "\n")
-  
 } else {
   
+  ## The file doesn't exist yet, begin analysis
   ## Load libraries
-  cat("Loading libraries...", "\n")
-  suppressMessages(library(GenomicRanges))
-  suppressMessages(library(stats4))
+  cat("Loading libraries", "\n")
   suppressMessages(library(BiocGenerics))
-  suppressMessages(library(parallel))
-  suppressMessages(library(Rsamtools))
+  suppressMessages(library(GenomicRanges))
   suppressMessages(library(GenomicAlignments))
+  suppressMessages(library(Rsamtools))
   suppressMessages(library(genomation))
+  suppressMessages(library(stats4))
   suppressMessages(library(rlist))
   
-  ##
-  cat("Loading binding sites...", "\n")
+  ## Load the binding sites for current gene
+  cat("Loading binding sites", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
   bamFile <- BamFile(bamPath)
   
   ## Initiate an R object to hold all generated data
+  ## and set a motif number index
   footprintData <- list()
-  for (a in 1:numMotif){
-    com <- paste0("footprintData$motif", a, " <- list()")
-    eval(parse(text = com))} # end for (a in 1:numMotif)
-  
-  cat("Analyzing footprints for", geneName, "\n")
-  cat("Found", numMotif, "unique motifs", "\n")
-  
-  ##
   idxMotif <- 1
   
-  ## Begin analysis
+  ## Loop through all the unique motifs and perform the analysis
+  cat("Analyzing footprints for", geneName, "with", numMotif, "unique motifs",  "\n")
   for (b in 1:numMotif){
-    
-    ##
-    cat("Analyzing motif", b, "\n")
     
     ## Initiate a temporary list object to store data, will be transferred to footprintData list
     tempData <- list()
-    
-    cat("Processing binding sites", "\n")
+    cat("Analyzing motif", b, "\n")
     
     ## Binding Sites
-    allSites <- bindingSites[[b]][["sites"]]
-    ## Trim the matched binding sites to the standard chromosomes only
+    cat("Processing binding sites", "\n")
     scope <- paste0("chr", c(1:22, "X", "Y"))
-    allSites <- keepStandardChromosomes(allSites, pruning.mode="coarse")
-    allSites <- keepSeqlevels(allSites, scope, pruning.mode="coarse")
-    ##
-    numSites <- length(allSites)
+    genomeSites <- bindingSites[[b]][["sites"]]
+    ## Trim the matched binding sites to the standard chromosomes only
+    genomeSites <- keepStandardChromosomes(genomeSites, pruning.mode="coarse")
+    genomeSites <- keepSeqlevels(genomeSites, scope, pruning.mode="coarse")
+    genomeSites <- trim(genomeSites, use.names = TRUE)
+    numSites <- length(genomeSites)
     cat("Found", numSites, "genome-wide binding sites", "\n")
+    
+    ## Pull binding motif data
+    cat("Loading binding motif data", "\n")
+    PWM <- bindingSites[[b]][["PWM"]]
+    motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
+    
+    ## Extend each binding site in the Granges to the analysis window (+/- 250 bp)
+    cat("Processing analysis window for each binding site", "\n")
+    extendedSites <- promoters(genomeSites, upstream = 250, downstream = (250 + motifWidth), use.names=TRUE)
+    
+    ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
+    ## Consider each read as a unique element (insertion), not paired end
+    cat("Loading relevant reads", "\n")
+    param <- ScanBamParam(which = extendedSites)
+    bamIn <- readGAlignments(bamFile, param = param)
       
-      ## Transfer the data
-      tempData$PWM <- bindingSites[[b]][["PWM"]]
-      tempData$genomeSites <- allSites
-      tempData$motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
+    ## Convert GAlignments to GRanges
+    cat("Converting reads to insertions", "\n")
+    grIn <- granges(bamIn)
       
-      cat("Processing analysis window for each site", "\n")
-      ## extend each range +/- 250 bp from motif edges
-      tempData$extSites <- promoters(tempData$genomeSites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
-      
-      ## Read in the data from bam file for current ranges
-      param <- ScanBamParam(which = tempData$extSites)
-      
-      ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
-      ## Consider each read as a unique element (insertion), not paired end
-      cat("Loading relevant reads", "\n")
-      bamIn <- readGAlignments(bamFile, param = param)
-      
-      ## Convert GAlignments to GRanges
-      cat("Converting reads to insertions", "\n")
-      grIn <- granges(bamIn)
-      
-      ## Trim everything but standard chromosomes, trim out of bounds ranges
-      grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
-      grIn <- trim(grIn)
+    ## Trim everything but standard chromosomes, trim out of bounds ranges
+    cat("Trimming out of bounds reads and keeping only standard chromosomes", "\n")
+    grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
+    grIn <- keepSeqlevels(grIn, scope, pruning.mode="coarse")
+    grIn <- trim(grIn, use.names = TRUE)
       
       ## Convert the reads to insertions with width = 1
       grIn2 <- resize(grIn, width = 1)
@@ -153,6 +134,14 @@ if (file.exists(footprintDataPath) == TRUE){
         rawProfile[2,c] <- (rawProfile[1,c] / rawTotalSignal) * 100
       } # end for (c in 1:length(insMatrix[1,]))
       
+      ## Transfer the data
+      tempData$PWM <- bindingSites[[b]][["PWM"]]
+      tempData$genomeSites <- allSites
+      tempData$motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
+      
+      tempData$extSites <- promoters(tempData$genomeSites, upstream = 250, downstream = (250 + tempData$motifWidth), use.names=TRUE)
+      
+      
       ## Store the data
       cat("Storing data", "\n")
       tempData$extSites <- extSites
@@ -180,6 +169,11 @@ if (file.exists(footprintDataPath) == TRUE){
       
       ##
       tempData$rawFootprintMetrics <- rawFootprintMetrics
+      
+      
+      for (a in 1:numMotif){
+        com <- paste0("footprintData$motif", a, " <- list()")
+        eval(parse(text = com))} # end for (a in 1:numMotif)
       
       #### Transfer all the data for the current motif to the storage object
       cat("Transferring all data to storage object footprintData", "\n")

@@ -1301,31 +1301,3 @@ rule PANTF_remove_bamcopy:
          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
          touch {output}
          """
-
-########################################################################################################################################
-#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
-########################################################################################################################################
-
-## Note - this section utilizes rules defined in an auxillary snakefile
-
-rule generate_motifData:
-    output:
-        "sites/motifData.Rdata"
-    script:
-        "scripts/scanPWM/generateMotifData.R"
-
-rule generate_geneNames:
-    output:
-        "sites/geneNames.txt"
-    script:
-        "scripts/scanPWM/generateNames.R"
-
-rule scanPWM:
-    input:
-        "sites/motifData.Rdata"
-    output:
-        'sites/operations/scans/{gene}.PWMscan.done'
-    resources:
-        scanPWM=1
-    script:
-        'scripts/scanPWM/snakeScanPWM.R'

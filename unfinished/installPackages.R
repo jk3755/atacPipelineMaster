@@ -14,3 +14,14 @@ BiocManager::install("GenomicAlignments")
 BiocManager::install("BiocGenerics")
 BiocManager::install("parallel")
 install.packages("rlist")
+
+
+## Install libraries, if necessary
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("GenomicRanges", suppressUpdates = TRUE)
+#biocLite("stats4", suppressUpdates = TRUE)
+#biocLite("BiocGenerics", suppressUpdates = TRUE)
+#biocLite("parallel", suppressUpdates = TRUE)
+#biocLite("Rsamtools", suppressUpdates = TRUE)
+#biocLite("GenomicAlignments", suppressUpdates = TRUE)
+#biocLite("genomation", suppressUpdates = TRUE)
