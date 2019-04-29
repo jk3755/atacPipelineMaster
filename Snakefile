@@ -1126,7 +1126,7 @@ rule pantf_COADMR_h508wt02a:
 
 rule pantf_raw_h508wt02a_all:
     input:
-        "h508/wt02a/footprints/operations/groups/H508A-WT-02.rawFPanalysis.allgroups.done"
+        expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.rawFPanalysis.group{param}.done", param=config["group"])
 
 rule pantf_COADMR_ls1034wt01:
 	input:
