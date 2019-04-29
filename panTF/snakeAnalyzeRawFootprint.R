@@ -83,7 +83,7 @@ if (file.exists(footprintDataPath) == TRUE){
   } # end for (x in 2:numMotif)
   
   
-  
+  identical(bindingSites[[1]][["sites"]], bindingSites[[5]][["sites"]])
   
   
   ## Initiate an R object to hold all generated data
