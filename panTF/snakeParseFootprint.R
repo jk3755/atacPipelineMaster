@@ -94,6 +94,7 @@ if (file.exists(dataOutPath) == TRUE){
   } else {
     
     ## REMOVE ME ##
+    load("C:/Users/jsk33/Desktop/H508A-WT-02.FOSL1.rawFootprintData.Rdata")
     geneName <- "TEST"
     peaksPath <- "C:\\Users\\jsk33\\Desktop\\bug\\H508A-WT-02-merged_global_normalization_peaks.narrowPeak"
     ## REMOVE ME ##
@@ -200,7 +201,7 @@ if (file.exists(dataOutPath) == TRUE){
         numBoundGenomeSites <- length(boundGenomeSites)
         ## Unbound genome sites subset
         unboundGenomeSites <- genomeSites[-bfPvalueSiteIdx]
-        numUnboundGenomeSites <- length(boundGenomeSites)
+        numUnboundGenomeSites <- length(unboundGenomeSites)
         ############################################################
 
         ############################################################
@@ -218,10 +219,12 @@ if (file.exists(dataOutPath) == TRUE){
         boundPeakOverlap <- findOverlaps(peakSites, boundGenomeSites)
         boundPeakIndex <- unique(boundPeakOverlap@to)
         boundPeakSites <- boundGenomeSites[boundPeakIndex]
+        numBoundPeakSites <- length(boundPeakSites)
         ##
         unboundPeakOverlap <- findOverlaps(peakSites, unboundGenomeSites)
         unboundPeakIndex <- unique(unboundPeakOverlap@to)
         unboundPeakSites <- unboundGenomeSites[unboundPeakIndex]
+        numUnboundPeakSites <- length(unboundPeakSites)
         ############################################################
         
         ## Calculate flanking accessibility and footprint depth data
@@ -298,10 +301,12 @@ if (file.exists(dataOutPath) == TRUE){
         tempData$boundPeakOverlap <- boundPeakOverlap
         tempData$boundPeakIndex <- boundPeakIndex
         tempData$boundPeakSites <- boundPeakSites
+        tempData$numBoundPeakSites <- numBoundPeakSites
         ##
         tempData$unboundPeakOverlap <- unboundPeakOverlap
         tempData$unboundPeakIndex <- unboundPeakIndex
         tempData$unboundPeakSites <- unboundPeakSites
+        tempData$numUnboundPeakSites <- numUnboundPeakSites
         ##
         tempData$siteFootprintMetrics <- siteFootprintMetrics
         

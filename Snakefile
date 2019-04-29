@@ -36,6 +36,8 @@ include: "snakeModules/panTF.snakefile"
 
 include: "snakeModules/scanPWM.snakefile"
 
+include: "snakeModules/panTFraw.snakefile"
+
 #configfile: "snakeModules/config.yaml"
 
 ########################################################################################################################################
@@ -1121,6 +1123,10 @@ rule run_pantf_h508wt02a:
 rule pantf_COADMR_h508wt02a:
 	input:
 		"h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
+
+rule pantf_raw_h508wt02a_all:
+    input:
+        "h508/wt02a/footprints/operations/groups/H508A-WT-02.rawFPanalysis.allgroups.done"
 
 rule pantf_COADMR_ls1034wt01:
 	input:
