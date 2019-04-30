@@ -17,7 +17,11 @@ install.packages("rlist")
 
 
 ## Install libraries, if necessary
-#source("https://bioconductor.org/biocLite.R")
+source("https://bioconductor.org/biocLite.R")
+biocLite("VariantAnnotation", suppressUpdates = TRUE)
+
+
+
 #biocLite("GenomicRanges", suppressUpdates = TRUE)
 #biocLite("stats4", suppressUpdates = TRUE)
 #biocLite("BiocGenerics", suppressUpdates = TRUE)
