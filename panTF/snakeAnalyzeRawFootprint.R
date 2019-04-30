@@ -135,14 +135,22 @@ if (file.exists(footprintDataPath) == TRUE){
     insertionViews <- Views(insertionRLE, extendedSites)
     ## Convert to a matrix
     insertionMatrix <- as.matrix(insertionViews)
+    
+    #### Calculate read statistics
+    # Total number of reads in input bam file
+    librarySize <- length(bamIn)
+    # 
+    coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
+    #
+    libraryFactor <- (librarySize / coverageSize)
       
     ## Store and save all the data for downstream analysis
     cat("Storing data in a list object", "\n")
     tempData <- list()
     ## Transfer the data
-    tempData$librarySize <- length(bamIn)
-    tempData$coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
-    tempData$libraryFactor <- (tempData$librarySize / tempData$coverageSize)
+    tempData$librarySize <- librarySize
+    tempData$coverageSize <- coverageSize
+    tempData$libraryFactor <- libraryFactor
     ##
     tempData$PWM <- PWM
     tempData$genomeSites <- genomeSites

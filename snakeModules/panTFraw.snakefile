@@ -98,6 +98,8 @@ rule rawFPanalysis_COAD_MRs:
         '{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.COADMR.done'
     shell:
         'touch {output}'
+
+####################################################################################################################################
 rule rawFPanalysis_group1:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.MUSC.rawFPanalysis.bamcopy1.done', 
@@ -1150,21 +1152,27 @@ rule rawFPanalysis_group41:
 		'{path}footprints/operations/raw/{mergedsample}.TFAP2A.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.TCF12.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZBTB18.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PDE6H.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CBX3.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZBED1.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOXD1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PRNP.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SOX3.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TFEB.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ARNT2.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.AHR.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RAB2A.rawFPanalysis.bamcopy20.done'
 	output:
 		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group41.done'
 	shell:
 		'touch {output}'
 rule rawFPanalysis_group42:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.PDE6H.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CBX3.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZBED1.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.FOXD1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PRNP.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SOX3.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TFEB.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ARNT2.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.AHR.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RAB2A.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group42.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group43:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.FOXO3.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.CRX.rawFPanalysis.bamcopy2.done', 
@@ -1176,21 +1184,27 @@ rule rawFPanalysis_group42:
 		'{path}footprints/operations/raw/{mergedsample}.HXD4.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.RFXANK.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.PGAM2.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOSL1.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ETV4.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HOXD4.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.LMX1B.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TSC22D4.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HOXD9.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HXD9.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NR1I3.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.DIABLO.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ESRRA.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group42.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group43.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group43:
+rule rawFPanalysis_group44:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.FOSL1.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ETV4.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HOXD4.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.LMX1B.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TSC22D4.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HOXD9.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HXD9.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NR1I3.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.DIABLO.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ESRRA.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group44.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group45:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.MSX1.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.GRHL1.rawFPanalysis.bamcopy2.done', 
@@ -1202,21 +1216,27 @@ rule rawFPanalysis_group43:
 		'{path}footprints/operations/raw/{mergedsample}.MYB.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.CFL2.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.CD59.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GATA4.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.AP1.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PDS5A.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NELFB.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOXN3.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TCF3.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.EZR.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF71.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOXO6.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOXK1.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group43.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group45.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group44:
+rule rawFPanalysis_group46:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.GATA4.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.AP1.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PDS5A.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NELFB.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.FOXN3.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TCF3.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.EZR.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF71.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.FOXO6.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.FOXK1.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group46.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group47:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.FOXD2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.OLIG1.rawFPanalysis.bamcopy2.done', 
@@ -1228,21 +1248,27 @@ rule rawFPanalysis_group44:
 		'{path}footprints/operations/raw/{mergedsample}.NFIA.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.DTL.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.POLI.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOXP2.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.KLF12.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.INSM1.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NFIB.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GRHPR.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.BRCA1.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RBMS1.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HIRIP3.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.UNCX.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RAXL1.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group44.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group47.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group45:
+rule rawFPanalysis_group48:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.FOXP2.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.KLF12.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.INSM1.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NFIB.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GRHPR.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.BRCA1.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RBMS1.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HIRIP3.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.UNCX.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RAXL1.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group48.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group49:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.SHOX2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.LHX9.rawFPanalysis.bamcopy2.done', 
@@ -1254,21 +1280,27 @@ rule rawFPanalysis_group45:
 		'{path}footprints/operations/raw/{mergedsample}.ADARB1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.TAF4.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.TMSB4XP8.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MEIS2.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NR1I2.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZSWIM1.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CREB3L1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MGA.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TAF1A.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.USF2.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.OTUD4.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.WDR83.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.KDM5D.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group45.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group49.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group46:
+rule rawFPanalysis_group50:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.MEIS2.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NR1I2.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZSWIM1.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CREB3L1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MGA.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TAF1A.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.USF2.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.OTUD4.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.WDR83.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.KDM5D.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group50.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group51:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.TULP1.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.PQBP1.rawFPanalysis.bamcopy2.done', 
@@ -1280,21 +1312,27 @@ rule rawFPanalysis_group46:
 		'{path}footprints/operations/raw/{mergedsample}.TCEAL2.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.MEX3C.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.EEF1D.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NUCB1.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TSN.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MXD4.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ISX.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ARFGAP1.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TBX5.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.DAB2.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ISL1.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TPI1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZBTB46.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group46.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group51.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group47:
+rule rawFPanalysis_group52:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.NUCB1.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TSN.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MXD4.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ISX.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ARFGAP1.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TBX5.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.DAB2.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ISL1.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TPI1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZBTB46.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group52.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group53:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.PGR.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.GCR.rawFPanalysis.bamcopy2.done', 
@@ -1306,21 +1344,27 @@ rule rawFPanalysis_group47:
 		'{path}footprints/operations/raw/{mergedsample}.FOXO4.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZKSCAN8.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.HNRNPC.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NKX25.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HHEX.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NUP107.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MAFG.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SUCLG1.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SOCS4.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HOXD3.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SHOX.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.USF1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF76.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group47.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group53.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group48:
+rule rawFPanalysis_group54:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.NKX25.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HHEX.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NUP107.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MAFG.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SUCLG1.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SOCS4.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HOXD3.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SHOX.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.USF1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF76.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group54.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group55:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.ZNF326.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.SRBD1.rawFPanalysis.bamcopy2.done', 
@@ -1332,21 +1376,27 @@ rule rawFPanalysis_group48:
 		'{path}footprints/operations/raw/{mergedsample}.FOXL1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.GTPBP6.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.H1FX.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MAGEA8.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HP1BP3.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.POU3F2.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.EBF1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GTF3C5.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NONO.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CDX2.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MYOD1.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PPP2R3B.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SNRNP70.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group48.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group55.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group49:
+rule rawFPanalysis_group56:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.MAGEA8.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HP1BP3.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.POU3F2.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.EBF1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GTF3C5.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NONO.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CDX2.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MYOD1.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PPP2R3B.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SNRNP70.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group56.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group57:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.TOB2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZBTB12.rawFPanalysis.bamcopy2.done', 
@@ -1358,21 +1408,27 @@ rule rawFPanalysis_group49:
 		'{path}footprints/operations/raw/{mergedsample}.VAMP3.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZNF205.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.POU5F1.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.EHF.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RAX.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SRY.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MEIS1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TIA1.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RXRA.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SMAD3.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ESRP2.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NRL.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RBM42.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group49.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group57.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group50:
+rule rawFPanalysis_group58:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.EHF.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RAX.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SRY.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MEIS1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TIA1.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RXRA.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SMAD3.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ESRP2.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NRL.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RBM42.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group58.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group59:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.ZNF3.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.CPEB1.rawFPanalysis.bamcopy2.done', 
@@ -1384,21 +1440,27 @@ rule rawFPanalysis_group50:
 		'{path}footprints/operations/raw/{mergedsample}.PPARA.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.PPP1R10.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.SLC18A1.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.DIS3.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MAP4K2.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.USP39.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GTF2B.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZCCHC14.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.FOXD3.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.EXO5.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MSI2.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TSNAX.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF696.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group50.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group59.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group51:
+rule rawFPanalysis_group60:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.DIS3.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MAP4K2.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.USP39.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GTF2B.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZCCHC14.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.FOXD3.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.EXO5.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MSI2.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TSNAX.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF696.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group60.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group61:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.NFATC2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.TCF4.rawFPanalysis.bamcopy2.done', 
@@ -1410,21 +1472,27 @@ rule rawFPanalysis_group51:
 		'{path}footprints/operations/raw/{mergedsample}.PKM.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.RIOK2.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZNF720.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.DLX5.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PIR.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ECSIT.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.IVD.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NCBP2.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SF3B1.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.KLF4.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF160.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF354C.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SMCR7L.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group51.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group61.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group52:
+rule rawFPanalysis_group62:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.DLX5.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PIR.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ECSIT.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.IVD.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NCBP2.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SF3B1.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.KLF4.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF160.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF354C.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SMCR7L.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group62.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group63:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.HCFC2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.TAF9.rawFPanalysis.bamcopy2.done', 
@@ -1436,21 +1504,27 @@ rule rawFPanalysis_group52:
 		'{path}footprints/operations/raw/{mergedsample}.NR4A2.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZNF830.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.TRMT1.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RFX4.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SRRM3.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NFIC.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ASPSCR1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ABCF2.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.YEATS4.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF26.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SNAI2.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HSF1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HOXA4.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group52.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group63.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group53:
+rule rawFPanalysis_group64:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.RFX4.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SRRM3.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NFIC.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ASPSCR1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ABCF2.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.YEATS4.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF26.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SNAI2.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HSF1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HOXA4.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group64.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group65:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.AGAP2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.HOXB9.rawFPanalysis.bamcopy2.done', 
@@ -1462,21 +1536,27 @@ rule rawFPanalysis_group53:
 		'{path}footprints/operations/raw/{mergedsample}.PRRX1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.RBFOX2.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.GIT2.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CBFA2T2.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF706.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RAB7A.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RPS10.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF655.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NUP133.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CBX7.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PAXIP1.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NMRAL1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MED30.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group53.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group65.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group54:
+rule rawFPanalysis_group66:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.CBFA2T2.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF706.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RAB7A.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RPS10.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF655.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NUP133.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CBX7.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PAXIP1.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NMRAL1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MED30.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group66.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group67:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.MYEF2.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.FEZ1.rawFPanalysis.bamcopy2.done', 
@@ -1488,21 +1568,27 @@ rule rawFPanalysis_group54:
 		'{path}footprints/operations/raw/{mergedsample}.ZBTB25.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.THRA.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.RNASEH2C.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CAT.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RFC3.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RPS6KA5.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SOX5.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NFE2L1.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NXPH3.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TCEAL6.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.YY1.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PSMA6.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NFIL3.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group54.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group67.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group55:
+rule rawFPanalysis_group68:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.CAT.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RFC3.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RPS6KA5.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SOX5.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NFE2L1.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NXPH3.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TCEAL6.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.YY1.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PSMA6.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NFIL3.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group68.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group69:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.MZF1.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.VDR.rawFPanalysis.bamcopy2.done', 
@@ -1514,21 +1600,27 @@ rule rawFPanalysis_group55:
 		'{path}footprints/operations/raw/{mergedsample}.TGIF1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.SMAD2.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.UTP18.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PLAGL1.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.POLE3.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF503.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PHOX2A.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CLK1.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RAB18.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HNRNPH3.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ING3.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ENO1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.U2AF1.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group55.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group69.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group56:
+rule rawFPanalysis_group70:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.PLAGL1.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.POLE3.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF503.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PHOX2A.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CLK1.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RAB18.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HNRNPH3.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ING3.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ENO1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.U2AF1.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group70.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group71:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.RPL6.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.IKZF1.rawFPanalysis.bamcopy2.done', 
@@ -1540,21 +1632,27 @@ rule rawFPanalysis_group56:
 		'{path}footprints/operations/raw/{mergedsample}.SCAND2P.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.CSNK2B.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.FOXM1.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SCMH1.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.POU4F3.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.UGP2.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GATA6.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.C19orf40.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HIST2H2AB.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SMAP2.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TRIM21.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.BCL11A.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CSTF2.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group56.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group71.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group57:
+rule rawFPanalysis_group72:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.SCMH1.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.POU4F3.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.UGP2.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GATA6.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.C19orf40.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HIST2H2AB.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SMAP2.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TRIM21.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.BCL11A.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CSTF2.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group72.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group73:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.NR2F1.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.CELF5.rawFPanalysis.bamcopy2.done', 
@@ -1566,21 +1664,27 @@ rule rawFPanalysis_group57:
 		'{path}footprints/operations/raw/{mergedsample}.SPI1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.MTHFD1.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.RBBP5.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MAGED4B.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PHLDA2.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.TFAM.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.LAS1L.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MYLK.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.AVEN.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZMAT4.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.EVX1.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NFATC4.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PICK1.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group57.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group73.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group58:
+rule rawFPanalysis_group74:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.MAGED4B.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PHLDA2.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.TFAM.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.LAS1L.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MYLK.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.AVEN.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZMAT4.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.EVX1.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NFATC4.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PICK1.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group74.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group75:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.CPSF4.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.VPS4B.rawFPanalysis.bamcopy2.done', 
@@ -1592,21 +1696,27 @@ rule rawFPanalysis_group58:
 		'{path}footprints/operations/raw/{mergedsample}.BARX1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.HSPA1L.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.MSRB3.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CEBPG.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZCCHC17.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RNF114.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RBM3.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GATA2.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GTPBP1.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PLG.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.MECP2.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CELF6.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GAR1.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group58.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group75.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group59:
+rule rawFPanalysis_group76:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.CEBPG.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZCCHC17.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RNF114.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RBM3.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GATA2.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GTPBP1.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.PLG.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.MECP2.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CELF6.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GAR1.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group76.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group77:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.GTF2H3.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.MORN1.rawFPanalysis.bamcopy2.done', 
@@ -1618,21 +1728,27 @@ rule rawFPanalysis_group59:
 		'{path}footprints/operations/raw/{mergedsample}.SOX10.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.PPP5C.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.SOD1.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.PTPMT1.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HMGA1.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CANX.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SOX13.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.NR4A1.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZDHHC5.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZMAT2.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.WISP2.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SF1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ZNF510.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group59.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group77.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group60:
+rule rawFPanalysis_group78:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.PTPMT1.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HMGA1.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CANX.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SOX13.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.NR4A1.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZDHHC5.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZMAT2.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.WISP2.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SF1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ZNF510.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group78.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group79:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.GPAM.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZNF131.rawFPanalysis.bamcopy2.done', 
@@ -1644,21 +1760,27 @@ rule rawFPanalysis_group60:
 		'{path}footprints/operations/raw/{mergedsample}.STUB1.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.PHTF1.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.RUFY3.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.METTL21B.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CELF4.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.A1CF.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GPANK1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.KIF22.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.HLCS.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RFC2.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.IRF1.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.CDK2AP1.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.GADD45A.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group60.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group79.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group61:
+rule rawFPanalysis_group80:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.METTL21B.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CELF4.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.A1CF.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GPANK1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.KIF22.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.HLCS.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RFC2.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.IRF1.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.CDK2AP1.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.GADD45A.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group80.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group81:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.DUS3L.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.LHX2.rawFPanalysis.bamcopy2.done', 
@@ -1670,21 +1792,27 @@ rule rawFPanalysis_group61:
 		'{path}footprints/operations/raw/{mergedsample}.DDX53.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.ZBTB43.rawFPanalysis.bamcopy9.done', 
 		'{path}footprints/operations/raw/{mergedsample}.GLTPD1.rawFPanalysis.bamcopy10.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RNF138.rawFPanalysis.bamcopy11.done', 
-		'{path}footprints/operations/raw/{mergedsample}.UBB.rawFPanalysis.bamcopy12.done', 
-		'{path}footprints/operations/raw/{mergedsample}.BAD.rawFPanalysis.bamcopy13.done', 
-		'{path}footprints/operations/raw/{mergedsample}.DAZAP1.rawFPanalysis.bamcopy14.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SSX3.rawFPanalysis.bamcopy15.done', 
-		'{path}footprints/operations/raw/{mergedsample}.AKR1A1.rawFPanalysis.bamcopy16.done', 
-		'{path}footprints/operations/raw/{mergedsample}.SPR.rawFPanalysis.bamcopy17.done', 
-		'{path}footprints/operations/raw/{mergedsample}.DDX4.rawFPanalysis.bamcopy18.done', 
-		'{path}footprints/operations/raw/{mergedsample}.RPL35.rawFPanalysis.bamcopy19.done', 
-		'{path}footprints/operations/raw/{mergedsample}.ESX1.rawFPanalysis.bamcopy20.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group61.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group81.done'
 	shell:
 		'touch {output}'
-rule rawFPanalysis_group62:
+rule rawFPanalysis_group82:
+	input:
+		'{path}footprints/operations/raw/{mergedsample}.RNF138.rawFPanalysis.bamcopy1.done', 
+		'{path}footprints/operations/raw/{mergedsample}.UBB.rawFPanalysis.bamcopy2.done', 
+		'{path}footprints/operations/raw/{mergedsample}.BAD.rawFPanalysis.bamcopy3.done', 
+		'{path}footprints/operations/raw/{mergedsample}.DAZAP1.rawFPanalysis.bamcopy4.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SSX3.rawFPanalysis.bamcopy5.done', 
+		'{path}footprints/operations/raw/{mergedsample}.AKR1A1.rawFPanalysis.bamcopy6.done', 
+		'{path}footprints/operations/raw/{mergedsample}.SPR.rawFPanalysis.bamcopy7.done', 
+		'{path}footprints/operations/raw/{mergedsample}.DDX4.rawFPanalysis.bamcopy8.done', 
+		'{path}footprints/operations/raw/{mergedsample}.RPL35.rawFPanalysis.bamcopy9.done', 
+		'{path}footprints/operations/raw/{mergedsample}.ESX1.rawFPanalysis.bamcopy10.done', 
+	output:
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group82.done'
+	shell:
+		'touch {output}'
+rule rawFPanalysis_group83:
 	input:
 		'{path}footprints/operations/raw/{mergedsample}.CBFB.rawFPanalysis.bamcopy1.done', 
 		'{path}footprints/operations/raw/{mergedsample}.PRRX2.rawFPanalysis.bamcopy2.done', 
@@ -1696,7 +1824,6 @@ rule rawFPanalysis_group62:
 		'{path}footprints/operations/raw/{mergedsample}.HOXA6.rawFPanalysis.bamcopy8.done', 
 		'{path}footprints/operations/raw/{mergedsample}.HOXB6.rawFPanalysis.bamcopy9.done'
 	output:
-		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group62.done'
+		'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group83.done'
 	shell:
 		'touch {output}'
-
