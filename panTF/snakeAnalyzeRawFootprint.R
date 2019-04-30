@@ -24,11 +24,12 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(BiocGenerics))
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(GenomicAlignments))
+  suppressMessages(library(BSgenome.Hsapiens.UCSC.hg38))
   suppressMessages(library(Rsamtools))
   suppressMessages(library(genomation))
   suppressMessages(library(stats4))
   suppressMessages(library(rlist))
-  
+
   ## Load the binding sites for current gene
   cat("Loading binding sites", "\n")
   load(sitesPath)
@@ -136,12 +137,27 @@ if (file.exists(footprintDataPath) == TRUE){
     ## Convert to a matrix
     insertionMatrix <- as.matrix(insertionViews)
     
-    #### Calculate read statistics
-    # Total number of reads in input bam file
-    librarySize <- length(bamIn)
-    # 
-    coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
-    #
+    #### Calculate read statistics ####
+    
+    ## Build a GRanges object containing ranges for standard hg38
+    scope <- paste0("chr", c(1:22, "X", "Y"))
+    grHg38 <- GRanges(seqinfo(BSgenome.Hsapiens.UCSC.hg38))
+    grHg38 <- keepStandardChromosomes(grHg38, pruning.mode="coarse")
+    grHg38 <- keepSeqlevels(grHg38, scope, pruning.mode="coarse")
+    grHg38 <- trim(grHg38, use.names = TRUE)
+    
+    
+    # The total number of reads read from the bam file,
+    # After filtering for standard chromosomes, etc
+    # Total number of reads that overlap with the extended
+    # ranges for the current binding motif matches
+    totalReads <- length(grIn@ranges)
+    # reduce() 'collapses' any overlapping reads into a single range
+    # width() returns the widths of all reads in the GRanges object
+    # numCutSites therefore = the total number of unique bp where there is an insertion
+    numCutSites <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
+    # libraryFactor = current total insertions / 
+    # where there is at least one insertion
     libraryFactor <- (librarySize / coverageSize)
       
     ## Store and save all the data for downstream analysis
