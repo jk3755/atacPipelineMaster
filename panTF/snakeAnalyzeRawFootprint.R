@@ -91,6 +91,10 @@ if (file.exists(footprintDataPath) == TRUE){
     ## Extend each binding site in the Granges to the analysis window (+/- 250 bp)
     cat("Processing analysis window for each binding site", "\n")
     extendedSites <- promoters(genomeSites, upstream = 250, downstream = (250 + motifWidth), use.names=TRUE)
+    ## Trim to standard ranges only
+    extendedSites <- keepStandardChromosomes(extendedSites, pruning.mode="coarse")
+    extendedSites <- keepSeqlevels(extendedSites, scope, pruning.mode="coarse")
+    extendedSites <- trim(extendedSites, use.names = TRUE)
     
     ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
     ## Consider each read as a unique element (insertion), not paired end
@@ -128,44 +132,49 @@ if (file.exists(footprintDataPath) == TRUE){
     insertionRLE <- coverage(grShiftedInsertions)
     ## Get rid of the mitochondrial data
     insertionRLE@listData <- insertionRLE@listData[which(names(insertionRLE@listData) != "chrM")]
-    ## Get the matching sites
-    extendedSites <- keepStandardChromosomes(extendedSites, pruning.mode="coarse")
-    extendedSites <- keepSeqlevels(extendedSites, scope, pruning.mode="coarse")
-    extendedSites <- trim(extendedSites, use.names = TRUE)
     ## Create a views object for the Rle list using the Granges sites data
     insertionViews <- Views(insertionRLE, extendedSites)
     ## Convert to a matrix
     insertionMatrix <- as.matrix(insertionViews)
     
     #### Calculate read statistics ####
-    
+    cat("Calculating read statistics", "\n")
     ## Build a GRanges object containing ranges for standard hg38
-    scope <- paste0("chr", c(1:22, "X", "Y"))
-    grHg38 <- GRanges(seqinfo(BSgenome.Hsapiens.UCSC.hg38))
-    grHg38 <- keepStandardChromosomes(grHg38, pruning.mode="coarse")
-    grHg38 <- keepSeqlevels(grHg38, scope, pruning.mode="coarse")
-    grHg38 <- trim(grHg38, use.names = TRUE)
-    
-    
+    # scope <- paste0("chr", c(1:22, "X", "Y"))
+    # grHg38 <- GRanges(seqinfo(BSgenome.Hsapiens.UCSC.hg38))
+    # grHg38 <- keepStandardChromosomes(grHg38, pruning.mode="coarse")
+    # grHg38 <- keepSeqlevels(grHg38, scope, pruning.mode="coarse")
+    # grHg38 <- trim(grHg38, use.names = TRUE)
+    # ## Count the total reads in standard ranges in library
+    # cat("Counting total reads in library", "\n")
+    # paramHg38 <- ScanBamParam(which = grHg38)
+    # totalLibraryReads <- countBam(bamFile, param = paramHg38)
+    ## Count the total reads in current analysis ranges
     # The total number of reads read from the bam file,
     # After filtering for standard chromosomes, etc
     # Total number of reads that overlap with the extended
     # ranges for the current binding motif matches
-    totalReads <- length(grIn@ranges)
+    totalCurrentReads <- length(grIn@ranges)
+    ## Count the number of insertion sites in current analysis range
     # reduce() 'collapses' any overlapping reads into a single range
     # width() returns the widths of all reads in the GRanges object
     # numCutSites therefore = the total number of unique bp where there is an insertion
-    numCutSites <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
-    # libraryFactor = current total insertions / 
+    numCurrentCutSites <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
+    ## Get the total size in bp of the current analysis range
+    bpInCurrentAnalysisWindow <- sum(as.numeric(width(reduce(extendedSites, ignore.strand=TRUE))))
+    ## Calculate the library factor
+    # libraryFactor = current total insertions / total bp in current analysis window
     # where there is at least one insertion
-    libraryFactor <- (librarySize / coverageSize)
+    libraryFactor <- (totalCurrentReads / bpInCurrentAnalysisWindow)
       
     ## Store and save all the data for downstream analysis
     cat("Storing data in a list object", "\n")
     tempData <- list()
     ## Transfer the data
-    tempData$librarySize <- librarySize
-    tempData$coverageSize <- coverageSize
+    #tempData$totalLibraryReads <- totalLibraryReads
+    tempData$totalCurrentReads <- totalCurrentReads
+    tempData$numCurrentCutSites <- numCurrentCutSites
+    tempData$bpInCurrentAnalysisWindow <- bpInCurrentAnalysisWindow
     tempData$libraryFactor <- libraryFactor
     ##
     tempData$PWM <- PWM
@@ -174,7 +183,6 @@ if (file.exists(footprintDataPath) == TRUE){
     tempData$motifWidth <- motifWidth
     tempData$extendedSites <- extendedSites
     tempData$insertionMatrix <- insertionMatrix
-    
     ## Omitting these data will significantly reduce mem and storage reqs
     #tempData$shiftedInsertions <- grShiftedInsertions
     #tempData$insertionRLE <- insertionRLE
