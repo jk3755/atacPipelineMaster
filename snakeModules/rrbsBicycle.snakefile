@@ -27,6 +27,7 @@
 # bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle reference-index -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -v 2 -t 20
 #
 # ALIGN THE READS
+# This will take some time, depending on how big the input .fastq is
 # -t specifies alignment threads
 # -v specifies bowtie version
 ## ERRORS MAY BE THROWN IF YOU USE THE WRONG Q SCORES, TRY SPECIFYING WITH -Q@ OPTION ##

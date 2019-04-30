@@ -114,7 +114,7 @@ if (file.exists(dataOutPath) == TRUE){
       
       ##
       cat("Processing motif", a, "\n")
-      #tryCatch({
+      tryCatch({
         
         ############################################################
         ## Load the temporary data
@@ -204,7 +204,7 @@ if (file.exists(dataOutPath) == TRUE){
         peakSites <- keepSeqlevels(peakSites, scope, pruning.mode="coarse")
         peakSites <- trim(peakSites, use.names = TRUE)
         numPeakSites <- length(peakSites)
-        cat("Found", numPeakSites, "motif binding sites in peak accessibility regions", "\n")
+        cat("Found", numPeakSites, " binding sites in peak accessibility regions", "\n")
         ##
         boundPeakOverlap <- findOverlaps(peakSites, boundGenomeSites)
         boundPeakIndex <- unique(boundPeakOverlap@to)
@@ -262,9 +262,6 @@ if (file.exists(dataOutPath) == TRUE){
         tempData$numGenomeSites <- numGenomeSites
         tempData$motifWidth <- motifWidth
         tempData$extendedSites <- extendedSites
-        tempData$shiftedInsertions <- shiftedInsertions
-        tempData$insertionRLE <- insertionRLE
-        tempData$insertionViews <- insertionViews
         tempData$insertionMatrix <- insertionMatrix
         ##
         tempData$siteTotalSignal <- siteTotalSignal
@@ -275,7 +272,6 @@ if (file.exists(dataOutPath) == TRUE){
         tempData$tvalue <- tvalue
         tempData$pvaluePassSiteIdx <- pvaluePassSiteIdx
         tempData$bfPvalueSiteIdx <- bfPvalueSiteIdx
-        tempData$tvalue <- tvalue
         ##
         tempData$boundGenomeSites <- boundGenomeSites
         tempData$numBoundGenomeSites <- numBoundGenomeSites
@@ -306,12 +302,12 @@ if (file.exists(dataOutPath) == TRUE){
         
         motifIdx <= (motifIdx + 1)
         
-      # }, # end try
-      # error=function(cond){
-      #   message(cond)
-      #   return(NA)
-      # },
-      # finally={})
+      }, # end try
+      error=function(cond){
+        message(cond)
+        return(NA)
+      },
+      finally={})
 
     } # end for (a in 1:numMotif)
   } # end if (length(footprintData) == 0)
