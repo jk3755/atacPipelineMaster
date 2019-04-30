@@ -166,6 +166,10 @@ if (file.exists(footprintDataPath) == TRUE){
     # libraryFactor = current total insertions / total bp in current analysis window
     # where there is at least one insertion
     libraryFactor <- (totalCurrentReads / bpInCurrentAnalysisWindow)
+    
+    ## Normalize values in insertion matrix, z-scores
+    insertionStandardDeviation <- sd(insertionMatrix)
+    normalizedInsertionMatrix <- ((insertionMatrix - libraryFactor) / insertionStandardDeviation)
       
     ## Store and save all the data for downstream analysis
     cat("Storing data in a list object", "\n")
