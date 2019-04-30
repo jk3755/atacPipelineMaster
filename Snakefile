@@ -38,6 +38,8 @@ include: "snakeModules/scanPWM.snakefile"
 
 include: "snakeModules/panTFraw.snakefile"
 
+include: "snakeModules/rrbsBicycle.snakefile"
+
 #configfile: "snakeModules/config.yaml"
 
 ########################################################################################################################################
@@ -155,6 +157,10 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}correlation
         #
+        mkdir -p -v {wildcards.path}rrbs
+        mkdir -p -v {wildcards.path}rrbs/project {wildcards.path}rrbs/reference {wildcards.path}rrbs/reads
+
+
         touch {output}
         """
 
