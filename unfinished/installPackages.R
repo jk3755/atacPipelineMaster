@@ -19,6 +19,7 @@ biocLite("viper", suppressUpdates = TRUE)
 biocLite("annotate", suppressUpdates = TRUE)
 biocLite("org.Hs.eg.db", suppressUpdates = TRUE)
 biocLite("aracne.networks", suppressUpdates = TRUE)
+biocLite("methylKit", suppressUpdates = TRUE)
 ##
 install.packages("rlist")
 install.packages("ggpubr")

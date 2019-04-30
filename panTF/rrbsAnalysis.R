@@ -1,4 +1,6 @@
 library(VariantAnnotation)
+library(BiSeq)
+library(methylKit)
 ##
 rrbsPath <- "C:\\Users\\jsk33\\Desktop\\rrbs\\SRR8633497_1.fastq_hg38.fa.methylcytosines.vcf"
 
@@ -11,3 +13,8 @@ rrbs <- keepStandardChromosomes(rrbs, pruning.mode="coarse")
 rrbs <- keepSeqlevels(rrbs, scope, pruning.mode="coarse")
 rrbs <- trim(rrbs, use.names = TRUE)
 numSites <- length(rrbs)
+
+
+## VCF methylation calls by bicycle
+## CHG - methylation call for a cytosine in a CG context
+## CHH - methylation call for a cytosine in a non-CG context
