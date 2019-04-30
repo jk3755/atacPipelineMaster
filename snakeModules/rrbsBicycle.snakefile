@@ -1,6 +1,9 @@
 ####################################################################################################
 ##### METHYLATION ANALYSIS WITH BICYCLE PIPELINE ###################################################
 ####################################################################################################
+# Bicycle pipeline manual can be found here:
+# http://www.sing-group.org/bicycle/manual.html#faq
+#
 # hg38 reference sequence in .fa (fasta) format can be found here:
 # http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/
 
