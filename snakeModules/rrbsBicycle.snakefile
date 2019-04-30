@@ -35,13 +35,14 @@
 # bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle align -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -t 10 -v 2 -q2 phred33
 #
 # ANALYZE METHYLATION
+# Will sort, convert to bam, and index first, methylation analysis takes a few minutes
 # -n specifies the number of threads
 # -r specifies ignore non-correctly bisulfite-converted reads
 # -a specifies remove ambiguous (aligned to two strands) reads
 # -o only use uniquely mapping reads
 # -f sets FDR threshold (default = 0.01)
 # -c remove clonal reads
-# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle analyze-methylation -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -n 20 -r -a -c 
+# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle analyze-methylation -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -n 20 -f 0.05
 
 
 #rule generate_motifData:

@@ -1217,20 +1217,3 @@ rule PANTF_process_footprint_analysis:
 ########################################################################################################################################
 #### RRBS ANALYSIS #####################################################################################################################
 ########################################################################################################################################
-# bicycle will want to create the PROJECT directory itself, so don't do it beforehand
-# -p specifies the project directory
-# -r specifies the reference sequence directory (.fa format)
-# -f specifies the reads data directory (.fastq format)
-#
-# CREATE THE PROJECT FIRST
-# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle create-project -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -r /home/ubuntu2/atac/h508/wt02a/rrbs/reference -f /home/ubuntu2/atac/h508/wt02a/rrbs/reads
-#
-# CREATE THE BISULFATION REFERENCE
-# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle reference-bisulfitation -p /home/ubuntu2/atac/h508/wt02a/rrbs/project
-#
-# CREATE THE REFERENCE INDEX
-# -v specifies the bowtie version to use
-# -t specifies the number of bowtie2 threads to use
-# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle reference-index -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -v 2 -t 20
-#
-#
