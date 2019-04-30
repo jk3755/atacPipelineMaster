@@ -1,46 +1,25 @@
-#if (!requireNamespace("BiocManager", quietly = TRUE))
-#   install.packages("BiocManager")
-BiocManager::install("aracne.networks", version = "3.8")
-BiocManager::install("org.Hs.eg.db")
-BiocManager::install("annotate")
-BiocManager::install("viper")
-BiocManager::install("AnnotationDbi")
-BiocManager::install("ATACseqQC")
-BiocManager::install("MotifDb")
-BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
-BiocManager::install("Rsamtools")
-BiocManager::install("ChIPpeakAnno")
-BiocManager::install("GenomicAlignments")
-BiocManager::install("BiocGenerics")
-BiocManager::install("parallel")
-install.packages("rlist")
-
-
+##
 ## Install libraries, if necessary
 source("https://bioconductor.org/biocLite.R")
+##
+biocLite("BiocGenerics", suppressUpdates = TRUE)
+biocLite("GenomicRanges", suppressUpdates = TRUE)
+biocLite("GenomicAlignments", suppressUpdates = TRUE)
 biocLite("VariantAnnotation", suppressUpdates = TRUE)
-
-
-
-#biocLite("GenomicRanges", suppressUpdates = TRUE)
-#biocLite("stats4", suppressUpdates = TRUE)
-#biocLite("BiocGenerics", suppressUpdates = TRUE)
-#biocLite("parallel", suppressUpdates = TRUE)
-#biocLite("Rsamtools", suppressUpdates = TRUE)
-#biocLite("GenomicAlignments", suppressUpdates = TRUE)
-#biocLite("genomation", suppressUpdates = TRUE)
-
-
-## Install libraries, if necessary
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("GenomicRanges", suppressUpdates = TRUE)
-#biocLite("stats4", suppressUpdates = TRUE)
-#biocLite("BiocGenerics", suppressUpdates = TRUE)
-#biocLite("parallel", suppressUpdates = TRUE)
-#biocLite("Rsamtools", suppressUpdates = TRUE)
-#biocLite("GenomicAlignments", suppressUpdates = TRUE)
-#biocLite("genomation", suppressUpdates = TRUE)
-#biocLite("seqLogo", suppressUpdates = TRUE)
-#biocLite("ChIPpeakAnno", suppressUpdates = TRUE)
-#install.packages("ggplot2")
-#install.packages("ggpubr")
+biocLite("BiSeq", suppressUpdates = TRUE)
+biocLite("Rsamtools", suppressUpdates = TRUE)
+biocLite("genomation", suppressUpdates = TRUE)
+biocLite("stats4", suppressUpdates = TRUE)
+biocLite("seqLogo", suppressUpdates = TRUE)
+biocLite("MotifDb", suppressUpdates = TRUE)
+biocLite("BSgenome.Hsapiens.UCSC.hg38", suppressUpdates = TRUE)
+biocLite("ChIPpeakAnno", suppressUpdates = TRUE)
+biocLite("AnnotationDbi", suppressUpdates = TRUE)
+biocLite("viper", suppressUpdates = TRUE)
+biocLite("annotate", suppressUpdates = TRUE)
+biocLite("org.Hs.eg.db", suppressUpdates = TRUE)
+biocLite("aracne.networks", suppressUpdates = TRUE)
+##
+install.packages("rlist")
+install.packages("ggpubr")
+install.packages("ggplot2")
