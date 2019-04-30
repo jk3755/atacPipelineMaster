@@ -21,6 +21,7 @@
 # bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle reference-bisulfitation -p /home/ubuntu2/atac/h508/wt02a/rrbs/project
 #
 # CREATE THE REFERENCE INDEX
+# This may take several hours, even with 20 threads
 # -v specifies the bowtie version to use
 # -t specifies the number of bowtie2 threads to use
 # bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle reference-index -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -v 2 -t 20
@@ -28,7 +29,9 @@
 # ALIGN THE READS
 # -t specifies alignment threads
 # -v specifies bowtie version
-# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle align -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -t 20 -v 2
+## ERRORS MAY BE THROWN IF YOU USE THE WRONG Q SCORES, TRY SPECIFYING WITH -Q@ OPTION ##
+# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle align -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -t 10 -v 2
+# bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle align -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -t 10 -v 2 -q2 phred33
 #
 # ANALYZE METHYLATION
 # -n specifies the number of threads
@@ -40,8 +43,8 @@
 # bash /home/ubuntu2/atac/programs/bicycle/cmd/bicycle analyze-methylation -p /home/ubuntu2/atac/h508/wt02a/rrbs/project -n 20 -r -a -c 
 
 
-rule generate_motifData:
-    output:
-        "sites/motifData.Rdata"
-    script:
-        "scripts/scanPWM/generateMotifData.R"
+#rule generate_motifData:
+#    output:
+#        "sites/motifData.Rdata"
+#    script:
+#        "scripts/scanPWM/generateMotifData.R"

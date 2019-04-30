@@ -13,38 +13,30 @@ generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
   # inputSignals = unique values for total signal
   # analysisWidth = total bp in region of interest (flank + background + motif)
   # motifWidth = motif width
-  
   ##
   #cat("Generating a null footprint model with the following parameters:", "\n")
   #cat("Iterations:", iterations, "\n")
   #cat("Input signal:", inputSignal, "\n")
   #cat("Analysis window (bp):", analysisWidth, "\n")
   #cat("Motif width (bp):", motifWidth, "\n")
-  
   # declare vector of size n to store average motif signal values
   averages <- c()
-  
   # generate the null models and calculate motif averages
   for (a in 1:iterations){
-    
     # declare the null vector
     null <- c(1:(analysisWidth))
-    
     # randomly distribute the total signal
     # size = the number of values to distribute
     # prob = probability of each site
     # length = length of the generated vector
     null <- c(as.vector(rmultinom(1, size=inputSignal, prob=rep(1, length(null)))))
-    
     ## Calculate the mean signal in motif region
     motifStart <- ((analysisWidth - motifWidth)/2)
     motifEnd <- (motifStart + motifWidth)
     motifAvg <- (sum(null[motifStart:motifEnd])) / motifWidth
-    
     ## Store the average values
     averages[a] <- motifAvg
-    
-  } # end for (a in 1:n)
+    } # end for (a in 1:n)
   return(averages)
 } # end generateNullFP function
 
@@ -126,6 +118,7 @@ if (file.exists(dataOutPath) == TRUE){
         
         ############################################################
         ## Load the temporary data
+        tempData <- list()
         com <- paste0("tempData <- footprintData$", motifNames[a])
         eval(parse(text = com))
         ##
@@ -137,9 +130,6 @@ if (file.exists(dataOutPath) == TRUE){
         numGenomeSites <- tempData[["numGenomeSites"]]
         motifWidth <- tempData[["motifWidth"]]
         extendedSites <- tempData[["extendedSites"]]
-        shiftedInsertions <- tempData[["shiftedInsertions"]]
-        insertionRLE <- tempData[["insertionRLE"]]
-        insertionViews <- tempData[["insertionViews"]]
         insertionMatrix <- tempData[["insertionMatrix"]]
         ############################################################
         
