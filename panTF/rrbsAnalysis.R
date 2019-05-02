@@ -1,10 +1,14 @@
 ##
 library(VariantAnnotation)
+library(GenomicRanges)
 
 ##
-rrbsPath <- "C:\\Users\\jsk33\\Desktop\\rrbs\\SRR8633497_1.fastq_hg38.fa.methylcytosines.vcf"
+rrbsPath <- "C:\\Users\\jsk33\\Desktop\\SRR8633497_1.fastq_hg38.fa.methylcytosines.vcf"
 
-##
+## VCF methylation calls by bicycle
+## CHG - methylation call for a cytosine in a CG context
+## CHH - methylation call for a cytosine in a non-CG context
+## CG - non-methylated?
 rrbs <- readVcf(file = rrbsPath, genome = "hg38")
 
 ## Trim the rrbs data to standard chromosomes only
@@ -14,10 +18,17 @@ rrbs <- keepSeqlevels(rrbs, scope, pruning.mode="coarse")
 rrbs <- trim(rrbs, use.names = TRUE)
 numSites <- length(rrbs)
 
-
-## VCF methylation calls by bicycle
-## CHG - methylation call for a cytosine in a CG context
-## CHH - methylation call for a cytosine in a non-CG context
-
-
+##
 load("C:/Users/jsk33/Desktop/H508A-WT-02.ODC1.rawFootprintData.Rdata")
+
+## FPs
+grFP <- footprintData[["motif1"]][["genomeSites"]]
+
+
+## Overlaps
+methOverlaps <- findOverlaps(grFP, rrbs)
+methIdx <- methOverlaps@to
+meth2 <- rrbs[methIdx]
+
+##
+x <- which(meth2)
