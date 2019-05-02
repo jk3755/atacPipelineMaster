@@ -31,4 +31,6 @@ methIdx <- methOverlaps@to
 meth2 <- rrbs[methIdx]
 
 ##
-x <- which(meth2)
+x <- which(meth2@rowRanges@ranges@NAMES == "CHG")
+y <- which(meth2@rowRanges@ranges@NAMES == "CHH")
+z <- which(meth2@rowRanges@ranges@NAMES == "CG")
