@@ -1,6 +1,6 @@
+##
 library(VariantAnnotation)
-library(BiSeq)
-library(methylKit)
+
 ##
 rrbsPath <- "C:\\Users\\jsk33\\Desktop\\rrbs\\SRR8633497_1.fastq_hg38.fa.methylcytosines.vcf"
 
@@ -18,3 +18,6 @@ numSites <- length(rrbs)
 ## VCF methylation calls by bicycle
 ## CHG - methylation call for a cytosine in a CG context
 ## CHH - methylation call for a cytosine in a non-CG context
+
+
+load("C:/Users/jsk33/Desktop/H508A-WT-02.ODC1.rawFootprintData.Rdata")
