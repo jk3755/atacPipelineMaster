@@ -211,7 +211,6 @@ if (file.exists(dataOutPath) == TRUE){
   ## Get the total number of reads in the sample
   cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
   load(sampleTotalReadsPath)
-  sampleTotalReads <- sampleTotalReads[6]
   cat("Found", sampleTotalReads, "total reads in current sample", "\n")
   
   ## Load the peaks data for current sample
