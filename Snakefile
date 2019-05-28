@@ -176,6 +176,13 @@ rule run_pantf_lncap_group2:
         expand("lncap/cr05/footprints/operations/groups/LNCaP-CR-05.rawFPanalysis.group{param}.done", param=config["group"]),
         expand("lncap/cr08/footprints/operations/groups/LNCaP-CR-08.rawFPanalysis.group{param}.done", param=config["group"])
 
+rule parse_pantf_lncap_group2:
+    input:
+        expand("lncap/wt01/footprints/operations/groups/LNCaP-WT-01.parseFP.group{param}.done", param=config["group"]),
+        expand("lncap/cr02/footprints/operations/groups/LNCaP-CR-02.parseFP.group{param}.done", param=config["group"]),
+        expand("lncap/cr05/footprints/operations/groups/LNCaP-CR-05.parseFP.group{param}.done", param=config["group"]),
+        expand("lncap/cr08/footprints/operations/groups/LNCaP-CR-08.parseFP.group{param}.done", param=config["group"])
+
 ########################################################################################################################################
 #### SPOOL INDIVIDUAL OPERATIONS #######################################################################################################
 ########################################################################################################################################
@@ -1149,8 +1156,8 @@ rule METRICS_annotate_peaks_merged:
 
 rule METRICS_sample_total_reads:
     input:
-        a="{path}preprocessing/10unique/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-repmerged.bai"
+        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
     output:
         "{path}metrics/{mergedsample}.totalreads.Rdata"
     script:

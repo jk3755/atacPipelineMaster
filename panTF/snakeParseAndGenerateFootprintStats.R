@@ -208,16 +208,6 @@ if (file.exists(dataOutPath) == TRUE){
     #   dev.off()
   } # end plotInsertionHeatmap function
   
-  ## Get the total number of reads in the sample
-  cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
-  load(sampleTotalReadsPath)
-  cat("Found", sampleTotalReads, "total reads in current sample", "\n")
-  
-  ## Load the peaks data for current sample
-  cat("Loading sample accesibility peak data from:", peaksPath, "\n")
-  samplePeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
-  samplePeaks <- keepStandardChromosomes(samplePeaks, pruning.mode="coarse")
-  
   ## Load the raw footprintData file
   footprintDataPath <- gsub("operations", "data", footprintDataPath)
   footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
@@ -236,6 +226,16 @@ if (file.exists(dataOutPath) == TRUE){
   if (numMotif == 0){
     cat(numMotif, "No data to analyze. Skipping", "\n")
   } else {
+    
+    ## Get the total number of reads in the sample
+    cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
+    load(sampleTotalReadsPath)
+    cat("Found", sampleTotalReads, "total reads in current sample", "\n")
+    
+    ## Load the peaks data for current sample
+    cat("Loading sample accesibility peak data from:", peaksPath, "\n")
+    samplePeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
+    samplePeaks <- keepStandardChromosomes(samplePeaks, pruning.mode="coarse")
     
     #### Perform the parse and stats analysis 
     cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
@@ -429,6 +429,11 @@ if (file.exists(dataOutPath) == TRUE){
       eval(parse(text = com))
       
     } # end for (a in 1:numMotif)
+    
+    ## Save the parsed footprint data
+    cat("Saving finished data for", geneName, "\n")
+    save(footprintData, file = dataOutPath)
+    
   } # end if (numMotif == 0)
 } # end if (file.exists(dataOutPath) == TRUE)
 
