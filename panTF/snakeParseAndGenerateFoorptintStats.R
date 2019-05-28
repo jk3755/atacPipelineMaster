@@ -239,9 +239,8 @@ if (file.exists(dataOutPath) == TRUE){
   
   ## Load the peaks data for current sample
   cat("Loading sample accesibility peak data from:", peaksPath, "\n")
-  load(sampleTotalReadsPath)
-  sampleTotalReads <- sampleTotalReads[6]
-  cat("Found", sampleTotalReads, "total reads in current sample", "\n")
+  samplePeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
+  samplePeaks <- keepStandardChromosomes(samplePeaks, pruning.mode="coarse")
   
   ## Load the raw footprintData file
   footprintDataPath <- gsub("operations", "data", footprintDataPath)
@@ -271,9 +270,7 @@ if (file.exists(dataOutPath) == TRUE){
       
       cat("Processing data for motif", a, "\n")
       
-      ##
-      tryCatch({
-        
+      
         ## Prepare the data from the raw footprint analysis
         com <- paste0("tempData <- footprintData$motif", a)
         eval(parse(text = com))
@@ -292,74 +289,79 @@ if (file.exists(dataOutPath) == TRUE){
         
         
         #### Calculate basic statistics for each site ####
-        siteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 7)
+        siteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
         colnames(siteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
-                                      "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp") 
+                                      "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
+                                      "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
         
         ## Populate the basic stats matrix
         for (b in 1:numSites){
+          # Site index
           siteBasicStats[b,1] <- b
+          # Total signal
           siteBasicStats[b,2] <- sum(insMatrix[b,])
+          # Total signal per bp
           siteBasicStats[b,3] <- siteBasicStats[b,2] / (500 + motifWidth)
+          # Motif signal per bp
           siteBasicStats[b,4] <- sum(insMatrix[b,(250:(250+motifWidth))] / motifWidth)
+          # Flank signal per bp
           siteBasicStats[b,5] <- (sum(insMatrix[b,200:250]) + sum(insMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
+          # Background signal per bp
           siteBasicStats[b,6] <- (sum(insMatrix[b,1:50]) + sum(insMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
+          # Wide flank signal per bp
           siteBasicStats[b,7] <- (sum(insMatrix[b,1:250]) + sum(insMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
+          # Flank / background
+          siteBasicStats[b,8] <- siteBasicStats[b,5] / siteBasicStats[b,6]
+          # Motif / flank
+          siteBasicStats[b,9] <- siteBasicStats[b,4] / siteBasicStats[b,5]
+          # Motif / wide flank
+          siteBasicStats[b,10] <- siteBasicStats[b,4] / siteBasicStats[b,7]
         } # end for (b in 1:numSites)
         
         
-        
-        ## Normalize values in insertion matrix, z-scores
-        insertionStandardDeviation <- sd(insertionMatrix)
-        normalizedInsertionMatrix <- ((insertionMatrix - libraryFactor) / insertionStandardDeviation)
-        
-        
-        ## Data transfer to storage object and save
-        parseData <- list()
+        ## NEED TO CHECK MATH ON THIS ##
+        #### Normalize values in insertion matrix with z-scores
+        insStandardDeviation <- sd(insMatrix)
+        insMean <- mean(insMatrix)
         ##
-        parseData$PWM <- PWM
-        parseData$motifWidth <- motifWidth
-        parseData$allSites <- allSites
-        parseData$extSites <- extSites
-        parseData$numSites <- numSites
-        parseData$insMatrix <- insMatrix
-        parseData$libSize <- libSize
-        parseData$coverageSize <- coverageSize
-        parseData$libFactor <- libFactor
-        parseData$sampleTotalReads <- sampleTotalReads
-        parseData$siteBasicStats <- siteBasicStats
-        ##
-        com <- paste0("footprintData$motif", a, "<- parseData")
-        eval(parse(text = com))
-   
-
-
-
-
+        zscoreInsMatrix <- ((insMatrix - insMean) / insStandardDeviation)
         
-   
-        parseData$uniqueTotalSignals <- uniqueTotalSignals
-        parseData$nullModels <- nullModels
-        parseData$ttestPeak <- ttestPeak
-        parseData$pvaluePeak <- pvaluePeak
-        parseData$tvaluePeak <- tvaluePeak
-        parseData$peakPvaluePass <- peakPvaluePass
-        parseData$bfPvaluePeakPass <- bfPvaluePeakPass
-        parseData$bfInsMatrix <- bfInsMatrix
-        parseData$bfTotalSignal <- bfTotalSignal
-        parseData$bfProfile <- bfProfile
-        parseData$bfVector <- bfVector
-        parseData$bfSites <- bfSites
-        parseData$bfNumSites <- bfNumSites
+        ## Calculate basic statistics for z-score normalized matrix
+        zscoreBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+        colnames(zscoreBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+                                      "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
+                                      "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
+        
+        ## Populate the zscore stats matrix
+        for (b in 1:numSites){
+          # Site index
+          zscoreBasicStats[b,1] <- b
+          # Total signal
+          zscoreBasicStats[b,2] <- sum(zscoreInsMatrix[b,])
+          # Total signal per bp
+          zscoreBasicStats[b,3] <- zscoreBasicStats[b,2] / (500 + motifWidth)
+          # Motif signal per bp
+          zscoreBasicStats[b,4] <- sum(zscoreInsMatrix[b,(250:(250+motifWidth))] / motifWidth)
+          # Flank signal per bp
+          zscoreBasicStats[b,5] <- (sum(zscoreInsMatrix[b,200:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
+          # Background signal per bp
+          zscoreBasicStats[b,6] <- (sum(zscoreInsMatrix[b,1:50]) + sum(zscoreInsMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
+          # Wide flank signal per bp
+          zscoreBasicStats[b,7] <- (sum(zscoreInsMatrix[b,1:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
+          # Flank / background
+          zscoreBasicStats[b,8] <- zscoreBasicStats[b,5] / zscoreBasicStats[b,6]
+          # Motif / flank
+          zscoreBasicStats[b,9] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,5]
+          # Motif / wide flank
+          zscoreBasicStats[b,10] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,7]
+        } # end for (b in 1:numSites)
         
         
-        
-        
-        
-        
-        
+        #### Generate null models, use BF and BH correction to parse ####
         ## Find the unique values for total signal and generate null models
-        uniqueTotalSignals <- unique(siteTotalSignal)
+        uniqueTotalSignals <- unique(siteBasicStats[,2])
+        
+        
         
         ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
         nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
@@ -416,30 +418,55 @@ if (file.exists(dataOutPath) == TRUE){
         bfNumSites <- length(idxbfPeakPass)
         
         
+        
+        ## Data transfer to storage object and save
+        parseData <- list()
+        ##
+        parseData$PWM <- PWM
+        parseData$motifWidth <- motifWidth
+        parseData$allSites <- allSites
+        parseData$extSites <- extSites
+        parseData$numSites <- numSites
+        parseData$insMatrix <- insMatrix
+        parseData$libSize <- libSize
+        parseData$coverageSize <- coverageSize
+        parseData$libFactor <- libFactor
+        parseData$sampleTotalReads <- sampleTotalReads
+        parseData$siteBasicStats <- siteBasicStats
+        parseData$samplePeaks <- samplePeaks
+        parseData$insStandardDeviation <- insStandardDeviation
+        parseData$insMean <- insMean
+        parseData$zscoreInsMatrix <- zscoreInsMatrix
+        ##
+        parseData$uniqueTotalSignals <- uniqueTotalSignals
+        parseData$nullModels <- nullModels
+        parseData$ttestPeak <- ttestPeak
+        parseData$pvaluePeak <- pvaluePeak
+        parseData$tvaluePeak <- tvaluePeak
+        parseData$peakPvaluePass <- peakPvaluePass
+        parseData$bfPvaluePeakPass <- bfPvaluePeakPass
+        parseData$bfInsMatrix <- bfInsMatrix
+        parseData$bfTotalSignal <- bfTotalSignal
+        parseData$bfProfile <- bfProfile
+        parseData$bfVector <- bfVector
+        parseData$bfSites <- bfSites
+        parseData$bfNumSites <- bfNumSites
+        ##
+        com <- paste0("footprintData$motif", a, "<- parseData")
+        eval(parse(text = com))
+   
+
+        
         # end for (a in 1:numMotif)
         # end if (numMotif == 0)
   # end if (file.exists(dataOutPath) == TRUE)
     
      
-## Create the output file for snakemake
-cat("Creating output file for snakemake", geneName, "\n")
-file.create(outPath)
 
 
 
 
-
-  
-  
-      
-      
-      
-    }, # end try
-    error=function(cond){
-      message(cond)
-      return(NA)
-    },
-    finally={})
+   
 
     
   } # end for (a in 1:numMotif)
@@ -447,9 +474,9 @@ file.create(outPath)
   
 } # end if (file.exists(dataOutPath) == TRUE)
 
-##
+## Create the output file for snakemake
 file.create(outPath)
-cat("Finished!", "\n")
+cat("Finished parsing", "\n")
 
 
 
