@@ -165,58 +165,48 @@ if (file.exists(dataOutPath) == TRUE){
   } # end plotInsProb function
   
   plotInsertionHeatmap <- function(plotTitle = c(""), insMatrix, numSites, numBP, sites, heatPath){
-  #   
-  #   ## scale each row individually
-  #   for (f in 1:heatNumSites){
-  #     maxsig <- max(heatSigs[f,])
-  #     for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
-  #   maxsig <- 1
-  #   ## invert signals
-  #   for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
-  #   
-  #   ## Annotate the combined sublist name which will become the tital of the heatmap plot
-  #   heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
-  #   combined <- list()
-  #   com <- paste0("combined$", heatTitle, " <- heatSigs")
-  #   eval(parse(text = com))
-  #   
-  #   ##
-  #   svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
-  #   svg(file = svgPath)
-  #   cat("Saving svg footprint image at path:", svgPath, "\n")
-  #   
-  #   ## Margin controls
-  #   # margin(a,b,c,d)
-  #   # a = size of graph from top to bottom, higher value = smaller. default = 0.1
-  #   # b = size of graph from left to right, higher value = smaller. default = 0.005
-  #   # c = flips x axis?
-  #   # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
-  #   # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
-  #   # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
-  #   
-  #   ##
-  #   ChIPpeakAnno::featureAlignedHeatmap(combined,
-  #                                       feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
-  #                                       upper.extreme = maxsig, # set this to control the heatmap scale
-  #                                       annoMcols = "score",
-  #                                       sortBy = "score",
-  #                                       n.tile = heatNumBP,
-  #                                       margin = c(0.1, 0.005, 0.05, 0.2),
-  #                                       color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
-  #                                       gp = gpar(fontsize = 10),
-  #                                       newpage = TRUE)
-  #   dev.off()
+    #   
+    #   ## scale each row individually
+    #   for (f in 1:heatNumSites){
+    #     maxsig <- max(heatSigs[f,])
+    #     for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
+    #   maxsig <- 1
+    #   ## invert signals
+    #   for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
+    #   
+    #   ## Annotate the combined sublist name which will become the tital of the heatmap plot
+    #   heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
+    #   combined <- list()
+    #   com <- paste0("combined$", heatTitle, " <- heatSigs")
+    #   eval(parse(text = com))
+    #   
+    #   ##
+    #   svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
+    #   svg(file = svgPath)
+    #   cat("Saving svg footprint image at path:", svgPath, "\n")
+    #   
+    #   ## Margin controls
+    #   # margin(a,b,c,d)
+    #   # a = size of graph from top to bottom, higher value = smaller. default = 0.1
+    #   # b = size of graph from left to right, higher value = smaller. default = 0.005
+    #   # c = flips x axis?
+    #   # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
+    #   # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
+    #   # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
+    #   
+    #   ##
+    #   ChIPpeakAnno::featureAlignedHeatmap(combined,
+    #                                       feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
+    #                                       upper.extreme = maxsig, # set this to control the heatmap scale
+    #                                       annoMcols = "score",
+    #                                       sortBy = "score",
+    #                                       n.tile = heatNumBP,
+    #                                       margin = c(0.1, 0.005, 0.05, 0.2),
+    #                                       color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
+    #                                       gp = gpar(fontsize = 10),
+    #                                       newpage = TRUE)
+    #   dev.off()
   } # end plotInsertionHeatmap function
-  
-  ###########################
-  ## Make graph of the raw peak sites
-  #svgPath <- paste0(dirPath, "footprints/graphs/peaks/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
-  #svg(file = svgPath)
-  #cat("Saving peaks footprint image at path:", svgPath, "\n")
-  #plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
-  #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
-  #dev.off()
-  ############################
   
   ## Get the total number of reads in the sample
   cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
@@ -243,7 +233,6 @@ if (file.exists(dataOutPath) == TRUE){
   numMotif <- length(footprintData)
   cat("Found data for", numMotif, "non-0 unique motifs", "\n")
   
-  
   ## If no raw data is found, skip
   if (numMotif == 0){
     cat(numMotif, "No data to analyze. Skipping", "\n")
@@ -255,10 +244,8 @@ if (file.exists(dataOutPath) == TRUE){
     ##
     for (a in 1:numMotif){
       
-      cat("Processing data for motif", a, "\n")
-      
-      
       ## Prepare the data from the raw footprint analysis
+      cat("Processing data for motif", a, "\n")
       com <- paste0("tempData <- footprintData$motif", a)
       eval(parse(text = com))
       ##
@@ -273,7 +260,6 @@ if (file.exists(dataOutPath) == TRUE){
       ## Note that because trimming to standard xsomes is done, will need to set
       ## the total number of sites to the row number of the insertion matrix here
       numSites <- length(insMatrix[,1])
-      
       
       #### Calculate basic statistics for each site ####
       siteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
@@ -343,7 +329,6 @@ if (file.exists(dataOutPath) == TRUE){
         zscoreBasicStats[b,10] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,7]
       } # end for (b in 1:numSites)
       
-      
       #### Generate null models, use BF and BH correction to parse ####
       
       ## Find the unique values for total signal and generate null models
@@ -395,8 +380,16 @@ if (file.exists(dataOutPath) == TRUE){
       ## Perform benjamini-hochberg correction
       BHpvalue <- BH(pvalue, 0.05)
       
-      
       #### Generate insertion site probability graphs ####
+      ###########################
+      ## Make graph of the raw peak sites
+      #svgPath <- paste0(dirPath, "footprints/graphs/peaks/", sampleName, ".", geneName, ".", "motif", a, ".rawpeak.sites.svg")
+      #svg(file = svgPath)
+      #cat("Saving peaks footprint image at path:", svgPath, "\n")
+      #plotTitle <- paste0(sampleName, ".", geneName, ".", "motif", a, ".rawpeaks")
+      #plotInsProb(plotTitle = plotTitle, motifWidth = motifWidth, motifPWM = PWM, insVector = insVector)
+      #dev.off()
+      ############################
       
       ## Data transfer to storage object and save
       parseData <- list()
@@ -436,15 +429,13 @@ if (file.exists(dataOutPath) == TRUE){
       com <- paste0("footprintData$motif", a, "<- parseData")
       eval(parse(text = com))
       
-      
-      # end for (a in 1:numMotif)
-      # end if (numMotif == 0)
-      # end if (file.exists(dataOutPath) == TRUE)
-      
+    } # end for (a in 1:numMotif)
+  } # end if (numMotif == 0)
+} # end if (file.exists(dataOutPath) == TRUE)
+
 ## Create the output file for snakemake
 file.create(outPath)
 cat("Finished parsing", "\n")
-  
-  
-  
-  
+
+
+

@@ -34,6 +34,8 @@
 
 include: "snakeModules/panTFraw.snakefile"
 
+include: "snakeModules/panTFparse.snakefile"
+
 include: "snakeModules/scanPWM.snakefile"
 
 #configfile: "snakeModules/config.yaml"
@@ -159,6 +161,13 @@ rule run_pantf_lncap_group1:
         expand("lncap/cr01/footprints/operations/groups/LNCaP-CR-01.rawFPanalysis.group{param}.done", param=config["group"]),
         expand("lncap/cr04/footprints/operations/groups/LNCaP-CR-04.rawFPanalysis.group{param}.done", param=config["group"]),
         expand("lncap/cr07/footprints/operations/groups/LNCaP-CR-07.rawFPanalysis.group{param}.done", param=config["group"])
+
+rule parse_pantf_lncap_group1:
+    input:
+        expand("lncap/wt02/footprints/operations/groups/LNCaP-WT-02.parseFP.group{param}.done", param=config["group"]),
+        expand("lncap/cr01/footprints/operations/groups/LNCaP-CR-01.parseFP.group{param}.done", param=config["group"]),
+        expand("lncap/cr04/footprints/operations/groups/LNCaP-CR-04.parseFP.group{param}.done", param=config["group"]),
+        expand("lncap/cr07/footprints/operations/groups/LNCaP-CR-07.parseFP.group{param}.done", param=config["group"])
 
 rule run_pantf_lncap_group2:
     input:
@@ -1139,9 +1148,9 @@ rule METRICS_annotate_peaks_merged:
         "scripts/snakeAnnotateATAC.R"
 
 rule METRICS_sample_total_reads:
-	input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai"
+    input:
+        a="{path}preprocessing/10unique/{mergedsample}-repmerged.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-repmerged.bai"
     output:
         "{path}metrics/{mergedsample}.totalreads.Rdata"
     script:
@@ -1170,6 +1179,37 @@ rule xsample_footprint_direct_comparison:
         "xsample/footprints/{sample1}.{sample2}.{gene}.{motif}.xfootprint.Rdata"
     script:
         "script/snakeXsampleCompareFootprint.R"
+
+########################################################################################################################################
+#### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
+########################################################################################################################################
+
+## Note that even though this will be sped up by making 20 redundant copies of the bam file,
+## There is still a chance two processes will access the same file the way it is currently written
+## This will happen if two processes are launched with the same hard coded bam file
+## Note sure how to fix this, its probably fine for now
+## This code needs some work. Something is tripping it up if I try to run all TFs at once (gets stuck),
+## And I have also not been able to enforce strict group ordering in the execution
+## For now, I can run each group sequencially by using the shell command:
+## for i in {1..62}; do snakemake -j 20 run_group$i; done
+
+## Potential observation when writing/testing this block of code:
+## If I put all the TF targets into 62 target rule groups of 20 each,
+## And then attempt to run the pipeline by pulling an aggregator tool
+## That collects all 62 groups at once, it doesn't crash but stalls 
+## and does not run. This may be because the pipeline is pulling target
+## TFs from all 62 groups at once, so the entire cohort is available
+## to start new processes as soon as one finishes. What this means is,
+## FP targets that have very little computational requirements will finish
+## Quickly and then that thread will move on to a new target - until it reaches
+## One that has a heavy memory/computational load. All threads will do this until
+## Eventually all 20 processes are stuck on targets that have serious comp. requirements
+## And the pipeline will stall.
+## If, alternatively, you run the pipeline so that each group must finish completely before
+## the next one starts, this will not be a problem, as all the processes will sync up at
+## Each step and wait for the heavier ones to finish.
+
+## Note - this section utilizes rules defined in an auxillary snakefile called 'panTF.snakefile'
 
 rule AGGREGATOR_copy_bam:
     input:
@@ -1278,7 +1318,7 @@ rule PANTF_parse_and_generate_footprint_statistics:
     benchmark:
         '{path}footprints/benchmark/parse/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
-        "scripts/panTF/snakeParseFootprint.R"
+        "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
 rule PANTF_process_footprint_analysis:
     input:
