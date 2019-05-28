@@ -658,18 +658,6 @@ rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
         touch {output}
         """
 
-rule AGGREGATOR_preprocessing_steps:
-    input:
-        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-    output:
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
-    shell:
-        "touch {output}"
-
-########################################################################################################################################
-#### PEAK CALLING RULES ################################################################################################################
-########################################################################################################################################
-
 rule STEP19_MACS2_peaks_individual_global_normilization:
     # notes:
     # because we are going to use the TCGA data downstream likely as a reference point,
@@ -790,6 +778,14 @@ rule AGGREGATOR_peaks:
         "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
     output:
         "{path}operations/{mergedsample}-peaks.done.txt"
+    shell:
+        "touch {output}"
+
+rule AGGREGATOR_preprocessing_steps:
+    input:
+        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+    output:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
     shell:
         "touch {output}"
 
@@ -1142,11 +1138,21 @@ rule METRICS_annotate_peaks_merged:
     script:
         "scripts/snakeAnnotateATAC.R"
 
+rule METRICS_sample_total_reads:
+	input:
+        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
+        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai"
+    output:
+        "{path}metrics/{mergedsample}.totalreads.Rdata"
+    script:
+        "scripts/snakeCountSampleReads.R"
+
 rule AGGREGATOR_metrics_and_annotations:
     input:
         "{path}metrics/{mergedsample}.peak.genome.coverage.txt",
         "{path}operations/{mergedsample}.fragsizes.done.txt",
-        "{path}operations/{mergedsample}.mergedpeak.annotations.done.txt"
+        "{path}operations/{mergedsample}.mergedpeak.annotations.done.txt",
+        "{path}metrics/{mergedsample}.totalreads.Rdata"
     output:
         "{path}operations/{mergedsample}.metrics.annotations.done.txt"
     shell:
@@ -1244,7 +1250,6 @@ rule PANTF_copy_bai:
     shell:
         "cp {input} {output}"
 
-## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
 rule PANTF_raw_footprint_analysis:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
@@ -1261,7 +1266,6 @@ rule PANTF_raw_footprint_analysis:
     script:
         "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
-## Parsing the raw footprints involves identifying which genomic loci have a TF bound
 rule PANTF_parse_footprint_analysis:
     input:
         "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
@@ -1274,7 +1278,6 @@ rule PANTF_parse_footprint_analysis:
     script:
         "scripts/panTF/snakeParseFootprint.R"
 
-## Processing the parsed footprint data to generate plots, etc
 rule PANTF_process_footprint_analysis:
     input:
         "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
@@ -1287,8 +1290,6 @@ rule PANTF_process_footprint_analysis:
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
-## Remove the extra copies of the bam files once they are no longer needed
-## Not currently working due to method of running footprinting pipeline
 rule PANTF_remove_bamcopy:
     input:
         "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
