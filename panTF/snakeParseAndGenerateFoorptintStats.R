@@ -8,6 +8,7 @@ options(warn = -1)
 ## Set snakemake variables
 footprintDataPath <- snakemake@input[[1]]
 sampleTotalReadsPath <- snakemake@input[[2]]
+peaksPath <- snakemake@input[[3]]
 outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
@@ -236,6 +237,12 @@ if (file.exists(dataOutPath) == TRUE){
   sampleTotalReads <- sampleTotalReads[6]
   cat("Found", sampleTotalReads, "total reads in current sample", "\n")
   
+  ## Load the peaks data for current sample
+  cat("Loading sample accesibility peak data from:", peaksPath, "\n")
+  load(sampleTotalReadsPath)
+  sampleTotalReads <- sampleTotalReads[6]
+  cat("Found", sampleTotalReads, "total reads in current sample", "\n")
+  
   ## Load the raw footprintData file
   footprintDataPath <- gsub("operations", "data", footprintDataPath)
   footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
@@ -289,7 +296,6 @@ if (file.exists(dataOutPath) == TRUE){
         colnames(siteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
                                       "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp") 
         
-        
         ## Populate the basic stats matrix
         for (b in 1:numSites){
           siteBasicStats[b,1] <- b
@@ -308,14 +314,48 @@ if (file.exists(dataOutPath) == TRUE){
         normalizedInsertionMatrix <- ((insertionMatrix - libraryFactor) / insertionStandardDeviation)
         
         
-        ## Transfer all the data for the current motif to the storage object
-        cat("Transferring all data to storage object footprintData", "\n")
-        com <- paste0("footprintData$motif", idxMotif, " <- tempData")
+        ## Data transfer to storage object and save
+        parseData <- list()
+        ##
+        parseData$PWM <- PWM
+        parseData$motifWidth <- motifWidth
+        parseData$allSites <- allSites
+        parseData$extSites <- extSites
+        parseData$numSites <- numSites
+        parseData$insMatrix <- insMatrix
+        parseData$libSize <- libSize
+        parseData$coverageSize <- coverageSize
+        parseData$libFactor <- libFactor
+        parseData$sampleTotalReads <- sampleTotalReads
+        parseData$siteBasicStats <- siteBasicStats
+        ##
+        com <- paste0("footprintData$motif", a, "<- parseData")
         eval(parse(text = com))
+   
+
+
+
+
         
-        ## Update the motif index counter
-        cat("Updating motif index counter", "\n")
-        idxMotif <- (idxMotif + 1)
+   
+        parseData$uniqueTotalSignals <- uniqueTotalSignals
+        parseData$nullModels <- nullModels
+        parseData$ttestPeak <- ttestPeak
+        parseData$pvaluePeak <- pvaluePeak
+        parseData$tvaluePeak <- tvaluePeak
+        parseData$peakPvaluePass <- peakPvaluePass
+        parseData$bfPvaluePeakPass <- bfPvaluePeakPass
+        parseData$bfInsMatrix <- bfInsMatrix
+        parseData$bfTotalSignal <- bfTotalSignal
+        parseData$bfProfile <- bfProfile
+        parseData$bfVector <- bfVector
+        parseData$bfSites <- bfSites
+        parseData$bfNumSites <- bfNumSites
+        
+        
+        
+        
+        
         
         
         ## Find the unique values for total signal and generate null models
@@ -392,28 +432,7 @@ file.create(outPath)
   
   
       
-      ## Data transfer to storage object and save
-      parseData <- list()
-      ##
-      parseData$numSites <- numSites
-      parseData$insVector <- insVector
-      parseData$siteTotalSignal <- siteTotalSignal
-      parseData$uniqueTotalSignals <- uniqueTotalSignals
-      parseData$nullModels <- nullModels
-      parseData$ttestPeak <- ttestPeak
-      parseData$pvaluePeak <- pvaluePeak
-      parseData$tvaluePeak <- tvaluePeak
-      parseData$peakPvaluePass <- peakPvaluePass
-      parseData$bfPvaluePeakPass <- bfPvaluePeakPass
-      parseData$bfInsMatrix <- bfInsMatrix
-      parseData$bfTotalSignal <- bfTotalSignal
-      parseData$bfProfile <- bfProfile
-      parseData$bfVector <- bfVector
-      parseData$bfSites <- bfSites
-      parseData$bfNumSites <- bfNumSites
-      ##
-      com <- paste0("footprintData$motif", a, "$parseData <- parseData")
-      eval(parse(text = com))
+      
       
     }, # end try
     error=function(cond){
@@ -421,13 +440,10 @@ file.create(outPath)
       return(NA)
     },
     finally={})
-    gc()
+
     
   } # end for (a in 1:numMotif)
-  gc()
-  
-  ## Finish the script and create the output file for snakemake
-  save(footprintData, file = dataOutPath)
+
   
 } # end if (file.exists(dataOutPath) == TRUE)
 
