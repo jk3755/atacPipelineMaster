@@ -4,7 +4,6 @@ options(scipen = 999)
 ## will need to improve this code at some point
 options(warn = -1)
 
-
 ## Set snakemake variables
 footprintDataPath <- snakemake@input[[1]]
 sampleTotalReadsPath <- snakemake@input[[2]]
@@ -14,22 +13,17 @@ sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
-
 ##
 cat("Parsing and generating footprint statistics for", geneName, "from sample", sampleName, "\n")
-
 
 ## Set the output filepath for the Rdata object and perform a filecheck
 dataOutPath <- gsub("operations/parse", "data/parsed", outPath)
 dataOutPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", dataOutPath, perl = TRUE)
 cat("Output path for parsed data:", dataOutPath, "\n")
 
-
 ## Perform a filecheck 
 if (file.exists(dataOutPath) == TRUE){
-  
   cat("File already exists, skipping", "\n")
-  
 } else {
   
   ## Load libraries
@@ -170,55 +164,48 @@ if (file.exists(dataOutPath) == TRUE){
     
   } # end plotInsProb function
   
-  plotInsertionHeatmap <- function(plotTitle = c(""), motifWidth, motifPWM, plotLogo = FALSE, insVector){
-  #### Make heatmap for bf passing sites ####
-  ## USE THIS STRUCTURE FOR HEATMAPS
-  ## first, combine the signals from plus and minus strand
-  heatSigs <- bfInsMatrix
-  heatNumSites <- bfNumSites
-  heatNumBP <- siteWidth
-  heatSites <- bfSites
-  
-  ## scale each row individually
-  for (f in 1:heatNumSites){
-    maxsig <- max(heatSigs[f,])
-    for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
-  maxsig <- 1
-  ## invert signals
-  for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
-  
-  ## Annotate the combined sublist name which will become the tital of the heatmap plot
-  heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
-  combined <- list()
-  com <- paste0("combined$", heatTitle, " <- heatSigs")
-  eval(parse(text = com))
-  
-  ##
-  svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
-  svg(file = svgPath)
-  cat("Saving svg footprint image at path:", svgPath, "\n")
-  
-  ## Margin controls
-  # margin(a,b,c,d)
-  # a = size of graph from top to bottom, higher value = smaller. default = 0.1
-  # b = size of graph from left to right, higher value = smaller. default = 0.005
-  # c = flips x axis?
-  # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
-  # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
-  # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
-  
-  ##
-  ChIPpeakAnno::featureAlignedHeatmap(combined,
-                                      feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
-                                      upper.extreme = maxsig, # set this to control the heatmap scale
-                                      annoMcols = "score",
-                                      sortBy = "score",
-                                      n.tile = heatNumBP,
-                                      margin = c(0.1, 0.005, 0.05, 0.2),
-                                      color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
-                                      gp = gpar(fontsize = 10),
-                                      newpage = TRUE)
-  dev.off()
+  plotInsertionHeatmap <- function(plotTitle = c(""), insMatrix, numSites, numBP, sites, heatPath){
+  #   
+  #   ## scale each row individually
+  #   for (f in 1:heatNumSites){
+  #     maxsig <- max(heatSigs[f,])
+  #     for (g in 1:heatNumBP){heatSigs[f,g] <- (heatSigs[f,g] / maxsig)}}
+  #   maxsig <- 1
+  #   ## invert signals
+  #   for (h in 1:heatNumSites){for (i in 1:heatNumBP){heatSigs[h,i] <- (1-heatSigs[h,i])}}
+  #   
+  #   ## Annotate the combined sublist name which will become the tital of the heatmap plot
+  #   heatTitle <- paste0(geneName, "_motif", a, "_numsites", heatNumSites)
+  #   combined <- list()
+  #   com <- paste0("combined$", heatTitle, " <- heatSigs")
+  #   eval(parse(text = com))
+  #   
+  #   ##
+  #   svgPath <- paste0(dirPath, "footprints/graphs/heatmaps/", sampleName, ".", geneName, ".", "motif", a, ".bfpeak.sites.heatmap.svg")
+  #   svg(file = svgPath)
+  #   cat("Saving svg footprint image at path:", svgPath, "\n")
+  #   
+  #   ## Margin controls
+  #   # margin(a,b,c,d)
+  #   # a = size of graph from top to bottom, higher value = smaller. default = 0.1
+  #   # b = size of graph from left to right, higher value = smaller. default = 0.005
+  #   # c = flips x axis?
+  #   # d = margin from right side of page, higher = smaller. set at 0.2 so legends dont overlap
+  #   # good settings for ATACseq = c(0.1,0.005,0.05,0.2)
+  #   # bias setting >1 puts more colors at higher values, very useful for dealing with washout of low values
+  #   
+  #   ##
+  #   ChIPpeakAnno::featureAlignedHeatmap(combined,
+  #                                       feature.gr = reCenterPeaks(heatSites, width = heatNumBP),
+  #                                       upper.extreme = maxsig, # set this to control the heatmap scale
+  #                                       annoMcols = "score",
+  #                                       sortBy = "score",
+  #                                       n.tile = heatNumBP,
+  #                                       margin = c(0.1, 0.005, 0.05, 0.2),
+  #                                       color = colorRampPalette(c("white","grey98","grey97","grey99", "firebrick"), bias = 0.9)(100),
+  #                                       gp = gpar(fontsize = 10),
+  #                                       newpage = TRUE)
+  #   dev.off()
   } # end plotInsertionHeatmap function
   
   ###########################
@@ -261,7 +248,7 @@ if (file.exists(dataOutPath) == TRUE){
   if (numMotif == 0){
     cat(numMotif, "No data to analyze. Skipping", "\n")
   } else {
-  
+    
     #### Perform the parse and stats analysis 
     cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
     
@@ -271,212 +258,193 @@ if (file.exists(dataOutPath) == TRUE){
       cat("Processing data for motif", a, "\n")
       
       
-        ## Prepare the data from the raw footprint analysis
-        com <- paste0("tempData <- footprintData$motif", a)
-        eval(parse(text = com))
-        ##
-        PWM <- tempData[["PWM"]]
-        motifWidth <- tempData[["motifWidth"]]
-        allSites <- tempData[["allSites"]]
-        extSites <- tempData[["extSites"]]
-        insMatrix <- tempData[["insMatrix"]]
-        libSize <- tempData[["libsize"]]
-        coverageSize <- tempData[["coverageSize"]]
-        libFactor <- tempData[["libFactor"]]
-        ## Note that because trimming to standard xsomes is done, will need to set
-        ## the total number of sites to the row number of the insertion matrix here
-        numSites <- length(insMatrix[,1])
-        
-        
-        #### Calculate basic statistics for each site ####
-        siteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
-        colnames(siteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+      ## Prepare the data from the raw footprint analysis
+      com <- paste0("tempData <- footprintData$motif", a)
+      eval(parse(text = com))
+      ##
+      PWM <- tempData[["PWM"]]
+      motifWidth <- tempData[["motifWidth"]]
+      allSites <- tempData[["allSites"]]
+      extSites <- tempData[["extSites"]]
+      insMatrix <- tempData[["insMatrix"]]
+      libSize <- tempData[["libsize"]]
+      coverageSize <- tempData[["coverageSize"]]
+      libFactor <- tempData[["libFactor"]]
+      ## Note that because trimming to standard xsomes is done, will need to set
+      ## the total number of sites to the row number of the insertion matrix here
+      numSites <- length(insMatrix[,1])
+      
+      
+      #### Calculate basic statistics for each site ####
+      siteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+      colnames(siteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+                                    "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
+                                    "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
+      
+      ## Populate the basic stats matrix
+      for (b in 1:numSites){
+        # Site index
+        siteBasicStats[b,1] <- b
+        # Total signal
+        siteBasicStats[b,2] <- sum(insMatrix[b,])
+        # Total signal per bp
+        siteBasicStats[b,3] <- siteBasicStats[b,2] / (500 + motifWidth)
+        # Motif signal per bp
+        siteBasicStats[b,4] <- sum(insMatrix[b,(250:(250+motifWidth))] / motifWidth)
+        # Flank signal per bp
+        siteBasicStats[b,5] <- (sum(insMatrix[b,200:250]) + sum(insMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
+        # Background signal per bp
+        siteBasicStats[b,6] <- (sum(insMatrix[b,1:50]) + sum(insMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
+        # Wide flank signal per bp
+        siteBasicStats[b,7] <- (sum(insMatrix[b,1:250]) + sum(insMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
+        # Flank / background
+        siteBasicStats[b,8] <- siteBasicStats[b,5] / siteBasicStats[b,6]
+        # Motif / flank
+        siteBasicStats[b,9] <- siteBasicStats[b,4] / siteBasicStats[b,5]
+        # Motif / wide flank
+        siteBasicStats[b,10] <- siteBasicStats[b,4] / siteBasicStats[b,7]
+      } # end for (b in 1:numSites)
+      
+      
+      ## NEED TO CHECK MATH ON THIS ##
+      #### Normalize values in insertion matrix with z-scores
+      insStandardDeviation <- sd(insMatrix)
+      insMean <- mean(insMatrix)
+      ##
+      zscoreInsMatrix <- ((insMatrix - insMean) / insStandardDeviation)
+      
+      ## Calculate basic statistics for z-score normalized matrix
+      zscoreBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+      colnames(zscoreBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
                                       "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
                                       "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
-        
-        ## Populate the basic stats matrix
-        for (b in 1:numSites){
-          # Site index
-          siteBasicStats[b,1] <- b
-          # Total signal
-          siteBasicStats[b,2] <- sum(insMatrix[b,])
-          # Total signal per bp
-          siteBasicStats[b,3] <- siteBasicStats[b,2] / (500 + motifWidth)
-          # Motif signal per bp
-          siteBasicStats[b,4] <- sum(insMatrix[b,(250:(250+motifWidth))] / motifWidth)
-          # Flank signal per bp
-          siteBasicStats[b,5] <- (sum(insMatrix[b,200:250]) + sum(insMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
-          # Background signal per bp
-          siteBasicStats[b,6] <- (sum(insMatrix[b,1:50]) + sum(insMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
-          # Wide flank signal per bp
-          siteBasicStats[b,7] <- (sum(insMatrix[b,1:250]) + sum(insMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
-          # Flank / background
-          siteBasicStats[b,8] <- siteBasicStats[b,5] / siteBasicStats[b,6]
-          # Motif / flank
-          siteBasicStats[b,9] <- siteBasicStats[b,4] / siteBasicStats[b,5]
-          # Motif / wide flank
-          siteBasicStats[b,10] <- siteBasicStats[b,4] / siteBasicStats[b,7]
-        } # end for (b in 1:numSites)
-        
-        
-        ## NEED TO CHECK MATH ON THIS ##
-        #### Normalize values in insertion matrix with z-scores
-        insStandardDeviation <- sd(insMatrix)
-        insMean <- mean(insMatrix)
-        ##
-        zscoreInsMatrix <- ((insMatrix - insMean) / insStandardDeviation)
-        
-        ## Calculate basic statistics for z-score normalized matrix
-        zscoreBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
-        colnames(zscoreBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
-                                      "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
-                                      "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
-        
-        ## Populate the zscore stats matrix
-        for (b in 1:numSites){
-          # Site index
-          zscoreBasicStats[b,1] <- b
-          # Total signal
-          zscoreBasicStats[b,2] <- sum(zscoreInsMatrix[b,])
-          # Total signal per bp
-          zscoreBasicStats[b,3] <- zscoreBasicStats[b,2] / (500 + motifWidth)
-          # Motif signal per bp
-          zscoreBasicStats[b,4] <- sum(zscoreInsMatrix[b,(250:(250+motifWidth))] / motifWidth)
-          # Flank signal per bp
-          zscoreBasicStats[b,5] <- (sum(zscoreInsMatrix[b,200:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
-          # Background signal per bp
-          zscoreBasicStats[b,6] <- (sum(zscoreInsMatrix[b,1:50]) + sum(zscoreInsMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
-          # Wide flank signal per bp
-          zscoreBasicStats[b,7] <- (sum(zscoreInsMatrix[b,1:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
-          # Flank / background
-          zscoreBasicStats[b,8] <- zscoreBasicStats[b,5] / zscoreBasicStats[b,6]
-          # Motif / flank
-          zscoreBasicStats[b,9] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,5]
-          # Motif / wide flank
-          zscoreBasicStats[b,10] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,7]
-        } # end for (b in 1:numSites)
-        
-        
-        #### Generate null models, use BF and BH correction to parse ####
-        ## Find the unique values for total signal and generate null models
-        uniqueTotalSignals <- unique(siteBasicStats[,2])
-        
-        
-        
-        ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
-        nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
-        colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
-        
-        ## Calculate the null models
-        for (c in 1:length(uniqueTotalSignals)){
-          nullVec <- generateNullFP(1000, uniqueTotalSignals[c], siteWidth, motifWidth)
-          nullModels[c,1] <- uniqueTotalSignals[c]
-          nullModels[c,2] <- mean(nullVec)} # end for (c in 1:length(uniqueTotalSignals))
-        
-        ## Perform a one-tailed t-test to generate a p-value for each observed motif site
-        cat("Performing one-tailed t-tests on peak subset...", "\n")
-        ttestPeak <- list() # list to store the results of the t-tests
-        pvaluePeak <- c() # vector to store the p-values
-        tvaluePeak <- c() # vector to store the t-value
-        
-        ## Perform t-test on all sites
-        for (d in 1:numSites){
-          ## Retrieve the total signal for the current site
-          currentSignal <- c(siteTotalSignal[d])
-          ## Retrieve the appropriate null model
-          currentNullModel <- nullModels[which(nullModels[,1]==currentSignal),2]
-          ## Perform the t-test
-          ttestPeak[[d]] <- t.test(insMatrix[d,250:(250+motifWidth)], mu=currentNullModel, alternative="less", conf.level = 0.95)
-          pvaluePeak[d] <- ttestPeak[[d]][["p.value"]]
-          tvaluePeak[d] <- ttestPeak[[d]][["statistic"]][["t"]]
-        } # for (d in 1:numSites)
-        
-        ## Get the indices of the sites that are lower than p = 0.05
-        cat("Selecting p-value passing sites...", "\n")
-        idxPvaluePass <- which(pvaluePeak < 0.05)
-        peakPvaluePass <- pvaluePeak[idxPvaluePass]
-        
-        ## Perform bonferroni correction
-        cat("Performing bonferroni correction...", "\n")
-        idxbfPeakPass <- which(pvaluePeak < (0.05/numSites))
-        bfPvaluePeakPass <- pvaluePeak[idxbfPeakPass]
-        
-        ## Subset the insertion matrix based on the bonferroni passing sites only
-        cat("Subsetting sites based on bf corrected p-values...", "\n")
-        bfInsMatrix <- insMatrix[idxbfPeakPass,]
-        ##
-        bfTotalSignal <- sum(bfInsMatrix)
-        bfProfile <- matrix(data = NA, ncol = length(bfInsMatrix[1,]), nrow = 2)
-        rownames(bfProfile) <- c("Column sums", "Insertion frequency")
-        for (e in 1:length(bfInsMatrix[1,])){
-          bfProfile[1,e] <- sum(bfInsMatrix[,e])
-          bfProfile[2,e] <- (bfProfile[1,e] / bfTotalSignal) * 100
-        } # end for (e in 1:length(bfInsMatrix[1,]))
-        ##
-        bfVector <- bfProfile[2,]
-        bfSites <- peakSites[idxbfPeakPass]
-        bfNumSites <- length(idxbfPeakPass)
-        
-        
-        
-        ## Data transfer to storage object and save
-        parseData <- list()
-        ##
-        parseData$PWM <- PWM
-        parseData$motifWidth <- motifWidth
-        parseData$allSites <- allSites
-        parseData$extSites <- extSites
-        parseData$numSites <- numSites
-        parseData$insMatrix <- insMatrix
-        parseData$libSize <- libSize
-        parseData$coverageSize <- coverageSize
-        parseData$libFactor <- libFactor
-        parseData$sampleTotalReads <- sampleTotalReads
-        parseData$siteBasicStats <- siteBasicStats
-        parseData$samplePeaks <- samplePeaks
-        parseData$insStandardDeviation <- insStandardDeviation
-        parseData$insMean <- insMean
-        parseData$zscoreInsMatrix <- zscoreInsMatrix
-        ##
-        parseData$uniqueTotalSignals <- uniqueTotalSignals
-        parseData$nullModels <- nullModels
-        parseData$ttestPeak <- ttestPeak
-        parseData$pvaluePeak <- pvaluePeak
-        parseData$tvaluePeak <- tvaluePeak
-        parseData$peakPvaluePass <- peakPvaluePass
-        parseData$bfPvaluePeakPass <- bfPvaluePeakPass
-        parseData$bfInsMatrix <- bfInsMatrix
-        parseData$bfTotalSignal <- bfTotalSignal
-        parseData$bfProfile <- bfProfile
-        parseData$bfVector <- bfVector
-        parseData$bfSites <- bfSites
-        parseData$bfNumSites <- bfNumSites
-        ##
-        com <- paste0("footprintData$motif", a, "<- parseData")
-        eval(parse(text = com))
-   
-
-        
-        # end for (a in 1:numMotif)
-        # end if (numMotif == 0)
-  # end if (file.exists(dataOutPath) == TRUE)
-    
-     
-
-
-
-
-   
-
-    
-  } # end for (a in 1:numMotif)
-
-  
-} # end if (file.exists(dataOutPath) == TRUE)
-
+      
+      ## Populate the zscore stats matrix
+      for (b in 1:numSites){
+        # Site index
+        zscoreBasicStats[b,1] <- b
+        # Total signal
+        zscoreBasicStats[b,2] <- sum(zscoreInsMatrix[b,])
+        # Total signal per bp
+        zscoreBasicStats[b,3] <- zscoreBasicStats[b,2] / (500 + motifWidth)
+        # Motif signal per bp
+        zscoreBasicStats[b,4] <- sum(zscoreInsMatrix[b,(250:(250+motifWidth))] / motifWidth)
+        # Flank signal per bp
+        zscoreBasicStats[b,5] <- (sum(zscoreInsMatrix[b,200:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
+        # Background signal per bp
+        zscoreBasicStats[b,6] <- (sum(zscoreInsMatrix[b,1:50]) + sum(zscoreInsMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
+        # Wide flank signal per bp
+        zscoreBasicStats[b,7] <- (sum(zscoreInsMatrix[b,1:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
+        # Flank / background
+        zscoreBasicStats[b,8] <- zscoreBasicStats[b,5] / zscoreBasicStats[b,6]
+        # Motif / flank
+        zscoreBasicStats[b,9] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,5]
+        # Motif / wide flank
+        zscoreBasicStats[b,10] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,7]
+      } # end for (b in 1:numSites)
+      
+      
+      #### Generate null models, use BF and BH correction to parse ####
+      
+      ## Find the unique values for total signal and generate null models
+      uniqueTotalSignals <- unique(siteBasicStats[,2])
+      siteWidth <- 500 + motifWidth
+      
+      ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
+      nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
+      colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
+      
+      ## Calculate the null models
+      for (c in 1:length(uniqueTotalSignals)){
+        nullVec <- generateNullFP(1000, uniqueTotalSignals[c], siteWidth, motifWidth)
+        nullModels[c,1] <- uniqueTotalSignals[c]
+        nullModels[c,2] <- mean(nullVec)
+      } # end for (c in 1:length(uniqueTotalSignals))
+      
+      ## Perform a one-tailed t-test to generate a p-value for each observed motif site
+      cat("Performing one-tailed t-tests on peak subset...", "\n")
+      ttest <- list() # list to store the results of the t-tests
+      pvalue <- c() # vector to store the p-values
+      tvalue <- c() # vector to store the t-value
+      
+      ## Perform t-test on all sites
+      cat("Performing 1-tailed ttest", "\n")
+      for (d in 1:numSites){
+        ## Retrieve the total signal for the current site
+        currentSignal <- c(siteBasicStats[d,2])
+        ## Retrieve the appropriate null model
+        currentNullModel <- nullModels[which(nullModels[,1]==currentSignal),2]
+        ## Perform the t-test
+        ttest[[d]] <- t.test(insMatrix[d,250:(250+motifWidth)], mu=currentNullModel, alternative="less", conf.level = 0.95)
+        pvalue[d] <- ttest[[d]][["p.value"]]
+        tvalue[d] <- ttest[[d]][["statistic"]][["t"]]
+      } # end for (d in 1:numSites)
+      
+      ## Get the indices of the sites that are lower than p = 0.05
+      cat("Selecting p-value passing sites > 0.05", "\n")
+      idxPvaluePass <- which(pvalue < 0.05)
+      pvaluePass <- pvalue[idxPvaluePass]
+      ppassNumSites <- length(idxPvaluePass)
+      
+      ## Perform bonferroni correction
+      cat("Performing bonferroni correction", "\n")
+      idxBFpass <- which(pvalue < (0.05/numSites))
+      BFpvaluePass <- pvalue[idxBFpass]
+      BFpassNumSites <- length(idxBFpass)
+      
+      ## Perform benjamini-hochberg correction
+      BHpvalue <- BH(pvalue, 0.05)
+      
+      
+      #### Generate insertion site probability graphs ####
+      
+      ## Data transfer to storage object and save
+      parseData <- list()
+      ##
+      parseData$PWM <- PWM
+      parseData$motifWidth <- motifWidth
+      parseData$allSites <- allSites
+      parseData$extSites <- extSites
+      parseData$numSites <- numSites
+      parseData$insMatrix <- insMatrix
+      parseData$libSize <- libSize
+      parseData$coverageSize <- coverageSize
+      parseData$libFactor <- libFactor
+      parseData$sampleTotalReads <- sampleTotalReads
+      parseData$siteBasicStats <- siteBasicStats
+      parseData$samplePeaks <- samplePeaks
+      parseData$insStandardDeviation <- insStandardDeviation
+      parseData$insMean <- insMean
+      parseData$zscoreInsMatrix <- zscoreInsMatrix
+      ##
+      parseData$uniqueTotalSignals <- uniqueTotalSignals
+      parseData$nullModels <- nullModels
+      parseData$ttest <- ttest
+      parseData$pvalue <- pvalue
+      parseData$tvalue <- tvalue
+      ##
+      parseData$idxPvaluePass <- idxPvaluePass
+      parseData$pvaluePass <- pvaluePass
+      parseData$ppassNumSites <- ppassNumSites
+      ##
+      parseData$idxBFpass <- idxBFpass
+      parseData$BFpvaluePass <- BFpvaluePass
+      parseData$BFpassNumSites <- BFpassNumSites
+      ##
+      parseData$BHpvalue <- BHpvalue
+      ##
+      com <- paste0("footprintData$motif", a, "<- parseData")
+      eval(parse(text = com))
+      
+      
+      # end for (a in 1:numMotif)
+      # end if (numMotif == 0)
+      # end if (file.exists(dataOutPath) == TRUE)
+      
 ## Create the output file for snakemake
 file.create(outPath)
 cat("Finished parsing", "\n")
-
-
-
+  
+  
+  
+  
