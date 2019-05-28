@@ -274,12 +274,14 @@ if (file.exists(dataOutPath) == TRUE){
         PWM <- tempData[["PWM"]]
         motifWidth <- tempData[["motifWidth"]]
         allSites <- tempData[["allSites"]]
-        numSites <- tempData[["numSites"]]
         extSites <- tempData[["extSites"]]
         insMatrix <- tempData[["insMatrix"]]
         libSize <- tempData[["libsize"]]
         coverageSize <- tempData[["coverageSize"]]
         libFactor <- tempData[["libFactor"]]
+        ## Note that because trimming to standard xsomes is done, will need to set
+        ## the total number of sites to the row number of the insertion matrix here
+        numSites <- length(insMatrix[,1])
         
         
         #### Calculate basic statistics for each site ####
@@ -288,9 +290,8 @@ if (file.exists(dataOutPath) == TRUE){
                                       "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp") 
         
         
-        ## 
+        ## Populate the basic stats matrix
         for (b in 1:numSites){
-          
           siteBasicStats[b,1] <- b
           siteBasicStats[b,2] <- sum(insMatrix[b,])
           siteBasicStats[b,3] <- siteBasicStats[b,2] / (500 + motifWidth)
@@ -298,7 +299,6 @@ if (file.exists(dataOutPath) == TRUE){
           siteBasicStats[b,5] <- (sum(insMatrix[b,200:250]) + sum(insMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
           siteBasicStats[b,6] <- (sum(insMatrix[b,1:50]) + sum(insMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
           siteBasicStats[b,7] <- (sum(insMatrix[b,1:250]) + sum(insMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
-        
         } # end for (b in 1:numSites)
         
         
