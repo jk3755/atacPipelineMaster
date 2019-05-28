@@ -32,13 +32,9 @@
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 
-include: "snakeModules/panTF.snakefile"
-
-include: "snakeModules/scanPWM.snakefile"
-
 include: "snakeModules/panTFraw.snakefile"
 
-include: "snakeModules/rrbsBicycle.snakefile"
+include: "snakeModules/scanPWM.snakefile"
 
 #configfile: "snakeModules/config.yaml"
 
@@ -66,11 +62,47 @@ rule run_mdst8wt01:
     input:
         "mdst8/wt01/operations/MDST8-WT-01-pipeline.complete.txt"
 
+## LNCaP #################################################################################################
+
+rule run_lncap_cr01:
+    input:
+        "lncap/cr01/operations/LNCaP-CR-01-pipeline.complete.txt"
+
+rule run_lncap_cr02:
+    input:
+        "lncap/cr02/operations/LNCaP-CR-02-pipeline.complete.txt"
+
+rule run_lncap_cr04:
+    input:
+        "lncap/cr04/operations/LNCaP-CR-04-pipeline.complete.txt"
+
+rule run_lncap_cr05:
+    input:
+        "lncap/cr05/operations/LNCaP-CR-05-pipeline.complete.txt"
+
+rule run_lncap_cr07:
+    input:
+        "lncap/cr07/operations/LNCaP-CR-07-pipeline.complete.txt"
+
+rule run_lncap_cr08:
+    input:
+        "lncap/cr08/operations/LNCaP-CR-08-pipeline.complete.txt"
+
+rule run_lncap_wt01:
+    input:
+        "lncap/wt01/operations/LNCaP-WT-01-pipeline.complete.txt"
+
+rule run_lncap_wt02:
+    input:
+        "lncap/wt02/operations/LNCaP-WT-02-pipeline.complete.txt"
+
+## LNCaP #################################################################################################
+
 rule AGGREGATOR_pipeline:
     input:
-        "{path}operations/{mergedsample}-correlation.done.txt",
+        #"{path}operations/{mergedsample}-correlation.done.txt",
         "{path}operations/{mergedsample}-peaks.done.txt",
-        "{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt",
+        #"{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt",
         "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
         "{path}operations/{mergedsample}-downsample.final.txt",
         "{path}operations/{mergedsample}.metrics.annotations.done.txt"
@@ -78,6 +110,62 @@ rule AGGREGATOR_pipeline:
         "{path}operations/{mergedsample}-pipeline.complete.txt"
     shell:
         "touch {output}"
+
+########################################################################################################################################
+#### SPOOL FOOTPRINTING ################################################################################################################
+########################################################################################################################################
+
+## Run with a terminal command like: for i in {1..62}; do snakemake --config group=$i -j 20 run_pantf_ls1034wt01; done
+
+# rule run_pantf_h508wt01:
+#     input:
+#         expand("h508/wt01/footprints/operations/groups/H508-WT-01.processFP.group{param}.done", param=config["group"])
+
+# rule run_pantf_ls1034wt01:
+#     input:
+#         expand("ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.group{param}.done", param=config["group"])
+
+# rule run_pantf_h508wt02a:
+#     input:
+#         expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
+
+# rule pantf_COADMR_h508wt02a:
+#   input:
+#       "h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
+
+# rule pantf_COADMR_ls1034wt01:
+#   input:
+#       "ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.COADMR.done"
+
+# rule pantf_aggregator_h508wt02a:
+#   input:
+#       "h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
+
+# rule run_pantf_mdst8wt01:
+#     input:
+#         expand("mdst8/wt01/footprints/operations/groups/MDST8-WT-01.processFP.group{param}.done", param=config["group"])
+
+# rule pantf_aggregator_mdst8wt01:
+#   input:
+#       "mdst8/wt01/footprints/operations/aggregated/MDST8-WT-01.aggregated.done"
+
+# rule pantf_aggregator_ls1034wt01:
+#   input:
+#       "ls1034/wt01/footprints/operations/aggregated/LS1034-WT-01.aggregated.done"
+
+rule run_pantf_lncap_group1:
+    input:
+        expand("lncap/wt02/footprints/operations/groups/LNCaP-WT-02.rawFPanalysis.group{param}.done", param=config["group"]),
+        expand("lncap/cr01/footprints/operations/groups/LNCaP-CR-01.rawFPanalysis.group{param}.done", param=config["group"]),
+        expand("lncap/cr04/footprints/operations/groups/LNCaP-CR-04.rawFPanalysis.group{param}.done", param=config["group"]),
+        expand("lncap/cr07/footprints/operations/groups/LNCaP-CR-07.rawFPanalysis.group{param}.done", param=config["group"])
+
+rule run_pantf_lncap_group2:
+    input:
+        expand("lncap/wt01/footprints/operations/groups/LNCaP-WT-01.rawFPanalysis.group{param}.done", param=config["group"]),
+        expand("lncap/cr02/footprints/operations/groups/LNCaP-CR-02.rawFPanalysis.group{param}.done", param=config["group"]),
+        expand("lncap/cr05/footprints/operations/groups/LNCaP-CR-05.rawFPanalysis.group{param}.done", param=config["group"]),
+        expand("lncap/cr08/footprints/operations/groups/LNCaP-CR-08.rawFPanalysis.group{param}.done", param=config["group"])
 
 ########################################################################################################################################
 #### SPOOL INDIVIDUAL OPERATIONS #######################################################################################################
@@ -140,13 +228,13 @@ rule PREP_builddirstructure:
         #
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/benchmark
-        mkdir -p -v {wildcards.path}footprints/benchmark/parsed {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
-        mkdir -p -v {wildcards.path}footprints/data
+        mkdir -p -v {wildcards.path}footprints/benchmark/parse {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
+        mkdir -p -v {wildcards.path}footprints/data 
         mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/graphs
 		mkdir -p -v {wildcards.path}footprints/graphs/bf {wildcards.path}footprints/graphs/heatmaps {wildcards.path}footprints/graphs/peaks {wildcards.path}footprints/graphs/processed
 		mkdir -p -v {wildcards.path}footprints/operations
-        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parsed {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
+        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
         #
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/genrich
@@ -157,10 +245,6 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}correlation
         #
-        mkdir -p -v {wildcards.path}rrbs
-        mkdir -p -v {wildcards.path}rrbs/project {wildcards.path}rrbs/reference {wildcards.path}rrbs/reads
-
-
         touch {output}
         """
 
@@ -402,55 +486,55 @@ rule STEP14_merge_1_replicate:
     shell:
         "cp {input} {output}"
 
-rule STEP14_merge_2_replicates:
-    # This rule will be called when there are two input replicates
-    # Merges the bam files from the infividual replicates
-    # I specifies the input files for individual replicates
-    # O specifies the merged output file
-    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-    # USE_THREADING allows multithreadded operation
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
-    output:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-    shell:
-        "java -jar programs/picard/picard.jar MergeSamFiles \
-        I={input.a} \
-        I={input.b} \
-        O={output} \
-        SORT_ORDER=coordinate \
-        ASSUME_SORTED=true \
-        MERGE_SEQUENCE_DICTIONARIES=true \
-        USE_THREADING=true"
+# rule STEP14_merge_2_replicates:
+#     # This rule will be called when there are two input replicates
+#     # Merges the bam files from the infividual replicates
+#     # I specifies the input files for individual replicates
+#     # O specifies the merged output file
+#     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+#     # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+#     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+#     # USE_THREADING allows multithreadded operation
+#     input:
+#         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+#         b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
+#     output:
+#         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+#     shell:
+#         "java -jar programs/picard/picard.jar MergeSamFiles \
+#         I={input.a} \
+#         I={input.b} \
+#         O={output} \
+#         SORT_ORDER=coordinate \
+#         ASSUME_SORTED=true \
+#         MERGE_SEQUENCE_DICTIONARIES=true \
+#         USE_THREADING=true"
 
-rule STEP14_merge_3_replicates:
-    # This rule will be called when there are three input replicates
-    # Merges the bam files from the infividual replicates
-    # I specifies the input files for individual replicates
-    # O specifies the merged output file
-    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-    # USE_THREADING allows multithreadded operation
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-        c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam"
-    output:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-    shell:
-        "java -jar programs/picard/picard.jar MergeSamFiles \
-        I={input.a} \
-        I={input.b} \
-        I={input.c} \
-        O={output} \
-        SORT_ORDER=coordinate \
-        ASSUME_SORTED=true \
-        MERGE_SEQUENCE_DICTIONARIES=true \
-        USE_THREADING=true"
+# rule STEP14_merge_3_replicates:
+#     # This rule will be called when there are three input replicates
+#     # Merges the bam files from the infividual replicates
+#     # I specifies the input files for individual replicates
+#     # O specifies the merged output file
+#     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+#     # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+#     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+#     # USE_THREADING allows multithreadded operation
+#     input:
+#         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
+#         b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
+#         c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam"
+#     output:
+#         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+#     shell:
+#         "java -jar programs/picard/picard.jar MergeSamFiles \
+#         I={input.a} \
+#         I={input.b} \
+#         I={input.c} \
+#         O={output} \
+#         SORT_ORDER=coordinate \
+#         ASSUME_SORTED=true \
+#         MERGE_SEQUENCE_DICTIONARIES=true \
+#         USE_THREADING=true"
 
 rule STEP15_index_replicate_merged:
     # creates a bai index for the bam files
@@ -507,50 +591,50 @@ rule STEP17_makebigwig_bamcov_merged_1replicate:
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-rule STEP17_makebigwig_bamcov_merged_2replicates:
-    # This rule will be used when two replicates are present
-    # params:
-    # -b bam input
-    # -o output file
-    # -of output format
-    # -bs binsize in bp
-    # -p number of processors to use
-    # -v verbose mode
-    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-    input:
-        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of2.bw",
-        d="{path}preprocessing/12bigwig/{mergedsample}-REP2of2.bw"
-    output:
-        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-    resources:
-        make_bigwig=1
-    shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+# rule STEP17_makebigwig_bamcov_merged_2replicates:
+#     # This rule will be used when two replicates are present
+#     # params:
+#     # -b bam input
+#     # -o output file
+#     # -of output format
+#     # -bs binsize in bp
+#     # -p number of processors to use
+#     # -v verbose mode
+#     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+#     input:
+#         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+#         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+#         c="{path}preprocessing/12bigwig/{mergedsample}-REP1of2.bw",
+#         d="{path}preprocessing/12bigwig/{mergedsample}-REP2of2.bw"
+#     output:
+#         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+#     resources:
+#         make_bigwig=1
+#     shell:
+#         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-rule STEP17_makebigwig_bamcov_merged_3replicates:
-    # This rule will be used when three replicates are present
-    # params:
-    # -b bam input
-    # -o output file
-    # -of output format
-    # -bs binsize in bp
-    # -p number of processors to use
-    # -v verbose mode
-    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-    input:
-        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of3.bw",
-        d="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw",
-        e="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw"
-    output:
-        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-    resources:
-        make_bigwig=1
-    shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+# rule STEP17_makebigwig_bamcov_merged_3replicates:
+#     # This rule will be used when three replicates are present
+#     # params:
+#     # -b bam input
+#     # -o output file
+#     # -of output format
+#     # -bs binsize in bp
+#     # -p number of processors to use
+#     # -v verbose mode
+#     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+#     input:
+#         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+#         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+#         c="{path}preprocessing/12bigwig/{mergedsample}-REP1of3.bw",
+#         d="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw",
+#         e="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw"
+#     output:
+#         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+#     resources:
+#         make_bigwig=1
+#     shell:
+#         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
 rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
     # gather and determine the various preprocessing metrics, record to output text file
@@ -648,47 +732,47 @@ rule STEP21_MACS2_peaks_merged_global_normilization_1replicate:
     shell:
         "macs2 callpeak -t {input.d} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP21_MACS2_peaks_merged_global_normilization_2replicates:
-    # see above for notes applicable to MACS2 peak calling
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
-        e="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        f="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        g="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        h="{path}peaks/macs2/individual/{mergedsample}-REP1of2_global_normalization_peaks.narrowPeak",
-        i="{path}peaks/macs2/individual/{mergedsample}-REP1of2_local_normalization_peaks.narrowPeak",
-        j="{path}peaks/macs2/individual/{mergedsample}-REP2of2_global_normalization_peaks.narrowPeak",
-        k="{path}peaks/macs2/individual/{mergedsample}-REP2of2_local_normalization_peaks.narrowPeak"
-    output:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.f} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+# rule STEP21_MACS2_peaks_merged_global_normilization_2replicates:
+#     # see above for notes applicable to MACS2 peak calling
+#     input:
+#         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+#         b="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
+#         c="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
+#         d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
+#         e="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+#         f="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+#         g="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+#         h="{path}peaks/macs2/individual/{mergedsample}-REP1of2_global_normalization_peaks.narrowPeak",
+#         i="{path}peaks/macs2/individual/{mergedsample}-REP1of2_local_normalization_peaks.narrowPeak",
+#         j="{path}peaks/macs2/individual/{mergedsample}-REP2of2_global_normalization_peaks.narrowPeak",
+#         k="{path}peaks/macs2/individual/{mergedsample}-REP2of2_local_normalization_peaks.narrowPeak"
+#     output:
+#         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+#     shell:
+#         "macs2 callpeak -t {input.f} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
-    # see above for notes applicable to MACS2 peak calling
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
-        c="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
-        e="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
-        f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai",
-        g="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        h="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        i="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        j="{path}peaks/macs2/individual/{mergedsample}-REP1of3_global_normalization_peaks.narrowPeak",
-        k="{path}peaks/macs2/individual/{mergedsample}-REP1of3_local_normalization_peaks.narrowPeak",
-        l="{path}peaks/macs2/individual/{mergedsample}-REP2of3_global_normalization_peaks.narrowPeak",
-        m="{path}peaks/macs2/individual/{mergedsample}-REP2of3_local_normalization_peaks.narrowPeak",
-        n="{path}peaks/macs2/individual/{mergedsample}-REP3of3_global_normalization_peaks.narrowPeak",
-        o="{path}peaks/macs2/individual/{mergedsample}-REP3of3_local_normalization_peaks.narrowPeak"
-    output:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.h} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+# rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
+#     # see above for notes applicable to MACS2 peak calling
+#     input:
+#         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
+#         b="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
+#         c="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
+#         d="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
+#         e="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
+#         f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai",
+#         g="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+#         h="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+#         i="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
+#         j="{path}peaks/macs2/individual/{mergedsample}-REP1of3_global_normalization_peaks.narrowPeak",
+#         k="{path}peaks/macs2/individual/{mergedsample}-REP1of3_local_normalization_peaks.narrowPeak",
+#         l="{path}peaks/macs2/individual/{mergedsample}-REP2of3_global_normalization_peaks.narrowPeak",
+#         m="{path}peaks/macs2/individual/{mergedsample}-REP2of3_local_normalization_peaks.narrowPeak",
+#         n="{path}peaks/macs2/individual/{mergedsample}-REP3of3_global_normalization_peaks.narrowPeak",
+#         o="{path}peaks/macs2/individual/{mergedsample}-REP3of3_local_normalization_peaks.narrowPeak"
+#     output:
+#         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+#     shell:
+#         "macs2 callpeak -t {input.h} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 rule STEP22_MACS2_peaks_merged_local_normilization:
     # see above for notes applicable to MACS2 peak calling
@@ -713,59 +797,59 @@ rule AGGREGATOR_peaks:
 #### SAMPLE CORRELATION ANALYSIS RULES #################################################################################################
 ########################################################################################################################################
 
-rule STEP23_sample_correlation_spearman_2replicates:
-    # parameters:
-    # -b input bam files
-    # -o output file name
-    # -bs set the bin size used for comparison, default is 10000 bp
-    # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-    # -p set the number of computing processors to use
-    # -v verbose mode
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
-        c="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
-        d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai"
-    output:
-        "{path}correlation/{mergedsample}.spearman.corrTest"
-    shell:
-        "multiBamSummary bins -b {input.a} {input.b} -o {output} -bs 10000 -p 20 -v"
+# rule STEP23_sample_correlation_spearman_2replicates:
+#     # parameters:
+#     # -b input bam files
+#     # -o output file name
+#     # -bs set the bin size used for comparison, default is 10000 bp
+#     # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+#     # -p set the number of computing processors to use
+#     # -v verbose mode
+#     input:
+#         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
+#         b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
+#         c="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
+#         d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai"
+#     output:
+#         "{path}correlation/{mergedsample}.spearman.corrTest"
+#     shell:
+#         "multiBamSummary bins -b {input.a} {input.b} -o {output} -bs 10000 -p 20 -v"
 
-rule STEP23_sample_correlation_spearman_3replicates:
-    # parameters:
-    # -b input bam files
-    # -o output file name
-    # -bs set the bin size used for comparison, default is 10000 bp
-    # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-    # -p set the number of computing processors to use
-    # -v verbose mode
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-        c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
-        d="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
-        e="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
-        f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai"
-    output:
-        "{path}correlation/{mergedsample}.spearman.corrTest"
-    shell:
-        "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
+# rule STEP23_sample_correlation_spearman_3replicates:
+#     # parameters:
+#     # -b input bam files
+#     # -o output file name
+#     # -bs set the bin size used for comparison, default is 10000 bp
+#     # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
+#     # -p set the number of computing processors to use
+#     # -v verbose mode
+#     input:
+#         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
+#         b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
+#         c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
+#         d="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
+#         e="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
+#         f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai"
+#     output:
+#         "{path}correlation/{mergedsample}.spearman.corrTest"
+#     shell:
+#         "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
 
-rule STEP24_makecorrheatmap:
-    input:
-        "{path}correlation/{sample}.spearman.corrTest"
-    output:
-        "{path}correlation/{sample}.spearman.heatmap.svg"
-    shell:
-        "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
+# rule STEP24_makecorrheatmap:
+#     input:
+#         "{path}correlation/{sample}.spearman.corrTest"
+#     output:
+#         "{path}correlation/{sample}.spearman.heatmap.svg"
+#     shell:
+#         "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
 
-rule AGGREGATOR_correlation:
-    input:
-        "{path}correlation/{mergedsample}.spearman.heatmap.svg"
-    output:
-        "{path}operations/{mergedsample}-correlation.done.txt"
-    shell:
-        "touch {output}"
+# rule AGGREGATOR_correlation:
+#     input:
+#         "{path}correlation/{mergedsample}.spearman.heatmap.svg"
+#     output:
+#         "{path}operations/{mergedsample}-correlation.done.txt"
+#     shell:
+#         "touch {output}"
 
 ########################################################################################################################################
 #### SATURATION ANALYSIS RULES #########################################################################################################
@@ -903,24 +987,24 @@ rule FINISH_saturation_1rep:
     shell:
         "touch {output}"
 
-rule FINISH_saturation_2rep:
-    input:
-        "{path}operations/{mergedsample}-REP1of2-downsample.done.txt",
-        "{path}operations/{mergedsample}-REP2of2-downsample.done.txt",
-    output:
-        "{path}operations/{mergedsample}-downsample.final.txt"
-    shell:
-        "touch {output}"
+# rule FINISH_saturation_2rep:
+#     input:
+#         "{path}operations/{mergedsample}-REP1of2-downsample.done.txt",
+#         "{path}operations/{mergedsample}-REP2of2-downsample.done.txt",
+#     output:
+#         "{path}operations/{mergedsample}-downsample.final.txt"
+#     shell:
+#         "touch {output}"
 
-rule FINISH_saturation_3rep:
-    input:
-        "{path}operations/{mergedsample}-REP1of3-downsample.done.txt",
-        "{path}operations/{mergedsample}-REP2of3-downsample.done.txt",
-        "{path}operations/{mergedsample}-REP3of3-downsample.done.txt",
-    output:
-        "{path}operations/{mergedsample}-downsample.final.txt"
-    shell:
-        "touch {output}"
+# rule FINISH_saturation_3rep:
+#     input:
+#         "{path}operations/{mergedsample}-REP1of3-downsample.done.txt",
+#         "{path}operations/{mergedsample}-REP2of3-downsample.done.txt",
+#         "{path}operations/{mergedsample}-REP3of3-downsample.done.txt",
+#     output:
+#         "{path}operations/{mergedsample}-downsample.final.txt"
+#     shell:
+#         "touch {output}"
 
 rule STEP32_make_footprint_by_chr_downsampled:
     input:
@@ -1031,24 +1115,24 @@ rule AGGREGATOR_fragsize_1rep:
     shell:
         "touch {output}"
 
-rule AGGREGATOR_fragsize_2reps:
-    input:
-        "{path}metrics/{mergedsample}-REP1of2.u.fragsizes.svg",
-        "{path}metrics/{mergedsample}-REP2of2.u.fragsizes.svg"
-    output:
-        "{path}operations/{mergedsample}.fragsizes.done.txt"
-    shell:
-        "touch {output}"
+# rule AGGREGATOR_fragsize_2reps:
+#     input:
+#         "{path}metrics/{mergedsample}-REP1of2.u.fragsizes.svg",
+#         "{path}metrics/{mergedsample}-REP2of2.u.fragsizes.svg"
+#     output:
+#         "{path}operations/{mergedsample}.fragsizes.done.txt"
+#     shell:
+#         "touch {output}"
 
-rule AGGREGATOR_fragsize_3reps:
-    input:
-        "{path}metrics/{mergedsample}-REP1of3.u.fragsizes.svg",
-        "{path}metrics/{mergedsample}-REP2of3.u.fragsizes.svg",
-        "{path}metrics/{mergedsample}-REP3of3.u.fragsizes.svg"
-    output:
-        "{path}operations/{mergedsample}.fragsizes.done.txt"
-    shell:
-        "touch {output}"
+# rule AGGREGATOR_fragsize_3reps:
+#     input:
+#         "{path}metrics/{mergedsample}-REP1of3.u.fragsizes.svg",
+#         "{path}metrics/{mergedsample}-REP2of3.u.fragsizes.svg",
+#         "{path}metrics/{mergedsample}-REP3of3.u.fragsizes.svg"
+#     output:
+#         "{path}operations/{mergedsample}.fragsizes.done.txt"
+#     shell:
+#         "touch {output}"
 
 rule METRICS_annotate_peaks_merged:
     input:
@@ -1081,59 +1165,60 @@ rule xsample_footprint_direct_comparison:
     script:
         "script/snakeXsampleCompareFootprint.R"
 
-########################################################################################################################################
-#### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
-########################################################################################################################################
-
-# Run this with a terminal command like: for i in {1..62}; do snakemake --config group=$i -j 20 run_pantf_ls1034wt01; done
-rule run_pantf_h508wt01:
+rule AGGREGATOR_copy_bam:
     input:
-        expand("h508/wt01/footprints/operations/groups/H508-WT-01.processFP.group{param}.done", param=config["group"])
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.1.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.2.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.3.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.4.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.5.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.6.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.7.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.8.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.9.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.10.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.11.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.12.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.13.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.14.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.15.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.16.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.17.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.18.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.19.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.20.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.1.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.2.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.3.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.4.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.5.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.6.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.7.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.8.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.9.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.10.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.11.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.12.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.13.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.14.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.15.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.16.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.17.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.18.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.19.bai",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.20.bai"
+    output:
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
+    shell:
+        "touch {output}"
 
-rule run_pantf_ls1034wt01:
-    input:
-        expand("ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.group{param}.done", param=config["group"])
-
-rule run_pantf_h508wt02a:
-    input:
-        expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
-
-rule pantf_COADMR_h508wt02a:
-	input:
-		"h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
-
-rule pantf_raw_h508wt02a_all:
-    input:
-        expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.rawFPanalysis.group{param}.done", param=config["group"])
-
-rule pantf_COADMR_ls1034wt01:
-	input:
-		"ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.COADMR.done"
-
-rule pantf_aggregator_h508wt02a:
-	input:
-		"h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
-
-rule run_pantf_mdst8wt01:
-    input:
-        expand("mdst8/wt01/footprints/operations/groups/MDST8-WT-01.processFP.group{param}.done", param=config["group"])
-
-rule pantf_aggregator_mdst8wt01:
-	input:
-		"mdst8/wt01/footprints/operations/aggregated/MDST8-WT-01.aggregated.done"
-
-rule pantf_aggregator_ls1034wt01:
-	input:
-		"ls1034/wt01/footprints/operations/aggregated/LS1034-WT-01.aggregated.done"
-
-## Pipeline TF rules ###################################################################################################################
 rule PANTF_run_aggregator:
-	input:
-		"{path}footprints/data/processed/"
-	output:
-		"{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
-	script:
-		"scripts/panTF/snakeAggregateProcessedFootprintData.R"
+    input:
+        "{path}footprints/data/processed/"
+    output:
+        "{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
+    script:
+        "scripts/panTF/snakeAggregateProcessedFootprintData.R"
 
 rule PANTF_copy_bam:
     # The TF analysis script runs in 20 simultaneous processes
@@ -1159,24 +1244,13 @@ rule PANTF_copy_bai:
     shell:
         "cp {input} {output}"
 
-rule PANTF_remove_bamcopy:
-    input:
-        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
-    output:
-        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
-    shell:
-         """
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-         touch {output}
-         """
-
+## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
 rule PANTF_raw_footprint_analysis:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
         "sites/data/{gene}.bindingSites.Rdata",
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
     output:
         "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
@@ -1190,21 +1264,20 @@ rule PANTF_raw_footprint_analysis:
 ## Parsing the raw footprints involves identifying which genomic loci have a TF bound
 rule PANTF_parse_footprint_analysis:
     input:
-        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     output:
-    	"{path}footprints/operations/parsed/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
     resources:
         parseFootprint=1
     benchmark:
-        '{path}footprints/benchmark/parsed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+        '{path}footprints/benchmark/parse/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
-    	"scripts/panTF/snakeParseFootprint.R"
+        "scripts/panTF/snakeParseFootprint.R"
 
 ## Processing the parsed footprint data to generate plots, etc
 rule PANTF_process_footprint_analysis:
     input:
-        "{path}footprints/operations/parsed/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
     output:
         "{path}footprints/operations/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
     resources:
@@ -1214,6 +1287,17 @@ rule PANTF_process_footprint_analysis:
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
-########################################################################################################################################
-#### RRBS ANALYSIS #####################################################################################################################
-########################################################################################################################################
+## Remove the extra copies of the bam files once they are no longer needed
+## Not currently working due to method of running footprinting pipeline
+rule PANTF_remove_bamcopy:
+    input:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    output:
+        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """

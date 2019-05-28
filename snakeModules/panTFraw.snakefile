@@ -1,4 +1,126 @@
 ########################################################################################################################################
+#### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
+########################################################################################################################################
+
+## Note that even though this will be sped up by making 20 redundant copies of the bam file,
+## There is still a chance two processes will access the same file the way it is currently written
+## This will happen if two processes are launched with the same hard coded bam file
+## Note sure how to fix this, its probably fine for now
+## This code needs some work. Something is tripping it up if I try to run all TFs at once (gets stuck),
+## And I have also not been able to enforce strict group ordering in the execution
+## For now, I can run each group sequencially by using the shell command:
+## for i in {1..62}; do snakemake -j 20 run_group$i; done
+
+## Potential observation when writing/testing this block of code:
+## If I put all the TF targets into 62 target rule groups of 20 each,
+## And then attempt to run the pipeline by pulling an aggregator tool
+## That collects all 62 groups at once, it doesn't crash but stalls 
+## and does not run. This may be because the pipeline is pulling target
+## TFs from all 62 groups at once, so the entire cohort is available
+## to start new processes as soon as one finishes. What this means is,
+## FP targets that have very little computational requirements will finish
+## Quickly and then that thread will move on to a new target - until it reaches
+## One that has a heavy memory/computational load. All threads will do this until
+## Eventually all 20 processes are stuck on targets that have serious comp. requirements
+## And the pipeline will stall.
+## If, alternatively, you run the pipeline so that each group must finish completely before
+## the next one starts, this will not be a problem, as all the processes will sync up at
+## Each step and wait for the heavier ones to finish.
+
+## Note - this section utilizes rules defined in an auxillary snakefile called 'panTF.snakefile'
+
+# ## Pipeline TF rules ###################################################################################################################
+rule PANTF_run_aggregator:
+	input:
+		"{path}footprints/data/processed/"
+	output:
+		"{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
+	script:
+		"scripts/panTF/snakeAggregateProcessedFootprintData.R"
+
+rule PANTF_copy_bam:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
+    input:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
+    output:
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam"
+    shell:
+        "cp {input} {output}"
+
+rule PANTF_copy_bai:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
+    input:
+        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    output:
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai"
+    shell:
+        "cp {input} {output}"
+
+## The 'raw' footprint analysis involves pulling the reads from the bam files and generating insertion matrices
+rule PANTF_raw_footprint_analysis:
+    input:
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
+        "sites/data/{gene}.bindingSites.Rdata",
+        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
+        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
+    output:
+        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+    resources:
+        analyzeRawFP=1
+    benchmark:
+        '{path}footprints/benchmark/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
+    script:
+        "scripts/panTF/snakeAnalyzeRawFootprint.R"
+
+## Parsing the raw footprints involves identifying which genomic loci have a TF bound
+rule PANTF_parse_footprint_analysis:
+    input:
+        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+    output:
+    	"{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    resources:
+        parseFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/parse/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+    	"scripts/panTF/snakeParseFootprint.R"
+
+## Processing the parsed footprint data to generate plots, etc
+rule PANTF_process_footprint_analysis:
+    input:
+        "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    output:
+        "{path}footprints/operations/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
+    resources:
+        processFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/processed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+        "scripts/panTF/snakeProcessFootprint.R"
+
+## Remove the extra copies of the bam files once they are no longer needed
+## Not currently working due to method of running footprinting pipeline
+rule PANTF_remove_bamcopy:
+    input:
+        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+    output:
+        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
+
+########################################################################################################################################
 #### GROUP AGGREGATOR ##################################################################################################################
 ########################################################################################################################################
 

@@ -1,4 +1,19 @@
+
+## Install libraries, if necessary
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("GenomicRanges", suppressUpdates = TRUE)
+#biocLite("stats4", suppressUpdates = TRUE)
+#biocLite("BiocGenerics", suppressUpdates = TRUE)
+#biocLite("parallel", suppressUpdates = TRUE)
+#biocLite("Rsamtools", suppressUpdates = TRUE)
+#biocLite("GenomicAlignments", suppressUpdates = TRUE)
+#biocLite("genomation", suppressUpdates = TRUE)
+
+## Disable scientific notation in variables
+options(scipen = 999)
+
 ## Set snakemake variables
+cat("Setting snakemake variables...", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 sitesPath <- snakemake@input[[3]]
@@ -6,220 +21,151 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
-##
-cat("Processing raw footprint data for gene", geneName, "from sample", sampleName, "\n")
 
 ## Set the output path for Rdata file and perform a filecheck
 footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
-cat("Output path for data is set as:", footprintDataPath, "\n")
 
-## Perform a filecheck first, skip if already exists
 if (file.exists(footprintDataPath) == TRUE){
+  
   cat("File already exists, skipping", "\n")
+  
 } else {
   
-  ## The file doesn't exist yet, begin analysis
   ## Load libraries
-  cat("Loading libraries", "\n")
-  suppressMessages(library(BiocGenerics))
+  cat("Loading libraries...", "\n")
   suppressMessages(library(GenomicRanges))
-  suppressMessages(library(GenomicAlignments))
-  suppressMessages(library(BSgenome.Hsapiens.UCSC.hg38))
-  suppressMessages(library(Rsamtools))
-  suppressMessages(library(genomation))
   suppressMessages(library(stats4))
-  suppressMessages(library(rlist))
-
-  ## Load the binding sites for current gene
-  cat("Loading binding sites", "\n")
+  suppressMessages(library(BiocGenerics))
+  suppressMessages(library(parallel))
+  suppressMessages(library(Rsamtools))
+  suppressMessages(library(GenomicAlignments))
+  suppressMessages(library(genomation))
+  
+  ##
+  cat("Loading binding sites...", "\n")
   load(sitesPath)
-  ##
   numMotif <- length(bindingSites)
-  cat("Found", numMotif, "motifs", "\n")
-  
-  ## Remove motifs with 0 binding sites
-  cat("Removing motifs that matched 0 genomic loci", "\n")
-  numMotif <- length(bindingSites)
-  numSites <- c()
-  ##
-  for (l in 1:numMotif){numSites[l] <- length(bindingSites[[l]][["sites"]]@ranges)}
-  ##
-  zeroIdx <- which(numSites == 0)
-  if (length(zeroIdx) != 0){
-    bindingSites <- bindingSites[-zeroIdx]
-  }
-  ##
-  numMotif <- length(bindingSites)
-  cat(numMotif, "motifs remain", "\n")
-  
-    ## Initiate an R object to hold all generated data
-  ## and set a motif number index
   bamFile <- BamFile(bamPath)
+  
+  ## Initiate an R object to hold all generated data
   footprintData <- list()
+  for (a in 1:numMotif){
+    com <- paste0("footprintData$motif", a, " <- list()")
+    eval(parse(text = com))} # end for (a in 1:numMotif)
+  
+  cat("Analyzing footprints for", geneName, "\n")
+  cat("Found", numMotif, "unique motifs", "\n")
+  
+  ## If no motifs are found, skip
+  if (numMotif ==0){
+    cat("No motifs found. Skipping", "\n")
+  } else {
+  
+  ## Index counter for motif naming, required in case some motifs have no matches in peak sites
   idxMotif <- 1
   
-  ##
-  if (numMotif == 0){
-    cat(numMotif, "No data to analyze. Skipping", "\n")
-  } else {
-
-  ## Loop through all the unique motifs and perform the analysis
-  cat("Analyzing footprints for", geneName, "with", numMotif, "unique motifs",  "\n")
+  ## Begin analysis
   for (b in 1:numMotif){
     
-    cat("Analyzing motif", b, "\n")
     ## Binding Sites
-    cat("Processing binding sites", "\n")
-    scope <- paste0("chr", c(1:22, "X", "Y"))
-    genomeSites <- bindingSites[[b]][["sites"]]
-    ## Trim the matched binding sites to the standard chromosomes only
-    genomeSites <- keepStandardChromosomes(genomeSites, pruning.mode="coarse")
-    genomeSites <- keepSeqlevels(genomeSites, scope, pruning.mode="coarse")
-    genomeSites <- trim(genomeSites, use.names = TRUE)
-    numSites <- length(genomeSites)
-    
-    cat("Found", numSites, "genome-wide binding sites", "\n")
-      
-    ## Using a tryCatch block, errors in any given motif won't stop pipeline
-    #tryCatch({
-    
-    ## Pull binding motif data
-    cat("Loading binding motif data", "\n")
+    cat("Analyzing motif", b, "\n")
     PWM <- bindingSites[[b]][["PWM"]]
     motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
+    allSites <- bindingSites[[b]][["sites"]]
+    numSites <- length(allSites)
+    cat("Found", numSites, "motif binding sites", "\n")
     
-    ## Extend each binding site in the Granges to the analysis window (+/- 250 bp)
-    cat("Processing analysis window for each binding site", "\n")
-    extendedSites <- promoters(genomeSites, upstream = 250, downstream = (250 + motifWidth), use.names=TRUE)
-    ## Trim to standard ranges only
-    extendedSites <- keepStandardChromosomes(extendedSites, pruning.mode="coarse")
-    extendedSites <- keepSeqlevels(extendedSites, scope, pruning.mode="coarse")
-    extendedSites <- trim(extendedSites, use.names = TRUE)
+    ## If no binding sites are found, skip this motif
+    if (numSites == 0){
+      cat("No motif binding sites found, skipping", "\n")
+    } else {
+      
+    ##
+    cat("Processing analysis window for each site", "\n")
+    ## extend each range +/- 250 bp from motif edges
+    extSites <- promoters(allSites, upstream = 250, downstream = (250 + motifWidth), use.names=TRUE)
+    extSites <- keepStandardChromosomes(extSites, pruning.mode="coarse")
+    extSites <- trim(extSites)
+
+    ## Read in the data from bam file for current ranges
+    param <- ScanBamParam(which = extSites)
     
     ## Use GenomicAlignments package to read in bam file to GRanges, also very fast
     ## Consider each read as a unique element (insertion), not paired end
     cat("Loading relevant reads", "\n")
-    param <- ScanBamParam(which = extendedSites)
     bamIn <- readGAlignments(bamFile, param = param)
-      
+    
     ## Convert GAlignments to GRanges
     cat("Converting reads to insertions", "\n")
     grIn <- granges(bamIn)
+    
     ## Trim everything but standard chromosomes, trim out of bounds ranges
-    cat("Trimming out of bounds reads and keeping only standard chromosomes", "\n")
     grIn <- keepStandardChromosomes(grIn, pruning.mode="coarse")
-    grIn <- keepSeqlevels(grIn, scope, pruning.mode="coarse")
-    grIn <- trim(grIn, use.names = TRUE)
-    ## Convert reads to insertions
-    grIn <- resize(grIn, width = 1)
-
+    grIn <- trim(grIn)
+    
+    ## Convert the reads to insertions with width = 1
+    grIn2 <- resize(grIn, width = 1)
+    
     ## Subset the Granges object into plus and minus strands for shifting
+    cat("Shifting insertions +4/-5 bp", "\n")
+    plusIdx <- which(strand(grIn2) == "+")
+    minusIdx <- which(strand(grIn2) == "-")
+    grPlus <- grIn2[plusIdx]
+    grMinus <- grIn2[minusIdx]
+    
     ## Shift the ATACseq reads to account for Tn5 insertion mechanism 
     ## shift end of fragment +4 bp (plus strand) or -5 bp (minus standed)
-    cat("Shifting insertions by +4/-5 bp", "\n")
-    plusIdx <- which(strand(grIn) == "+")
-    minusIdx <- which(strand(grIn) == "-")
-    grPlus <- grIn[plusIdx]
-    grMinus <- grIn[minusIdx]
     grPlusShifted <- shift(grPlus, shift=4L)
     grMinusShifted <- shift(grMinus, shift=-5L)
+    
     ## Merge the plus and minus strand shifted Granges
-    grShiftedInsertions <- c(grPlusShifted, grMinusShifted)
+    grMerged <- c(grPlusShifted, grMinusShifted)
+    shiftedInsertions <- grMerged
     
     ## Perform the footprint calculations
     ## Convert Tn5 insertions corrected Granges to Rle object
     cat("Generating insertion matrix", "\n")
-    insertionRLE <- coverage(grShiftedInsertions)
-    ## Get rid of the mitochondrial data
-    insertionRLE@listData <- insertionRLE@listData[which(names(insertionRLE@listData) != "chrM")]
+    insRLE <- coverage(grMerged)
+    
     ## Create a views object for the Rle list using the Granges sites data
-    insertionViews <- Views(insertionRLE, extendedSites)
+    insViews <- Views(insRLE, extSites)
+    
     ## Convert to a matrix
-    insertionMatrix <- as.matrix(insertionViews)
+    insMatrix <- as.matrix(insViews)
     
-    #### Calculate read statistics ####
-    cat("Calculating read statistics", "\n")
-    ## Build a GRanges object containing ranges for standard hg38
-    # scope <- paste0("chr", c(1:22, "X", "Y"))
-    # grHg38 <- GRanges(seqinfo(BSgenome.Hsapiens.UCSC.hg38))
-    # grHg38 <- keepStandardChromosomes(grHg38, pruning.mode="coarse")
-    # grHg38 <- keepSeqlevels(grHg38, scope, pruning.mode="coarse")
-    # grHg38 <- trim(grHg38, use.names = TRUE)
-    # ## Count the total reads in standard ranges in library
-    # cat("Counting total reads in library", "\n")
-    # paramHg38 <- ScanBamParam(which = grHg38)
-    # totalLibraryReads <- countBam(bamFile, param = paramHg38)
-    ## Count the total reads in current analysis ranges
-    # The total number of reads read from the bam file,
-    # After filtering for standard chromosomes, etc
-    # Total number of reads that overlap with the extended
-    # ranges for the current binding motif matches
-    totalCurrentReads <- length(grIn@ranges)
-    ## Count the number of insertion sites in current analysis range
-    # reduce() 'collapses' any overlapping reads into a single range
-    # width() returns the widths of all reads in the GRanges object
-    # numCutSites therefore = the total number of unique bp where there is an insertion
-    numCurrentCutSites <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
-    ## Get the total size in bp of the current analysis range
-    bpInCurrentAnalysisWindow <- sum(as.numeric(width(reduce(extendedSites, ignore.strand=TRUE))))
-    ## Calculate the library factor
-    # libraryFactor = current total insertions / total bp in current analysis window
-    # where there is at least one insertion
-    libraryFactor <- (totalCurrentReads / bpInCurrentAnalysisWindow)
-    
-    ## Normalize values in insertion matrix, z-scores
-    insertionStandardDeviation <- sd(insertionMatrix)
-    normalizedInsertionMatrix <- ((insertionMatrix - libraryFactor) / insertionStandardDeviation)
-      
-    ## Store and save all the data for downstream analysis
-    cat("Storing data in a list object", "\n")
+    ## Store the data
+    cat("Storing data", "\n")
+    ## Initiate a temporary list object to store data, will be transferred to footprintData list
     tempData <- list()
-    ## Transfer the data
-    #tempData$totalLibraryReads <- totalLibraryReads
-    tempData$totalCurrentReads <- totalCurrentReads
-    tempData$numCurrentCutSites <- numCurrentCutSites
-    tempData$bpInCurrentAnalysisWindow <- bpInCurrentAnalysisWindow
-    tempData$libraryFactor <- libraryFactor
-    ##
-    tempData$PWM <- PWM
-    tempData$genomeSites <- genomeSites
-    tempData$numGenomeSites <- numSites
+    tempData$PWM <- bindingSites[[b]][["PWM"]]
     tempData$motifWidth <- motifWidth
-    tempData$extendedSites <- extendedSites
-    tempData$insertionMatrix <- insertionMatrix
-    ## Omitting these data will significantly reduce mem and storage reqs
-    #tempData$shiftedInsertions <- grShiftedInsertions
-    #tempData$insertionRLE <- insertionRLE
-    #tempData$insertionViews <- insertionViews
+    tempData$allSites <- allSites
+    tempData$numSites <- numSites
+    tempData$extSites <- extSites
+    tempData$insMatrix <- insMatrix
+    tempData$libSize <- length(bamIn)
+    tempData$coverageSize <- sum(as.numeric(width(reduce(grIn, ignore.strand=TRUE))))
+    tempData$libFactor <- tempData$libSize / tempData$coverageSize
 
-    ## Transfer all the data for the current motif to the storage object
+    #### Transfer all the data for the current motif to the storage object
     cat("Transferring all data to storage object footprintData", "\n")
     com <- paste0("footprintData$motif", idxMotif, " <- tempData")
     eval(parse(text = com))
     
-    ## Update the motif index counter
-    cat("Updating motif index counter", "\n")
+    ## Update the motif index
     idxMotif <- (idxMotif + 1)
-
-    # }, # end try
-    # error = function(cond){
-    #   message(cond)
-    #   return(NA)
-    # },
-    # finally={})
-  
+    
+    } # end if (numSites == 0){
+      
   } # end for (b in 1:numMotif)
   
   ## Save the raw footprint data
-  cat("Saving finished raw footprint data for", geneName, "\n")
+  cat("Saving finished data for", geneName, "\n")
   save(footprintData, file = footprintDataPath)
   
-  } # end if (numMotif == 0)
+  } # end if (numMotif ==0){
   
 } # end if (file.exists(footprintDataPath) == TRUE)
 
-## Create the output file for snakemake
-cat("Creating output file for snakemake", geneName, "\n")
+##
 file.create(outPath)
-gc()
-warnings()
