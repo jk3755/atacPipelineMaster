@@ -1266,9 +1266,10 @@ rule PANTF_raw_footprint_analysis:
     script:
         "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
-rule PANTF_parse_footprint_analysis:
+rule PANTF_parse_and_generate_footprint_statistics:
     input:
-        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+        "{path}metrics/{mergedsample}.totalreads.Rdata"
     output:
         "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
     resources:
