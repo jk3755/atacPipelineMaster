@@ -13,8 +13,8 @@ suppressMessages(library(Rsamtools))
 ##
 bamFile <- BamFile(bamPath)
 sampleTotalReads <- countBam(bamFile)
+sampleTotalReads <- sampleTotalReads[[6]]
 cat("Found", sampleTotalReads, "total reads in sample library", "\n")
       
 ## Save the data
-cat("Saving finished raw footprint data for", geneName, "\n")
 save(sampleTotalReads, file = outPath)
