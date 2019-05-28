@@ -377,7 +377,7 @@ if (file.exists(dataOutPath) == TRUE){
       BFpassNumSites <- length(idxBFpass)
       
       ## Perform benjamini-hochberg correction
-      BHpvalue <- BH(pvalue, 0.05)
+      BHpvalue <- p.adjust(pvalue, method = "BH")
       
       #### Generate insertion site probability graphs ####
       ###########################
