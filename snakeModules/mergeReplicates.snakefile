@@ -139,27 +139,6 @@ rule STEP17_makebigwig_bamcov_merged_1replicate:
 #     shell:
 #         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-rule STEP17_makebigwig_bamcov_merged_1replicate:
-    # This rule will be used when only one replicate is present
-    # params:
-    # -b bam input
-    # -o output file
-    # -of output format
-    # -bs binsize in bp
-    # -p number of processors to use
-    # -v verbose mode
-    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-    input:
-        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of1.bw"
-    output:
-        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-    resources:
-        make_bigwig=1
-    shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-
 rule STEP21_MACS2_peaks_merged_global_normilization_1replicate:
     # see above for notes applicable to MACS2 peak calling
     input:
