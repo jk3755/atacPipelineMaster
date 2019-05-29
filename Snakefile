@@ -95,6 +95,7 @@ rule AGGREGATOR_preprocessing:
         "{path}operations/{sample}-REP{repnum}.downsample.done.txt",
         "{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
         "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
+        #"{path}operations/{sample}-REP{repnum}.allgenes.footprint.downsampled.done.txt"
     output:
         "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
     shell:
@@ -137,6 +138,32 @@ rule AGGREGATOR_saturation:
     shell:
         "touch {output}"
 
+rule AGGREGATOR_saturation_footprints:
+    input:
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done",          
+    output:
+        "{path}operations/{sample}-REP{repnum}.{gene}.footprint.downsampled.done.txt"
+    shell:
+        "touch {output}"
+
+rule AGGREGATOR_saturation_footprints_genes:
+    input:
+        "{path}operations/{sample}-REP{repnum}.CTCF.footprint.downsampled.done.txt",
+        "{path}operations/{sample}-REP{repnum}.MNX1.footprint.downsampled.done.txt",
+        "{path}operations/{sample}-REP{repnum}.CDX2.footprint.downsampled.done.txt"
+    output:
+        "{path}operations/{sample}-REP{repnum}.allgenes.footprint.downsampled.done.txt"
+    shell:
+        "touch {output}"
+
 #### Preprocessing Rules #####
 
 rule PREP_builddirstructure:
@@ -153,7 +180,10 @@ rule PREP_builddirstructure:
         ##
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/footprints
-        mkdir -p -v {wildcards.path}saturation/footprints/data {wildcards.path}saturation/footprints/graphs {wildcards.path}saturation/footprints/operations {wildcards.path}saturation/footprints/benchmark
+        mkdir -p -v {wildcards.path}saturation/footprints/benchmark {wildcards.path}saturation/footprints/graphs {wildcards.path}saturation/footprints/operations
+        mkdir -p -v {wildcards.path}saturation/footprints/data
+        mkdir -p -v {wildcards.path}saturation/footprints/data/raw {wildcards.path}saturation/footprints/data/parsed 
+        mkdir -p -v {wildcards.path}saturation/footprints/data/processed {wildcards.path}saturation/footprints/data/graphs
         mkdir -p -v {wildcards.path}saturation/complexity
         mkdir -p -v {wildcards.path}saturation/peaks
         mkdir -p -v {wildcards.path}saturation/downsampled
@@ -629,6 +659,17 @@ rule STEP27_analyze_peak_saturation_downsampled:
         "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
     shell:
         "wc -l < {input} >> {output}"
+
+rule STEP28_analyze_raw_footprint_downsampled:
+    input:
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam",
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bai",
+        "sites/data/{gene}.bindingSites.Rdata",
+        "{path}operations/{sample}-REP{repnum}.downsample.done.txt"
+    output:
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
+    script:
+        "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
 ########################################################################################################################################
 #### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
