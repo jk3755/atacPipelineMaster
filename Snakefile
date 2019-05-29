@@ -14,7 +14,7 @@ include: "snakeModules/panTFparse.snakefile"
 
 include: "snakeModules/panTFprocess.snakefile"
 
-include: "snakeModules/panTFprocess.snakefile"
+#include: "snakeModules/panTFgraphs.snakefile"
 
 include: "snakeModules/scanPWM.snakefile"
 
