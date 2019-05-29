@@ -1,34 +1,5 @@
 
 ########################################################################################################################################
-################################ GENERAL INFO ##########################################################################################
-########################################################################################################################################
-## Snakemake execution guide
-# A dry run of the pipeline can be run with:
-# snakemake -np h508go
-# On one of the virtualization servers, run the pipeline with the following to allocate 20 threads and 90 gb max memory (to avoid crashing the process)
-# snakemake -j 20 h508go --resources hg38align=1 fp_by_chr=5 raw_fp_graph=2 parse_fp=2 make_bigwig=1
-#
-## To initiate the pipeline, you must create a directory called "preprocessing" with a subdirectory called "1gz" containing the fastq.gz files
-## Rename the files as described below before spooling the pipeline
-# 
-## Raw file info
-# H508-1_S3_L001_R1_001.fastq.gz - Sample 1
-# H508-2_S2_L001_R1_001.fastq.gz - Sample 2
-# H508-3_S1_L001_R1_001.fastq.gz - Sample 3
-## Before running pipeline, if you have three replicates, rename these to:
-# H508-WT-01_REP1of3_L1_R1.fastq.gz
-# H508-WT-01_REP2of3_L1_R1.fastq.gz
-# H508-WT-01_REP3of3_L1_R1.fastq.gz
-## If you only have two reps, rename files to:
-# H508-WT-01_REP1of2_L1_R1.fastq.gz
-# H508-WT-01_REP2of2_L1_R1.fastq.gz
-## If you only have one replicate, rename files to:
-# H508-WT-01_REP1of1_L1_R1.fastq.gz
-#
-# Note that additional rule definitions (large group aggregators for panTF, scanPWM) are defined and imported into this main
-# Script from the files located in snakeModules directory
-#
-########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 
@@ -54,57 +25,21 @@ rule run_h508wt01:
     input:
         "h508/wt01/preprocessing/logs/H508-WT-01.preprocessing.cleaning.done.txt"
 
-rule run_h508wt02a:
+rule preprocessing_lncap_group1:
     input:
-        "h508/wt02a/operations/H508A-WT-02-pipeline.complete.txt"
-
-rule run_ls1034wt01:
-    input:
-        "ls1034/wt01/operations/LS1034-WT-01-pipeline.complete.txt"
-
-rule run_snu61wt01:
-    input:
-        "snu61/wt01/operations/SNU61-WT-01-pipeline.complete.txt"
-
-rule run_mdst8wt01:
-    input:
-        "mdst8/wt01/operations/MDST8-WT-01-pipeline.complete.txt"
-
-## LNCaP ##
-
-rule run_lncap_cr01:
-    input:
-        "lncap/cr01/operations/LNCaP-CR-01-pipeline.complete.txt"
-
-rule run_lncap_cr02:
-    input:
-        "lncap/cr02/operations/LNCaP-CR-02-pipeline.complete.txt"
-
-rule run_lncap_cr04:
-    input:
-        "lncap/cr04/operations/LNCaP-CR-04-pipeline.complete.txt"
-
-rule run_lncap_cr05:
-    input:
-        "lncap/cr05/operations/LNCaP-CR-05-pipeline.complete.txt"
-
-rule run_lncap_cr07:
-    input:
+        "lncap/wt02/operations/LNCaP-WT-02-pipeline.complete.txt",
+        "lncap/cr01/operations/LNCaP-CR-01-pipeline.complete.txt",
+        "lncap/cr04/operations/LNCaP-CR-04-pipeline.complete.txt",
         "lncap/cr07/operations/LNCaP-CR-07-pipeline.complete.txt"
 
-rule run_lncap_cr08:
+rule preprocessing_lncap_group2:
     input:
-        "lncap/cr08/operations/LNCaP-CR-08-pipeline.complete.txt"
+        "lncap/wt01/operations/LNCaP-WT-01-pipeline.complete.txt",
+        "lncap/cr02/operations/LNCaP-CR-02-pipeline.complete.txt",
+        "lncap/cr05/operations/LNCaP-CR-05-pipeline.complete.txt",
+         "lncap/cr08/operations/LNCaP-CR-08-pipeline.complete.txt"
 
-rule run_lncap_wt01:
-    input:
-        "lncap/wt01/operations/LNCaP-WT-01-pipeline.complete.txt"
 
-rule run_lncap_wt02:
-    input:
-        "lncap/wt02/operations/LNCaP-WT-02-pipeline.complete.txt"
-
-## LNCaP #################################################################################################
 
 rule AGGREGATOR_pipeline:
     input:
@@ -122,44 +57,6 @@ rule AGGREGATOR_pipeline:
 ########################################################################################################################################
 #### SPOOL FOOTPRINTING ################################################################################################################
 ########################################################################################################################################
-
-## Run with a terminal command like: for i in {1..62}; do snakemake --config group=$i -j 20 run_pantf_ls1034wt01; done
-
-# rule run_pantf_h508wt01:
-#     input:
-#         expand("h508/wt01/footprints/operations/groups/H508-WT-01.processFP.group{param}.done", param=config["group"])
-
-# rule run_pantf_ls1034wt01:
-#     input:
-#         expand("ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.group{param}.done", param=config["group"])
-
-# rule run_pantf_h508wt02a:
-#     input:
-#         expand("h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.group{param}.done", param=config["group"])
-
-# rule pantf_COADMR_h508wt02a:
-#   input:
-#       "h508/wt02a/footprints/operations/groups/H508A-WT-02.processFP.COADMR.done"
-
-# rule pantf_COADMR_ls1034wt01:
-#   input:
-#       "ls1034/wt01/footprints/operations/groups/LS1034-WT-01.processFP.COADMR.done"
-
-# rule pantf_aggregator_h508wt02a:
-#   input:
-#       "h508/wt02a/footprints/operations/aggregated/H508A-WT-02.aggregated.done"
-
-# rule run_pantf_mdst8wt01:
-#     input:
-#         expand("mdst8/wt01/footprints/operations/groups/MDST8-WT-01.processFP.group{param}.done", param=config["group"])
-
-# rule pantf_aggregator_mdst8wt01:
-#   input:
-#       "mdst8/wt01/footprints/operations/aggregated/MDST8-WT-01.aggregated.done"
-
-# rule pantf_aggregator_ls1034wt01:
-#   input:
-#       "ls1034/wt01/footprints/operations/aggregated/LS1034-WT-01.aggregated.done"
 
 rule run_pantf_lncap_group1:
     input:
@@ -188,12 +85,6 @@ rule parse_pantf_lncap_group2:
         expand("lncap/cr02/footprints/operations/groups/LNCaP-CR-02.parseFP.group{param}.done", param=config["group"]),
         expand("lncap/cr05/footprints/operations/groups/LNCaP-CR-05.parseFP.group{param}.done", param=config["group"]),
         expand("lncap/cr08/footprints/operations/groups/LNCaP-CR-08.parseFP.group{param}.done", param=config["group"])
-
-########################################################################################################################################
-#### SPOOL INDIVIDUAL OPERATIONS #######################################################################################################
-########################################################################################################################################
-
-
 
 ########################################################################################################################################
 #### SPOOL TF saturation analysis ######################################################################################################

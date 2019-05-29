@@ -1,28 +1,3 @@
-## Note that even though this will be sped up by making 20 redundant copies of the bam file,
-## There is still a chance two processes will access the same file the way it is currently written
-## This will happen if two processes are launched with the same hard coded bam file
-## Note sure how to fix this, its probably fine for now
-## This code needs some work. Something is tripping it up if I try to run all TFs at once (gets stuck),
-## And I have also not been able to enforce strict group ordering in the execution
-## For now, I can run each group sequencially by using the shell command:
-## for i in {1..62}; do snakemake -j 20 run_group$i; done
-
-## Potential observation when writing/testing this block of code:
-## If I put all the TF targets into 62 target rule groups of 20 each,
-## And then attempt to run the pipeline by pulling an aggregator tool
-## That collects all 62 groups at once, it doesn't crash but stalls 
-## and does not run. This may be because the pipeline is pulling target
-## TFs from all 62 groups at once, so the entire cohort is available
-## to start new processes as soon as one finishes. What this means is,
-## FP targets that have very little computational requirements will finish
-## Quickly and then that thread will move on to a new target - until it reaches
-## One that has a heavy memory/computational load. All threads will do this until
-## Eventually all 20 processes are stuck on targets that have serious comp. requirements
-## And the pipeline will stall.
-## If, alternatively, you run the pipeline so that each group must finish completely before
-## the next one starts, this will not be a problem, as all the processes will sync up at
-## Each step and wait for the heavier ones to finish.
-
 rule AGGREGATOR_copy_bam:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.1.bam",
