@@ -3,6 +3,28 @@
 ########################################################################################################################################
 # This script is provided for modularization purposes to the ATACseq snakemake workflow
 # It should be included in the main workflow using 'include'
+
+rule generate_motifData:
+    output:
+        "sites/motifData.Rdata"
+    script:
+        "../scripts/scanPWM/generateMotifData.R"
+
+rule generate_geneNames:
+    output:
+        "sites/geneNames.txt"
+    script:
+        "../scripts/scanPWM/generateNames.R"
+
+rule scanPWM:
+    input:
+        "sites/motifData.Rdata"
+    output:
+        '../sites/operations/scans/{gene}.PWMscan.done'
+    resources:
+        scanPWM=1
+    script:
+        '../scripts/scanPWM/snakeScanPWM.R'
    
 rule PWMscan_group_aggregator:
     input:

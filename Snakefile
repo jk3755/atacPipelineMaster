@@ -26,9 +26,9 @@ include: "snakeModules/scanPWM.snakefile"
 
 rule preprocessing_h508_wt01:
     input:
-        "h508/wt01/operations/H508-WT-01-REP1.preprocessing.complete.txt",
-        "h508/wt01/operations/H508-WT-01-REP2.preprocessing.complete.txt",
-        "h508/wt01/operations/H508-WT-01-REP3.preprocessing.complete.txt"
+        "h508/wt01/operations/H508-WT-01-REP1.preprocessing.complete.clean.txt",
+        "h508/wt01/operations/H508-WT-01-REP2.preprocessing.complete.clean.txt",
+        "h508/wt01/operations/H508-WT-01-REP3.preprocessing.complete.clean.txt"
 
 rule preprocessing_lncap_group1:
     input:
@@ -98,6 +98,14 @@ rule AGGREGATOR_preprocessing:
     output:
         "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
     shell:
+        "touch {output}"
+
+rule CLEAN_preprocessing:
+    input:
+        "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
+    output:
+        "{path}operations/{sample}-REP{repnum}.preprocessing.complete.clean.txt"
+    shell:
         """
         rm -f {wildcards.path}preprocessing/2fastq/*.fastq
         rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
@@ -108,6 +116,8 @@ rule AGGREGATOR_preprocessing:
         rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
         rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
         rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        rm -f {wildcards.path}preprocessing/8merged/*.bam
+        rm -f {wildcards.path}preprocessing/9dedup/*.bam
         touch {output}
         """
 
@@ -626,51 +636,51 @@ rule STEP27_analyze_peak_saturation_downsampled:
 
 rule PANTF_raw_footprint_analysis:
     input:
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bai",
         "sites/data/{gene}.bindingSites.Rdata",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
+        "{path}peaks/macs2/merged/{sample}-REP{repnum}-merged_global_normalization_peaks.narrowPeak",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.bamcopy.done"
     output:
-        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     resources:
         analyzeRawFP=1
     benchmark:
-        '{path}footprints/benchmark/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
+        '{path}footprints/benchmark/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
         "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
 rule PANTF_parse_and_generate_footprint_statistics:
     input:
-        "{path}footprints/operations/raw/{mergedsample}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
-        "{path}metrics/{mergedsample}.totalreads.Rdata",
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
+        "{path}footprints/operations/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+        "{path}peaks/macs2/merged/{sample}-REP{repnum}-merged_global_normalization_peaks.narrowPeak"
     output:
-        "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
     resources:
         parseFootprint=1
     benchmark:
-        '{path}footprints/benchmark/parse/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+        '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
 rule PANTF_process_footprint_analysis:
     input:
-        "{path}footprints/operations/parse/{mergedsample}.{gene}.parseFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
     output:
-        "{path}footprints/operations/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
     resources:
         processFootprint=1
     benchmark:
-        '{path}footprints/benchmark/processed/{mergedsample}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+        '{path}footprints/benchmark/processed/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
 rule PANTF_generate_tf_graphs:
     input:
-        "{path}footprints/operations/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
     output:
-        "{path}footprints/operations/graphs/{mergedsample}.{gene}.graphFP.bamcopy{bamcopy}.done"
+        "{path}footprints/operations/graphs/{sample}-REP{repnum}.{gene}.graphFP.bamcopy{bamcopy}.done"
     resources:
         graphFootprint=1
     script:
@@ -680,7 +690,7 @@ rule PANTF_run_aggregator:
     input:
         "{path}footprints/data/processed/"
     output:
-        "{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
+        "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
     script:
         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
 
@@ -696,24 +706,3 @@ rule run_PWMscan:
         "sites/geneNames.txt",
         "sites/operations/groups/PWMscan.allgroups.done"
 
-rule generate_motifData:
-    output:
-        "sites/motifData.Rdata"
-    script:
-        "scripts/scanPWM/generateMotifData.R"
-
-rule generate_geneNames:
-    output:
-        "sites/geneNames.txt"
-    script:
-        "scripts/scanPWM/generateNames.R"
-
-rule scanPWM:
-    input:
-        "sites/motifData.Rdata"
-    output:
-        'sites/operations/scans/{gene}.PWMscan.done'
-    resources:
-        scanPWM=1
-    script:
-        'scripts/scanPWM/snakeScanPWM.R'
