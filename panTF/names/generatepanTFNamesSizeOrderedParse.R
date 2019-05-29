@@ -1,14 +1,13 @@
-####################################################
-namePath <- "C:\\Users\\Jordan\\Documents\\git\\atacPipelineMaster\\scanPWM\\bindingSitesSizeOrdered.txt"
+
+####
+namePath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\names\\bindingSitesSizeOrdered.txt"
 orderedNames <- readLines(namePath)
 numGenes <- length(orderedNames)
-
-##
 strings <- c()
 a <- 1 # count for genes
 b <- 1 # string index (group)
-##########################################################
-# groups 1-40
+
+#### Groups 1-40
 while (b <= 40){
   c <- a
   d <- a+1
@@ -70,9 +69,11 @@ while (b <= 40){
   b <- b+1
 }
 
-############################################################################################
-# groups 40-55
+
+## Groups 40-55
 while (b <= 55){
+  
+  ##
   c <- a
   d <- a+1
   e <- a+2
@@ -96,6 +97,7 @@ while (b <= 55){
   tmp9 <- paste0("'{path}footprints/operations/parse/{mergedsample}.", orderedNames[k], ".parseFP.bamcopy9.done", "', ")
   tmp10 <- paste0("'{path}footprints/operations/parse/{mergedsample}.", orderedNames[l], ".parseFP.bamcopy10.done", "', ")
   
+  ##
   strings[b] <- paste0(
     "rule parseFP_group",
     b,
@@ -106,14 +108,17 @@ while (b <= 55){
     "output:\n\t\t",
     "'{path}footprints/operations/groups/{mergedsample}.parseFP.group", b, ".done'\n",
     "\tshell:\n\t\t",
-    "'touch {output}'"
-  )
+    "'touch {output}'")
+  
+  ##
   a <- a+10
   b <- b+1
 }
-###########################################################################################
-##
+
+## Remaining
 while (a <= 1229){
+  
+  ##
   c <- a
   d <- a+1
   e <- a+2
@@ -127,6 +132,7 @@ while (a <= 1229){
   tmp4 <- paste0("'{path}footprints/operations/parse/{mergedsample}.", orderedNames[f], ".parseFP.bamcopy4.done", "', ")
   tmp5 <- paste0("'{path}footprints/operations/parse/{mergedsample}.", orderedNames[g], ".parseFP.bamcopy5.done", "', ")
   
+  ##
   strings[b] <- paste0(
     "rule parseFP_group",
     b,
@@ -136,21 +142,24 @@ while (a <= 1229){
     "output:\n\t\t",
     "'{path}footprints/operations/groups/{mergedsample}.parseFP.group", b, ".done'\n",
     "\tshell:\n\t\t",
-    "'touch {output}'"
-  )
+    "'touch {output}'")
+  
+  ##
   a <- a+5
   b <- b+1
 }
-###########################################################################################
-## Write the file
-outPath <- "C:\\Users\\Jordan\\Desktop\\test.txt"
+
+#### Write the file ####
+outPath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\names\\panTFnameParse.snakefile"
+
+##
 write.table(
-            strings,
-            file = outPath,
-            quote = FALSE,
-            sep = ",",
-            eol = "\n",
-            row.names = FALSE,
-            col.names = FALSE)
+  strings,
+  file = outPath,
+  quote = FALSE,
+  sep = ",",
+  eol = "\n",
+  row.names = FALSE,
+  col.names = FALSE)
 
 

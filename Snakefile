@@ -36,6 +36,8 @@ include: "snakeModules/panTFraw.snakefile"
 
 include: "snakeModules/panTFparse.snakefile"
 
+include: "snakeModules/panTFprocess.snakefile"
+
 include: "snakeModules/scanPWM.snakefile"
 
 #configfile: "snakeModules/config.yaml"
@@ -64,7 +66,7 @@ rule run_mdst8wt01:
     input:
         "mdst8/wt01/operations/MDST8-WT-01-pipeline.complete.txt"
 
-## LNCaP #################################################################################################
+## LNCaP ##
 
 rule run_lncap_cr01:
     input:
