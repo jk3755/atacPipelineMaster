@@ -83,7 +83,6 @@ rule AGGREGATOR_pipeline:
     input:
         #"{path}operations/{mergedsample}-correlation.done.txt",
         "{path}operations/{mergedsample}-peaks.done.txt",
-        #"{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt",
         "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
         "{path}operations/{mergedsample}-downsample.final.txt",
         "{path}operations/{mergedsample}.metrics.annotations.done.txt"
@@ -194,7 +193,6 @@ rule STEP19_fragment_size_distribution:
         "{path}operations/{mergedsample}.fragsizes.done.txt"
     shell:
         "touch {output}"
-
 
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -562,45 +560,45 @@ rule STEP19_annotate_peaks:
     script:
         "scripts/snakeAnnotatePeaks.R"
 
-rule STEP19_sample_total_reads:
+rule STEP20_sample_total_reads:
     input:
-        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+        a="{path}preprocessing/11repmerged/{sample}-repmerged.bam",
+        b="{path}preprocessing/11repmerged/{sample}-repmerged.bai"
     output:
-        "{path}metrics/{mergedsample}.totalreads.Rdata"
+        "{path}metrics/{sample}.totalreads.Rdata"
     script:
         "scripts/snakeCountSampleReads.R"
 
 #### Downsampling and saturation analysis ####
 
-rule STEP20_downsample_bam:
+rule STEP21_downsample_bam:
     input:
-        "{path}preprocessing/8merged/{mergedsample}-REP{repnum}.lanemerge.bam"
+        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.bam"
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
     shell:
         "java -jar programs/picard/picard.jar DownsampleSam \
         I={input} \
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
 
-rule STEP21_sort_downsampled:
+rule STEP22_sort_downsampled:
     input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.bam"
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.cs.bam"
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
     shell:
         "java -jar programs/picard/picard.jar SortSam \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate"
 
-rule STEP22_purge_duplicates_downsampled:
+rule STEP23_purge_duplicates_downsampled:
     input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.cs.bam"
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
     output:
-        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bam",
-        b="{path}metrics/{mergedsample}-REP{repnum}.{prob}.duplication-metrics.txt"
+        a="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
+        b="{path}metrics/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
     shell:
         "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
         I={input} \
@@ -609,38 +607,38 @@ rule STEP22_purge_duplicates_downsampled:
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
-rule STEP23_index_downsampled:
+rule STEP24_index_downsampled:
     input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bam"
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bai"
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
     shell:
         "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 
-rule STEP24_analyze_complexity_downsampled:
+rule STEP25_analyze_complexity_downsampled:
     input:
-        a="{path}metrics/{mergedsample}-REP{repnum}.9.duplication-metrics.txt",
-        b="{path}metrics/{mergedsample}-REP{repnum}.8.duplication-metrics.txt",
-        c="{path}metrics/{mergedsample}-REP{repnum}.7.duplication-metrics.txt",
-        d="{path}metrics/{mergedsample}-REP{repnum}.6.duplication-metrics.txt",
-        e="{path}metrics/{mergedsample}-REP{repnum}.5.duplication-metrics.txt",
-        f="{path}metrics/{mergedsample}-REP{repnum}.4.duplication-metrics.txt",
-        g="{path}metrics/{mergedsample}-REP{repnum}.3.duplication-metrics.txt",
-        h="{path}metrics/{mergedsample}-REP{repnum}.2.duplication-metrics.txt",
-        i="{path}metrics/{mergedsample}-REP{repnum}.1.duplication-metrics.txt",
-        j="{path}saturation/downsampled/{mergedsample}-REP{repnum}.9.md.bai",
-        k="{path}saturation/downsampled/{mergedsample}-REP{repnum}.8.md.bai",
-        l="{path}saturation/downsampled/{mergedsample}-REP{repnum}.7.md.bai",
-        m="{path}saturation/downsampled/{mergedsample}-REP{repnum}.6.md.bai",
-        n="{path}saturation/downsampled/{mergedsample}-REP{repnum}.5.md.bai",
-        o="{path}saturation/downsampled/{mergedsample}-REP{repnum}.4.md.bai",
-        p="{path}saturation/downsampled/{mergedsample}-REP{repnum}.3.md.bai",
-        q="{path}saturation/downsampled/{mergedsample}-REP{repnum}.2.md.bai",
-        r="{path}saturation/downsampled/{mergedsample}-REP{repnum}.1.md.bai"
+        a="{path}metrics/{sample}-REP{repnum}.9.duplication-metrics.txt",
+        b="{path}metrics/{sample}-REP{repnum}.8.duplication-metrics.txt",
+        c="{path}metrics/{sample}-REP{repnum}.7.duplication-metrics.txt",
+        d="{path}metrics/{sample}-REP{repnum}.6.duplication-metrics.txt",
+        e="{path}metrics/{sample}-REP{repnum}.5.duplication-metrics.txt",
+        f="{path}metrics/{sample}-REP{repnum}.4.duplication-metrics.txt",
+        g="{path}metrics/{sample}-REP{repnum}.3.duplication-metrics.txt",
+        h="{path}metrics/{sample}-REP{repnum}.2.duplication-metrics.txt",
+        i="{path}metrics/{sample}-REP{repnum}.1.duplication-metrics.txt",
+        j="{path}saturation/downsampled/{sample}-REP{repnum}.9.md.bai",
+        k="{path}saturation/downsampled/{sample}-REP{repnum}.8.md.bai",
+        l="{path}saturation/downsampled/{sample}-REP{repnum}.7.md.bai",
+        m="{path}saturation/downsampled/{sample}-REP{repnum}.6.md.bai",
+        n="{path}saturation/downsampled/{sample}-REP{repnum}.5.md.bai",
+        o="{path}saturation/downsampled/{sample}-REP{repnum}.4.md.bai",
+        p="{path}saturation/downsampled/{sample}-REP{repnum}.3.md.bai",
+        q="{path}saturation/downsampled/{sample}-REP{repnum}.2.md.bai",
+        r="{path}saturation/downsampled/{sample}-REP{repnum}.1.md.bai"
     output:
-        "{path}metrics/{mergedsample}-REP{repnum}.downsampled_library_size.txt"
+        "{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt"
     shell:
         """
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
@@ -654,28 +652,28 @@ rule STEP24_analyze_complexity_downsampled:
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
         """
     
-rule STEP25_MACS2_peaks_downsampled:
+rule STEP26_MACS2_peaks_downsampled:
     input:
-        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bam",
-        b="{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bai"
+        a="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
+        b="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
     output:
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.{prob}_global_normalization_peaks.xls"
+        "{path}saturation/peaks/{sample}-REP{repnum}.{prob}_global_normalization_peaks.xls"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP26_analyze_peak_saturation_downsampled:
+rule STEP27_analyze_peak_saturation_downsampled:
     input:
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.9_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.8_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.7_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.6_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.5_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.4_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.3_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.2_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}.1_global_normalization_peaks.xls"
+        "{path}saturation/peaks/{sample}-REP{repnum}.9_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.8_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.7_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.6_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.5_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.4_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.3_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.2_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{sample}-REP{repnum}.1_global_normalization_peaks.xls"
     output:
-        "{path}metrics/{mergedsample}-REP{repnum}.downsampled_numpeaks.txt"
+        "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
     shell:
         "wc -l < {input} >> {output}"
 
