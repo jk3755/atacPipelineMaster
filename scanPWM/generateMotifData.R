@@ -1,11 +1,5 @@
-#### Generate gene names in snakemake group format and output to text file. Only need to run once
-#### Library installs
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("BSgenome.Hsapiens.UCSC.hg38", suppressUpdates = TRUE)
-#biocLite("Biostrings", suppressUpdates = TRUE)
-#biocLite("MotifDb", suppressUpdates = TRUE)
 
-#### Library loading
+## Load libraries
 cat("Loading libraries...", "\n")
 suppressMessages(library(BSgenome.Hsapiens.UCSC.hg38))
 suppressMessages(library(Biostrings))
@@ -58,7 +52,9 @@ for (gene in uniqueGenes){
     for (a in 1:numUniqueMotifs){
       com <- paste0("motifData$", gene, "$motif", a, " <- uniqueMotifs[[a]]")
       eval(parse(text = com))} # end for (a in 1:numUniqueMotifs)
+    
   },
+  
   error=function(cond){
     #message(cond)
     return(NA)},

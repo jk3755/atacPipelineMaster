@@ -1,9 +1,3 @@
-#### Generate gene uniqueGenes in snakemake group format and output to text file. Only need to run once
-#### Library installs
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("BSgenome.Hsapiens.UCSC.hg38", suppressUpdates = TRUE)
-#biocLite("Biostrings", suppressUpdates = TRUE)
-#biocLite("MotifDb", suppressUpdates = TRUE)
 
 #### Library loading
 cat("Loading libraries...", "\n")
@@ -76,7 +70,8 @@ b <- 1 # string index
 
 ##
 while (a <= numGenes){
-
+  
+  ##
   c <- a
   d <- a+1
   e <- a+2
@@ -98,6 +93,7 @@ while (a <= numGenes){
   u <- a+18
   v <- a+19
   
+  ##
   tmp1 <- paste0("'sites/operations/", uniqueGenes[c], ".PWMscan.done", "', ")
   tmp2 <- paste0("'sites/operations/", uniqueGenes[d], ".PWMscan.done", "', ")
   tmp3 <- paste0("'sites/operations/", uniqueGenes[e], ".PWMscan.done", "', ")
@@ -119,6 +115,7 @@ while (a <= numGenes){
   tmp19 <- paste0("'sites/operations/", uniqueGenes[u], ".PWMscan.done", "', ")
   tmp20 <- paste0("'sites/operations/", uniqueGenes[v], ".PWMscan.done", "'")
   
+  ##
   strings[b] <- paste0(
                       "rule PWMscan_group",
                       b,
@@ -131,8 +128,9 @@ while (a <= numGenes){
                       "output:\n\t\t",
                       "'sites/operations/PWMscan.group", b, ".done'\n",
                       "\tshell:\n\t\t",
-                      "'touch {output}'\n"
-                      )
+                      "'touch {output}'\n")
+  
+  ##
   a <- a+20
   b <- b+1
   

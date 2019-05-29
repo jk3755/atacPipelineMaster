@@ -32,9 +32,13 @@
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 
+include: "snakeModules/panTFcopybam.snakefile"
+
 include: "snakeModules/panTFraw.snakefile"
 
 include: "snakeModules/panTFparse.snakefile"
+
+include: "snakeModules/panTFprocess.snakefile"
 
 include: "snakeModules/panTFprocess.snakefile"
 
@@ -189,13 +193,7 @@ rule parse_pantf_lncap_group2:
 #### SPOOL INDIVIDUAL OPERATIONS #######################################################################################################
 ########################################################################################################################################
 
-rule run_PWMscan:
-    # Run this rule to generate all needed data for scanning the genome for matches to PWMs
-    # Will generate data for all annotated genes in motifDB, for all unique motifs
-    input:
-        "sites/motifData.Rdata",
-        "sites/geneNames.txt",
-        "sites/operations/groups/PWMscan.allgroups.done"
+
 
 ########################################################################################################################################
 #### SPOOL TF saturation analysis ######################################################################################################
@@ -236,33 +234,34 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
         mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11repmerged {wildcards.path}preprocessing/12bigwig {wildcards.path}preprocessing/operations
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
-        #
+        ##
         mkdir -p -v {wildcards.path}saturation
         mkdir -p -v {wildcards.path}saturation/footprints
         mkdir -p -v {wildcards.path}saturation/footprints/data {wildcards.path}saturation/footprints/graphs {wildcards.path}saturation/footprints/operations {wildcards.path}saturation/footprints/benchmark
         mkdir -p -v {wildcards.path}saturation/complexity
         mkdir -p -v {wildcards.path}saturation/peaks
         mkdir -p -v {wildcards.path}saturation/downsampled
-        #
+        ##
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/benchmark
         mkdir -p -v {wildcards.path}footprints/benchmark/parse {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
         mkdir -p -v {wildcards.path}footprints/data 
         mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/graphs
-		mkdir -p -v {wildcards.path}footprints/graphs/bf {wildcards.path}footprints/graphs/heatmaps {wildcards.path}footprints/graphs/peaks {wildcards.path}footprints/graphs/processed
+		mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
 		mkdir -p -v {wildcards.path}footprints/operations
-        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
-        #
+        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/graphs
+        mkdir -p -v {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
+        ##
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/genrich
         mkdir -p -v {wildcards.path}peaks/macs2
         mkdir -p -v {wildcards.path}peaks/macs2/individual {wildcards.path}peaks/macs2/merged
-        #
+        ##
         mkdir -p -v {wildcards.path}operations
         mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}correlation
-        #
+        ##
         touch {output}
         """
 
@@ -1193,112 +1192,6 @@ rule xsample_footprint_direct_comparison:
 #### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
 ########################################################################################################################################
 
-## Note that even though this will be sped up by making 20 redundant copies of the bam file,
-## There is still a chance two processes will access the same file the way it is currently written
-## This will happen if two processes are launched with the same hard coded bam file
-## Note sure how to fix this, its probably fine for now
-## This code needs some work. Something is tripping it up if I try to run all TFs at once (gets stuck),
-## And I have also not been able to enforce strict group ordering in the execution
-## For now, I can run each group sequencially by using the shell command:
-## for i in {1..62}; do snakemake -j 20 run_group$i; done
-
-## Potential observation when writing/testing this block of code:
-## If I put all the TF targets into 62 target rule groups of 20 each,
-## And then attempt to run the pipeline by pulling an aggregator tool
-## That collects all 62 groups at once, it doesn't crash but stalls 
-## and does not run. This may be because the pipeline is pulling target
-## TFs from all 62 groups at once, so the entire cohort is available
-## to start new processes as soon as one finishes. What this means is,
-## FP targets that have very little computational requirements will finish
-## Quickly and then that thread will move on to a new target - until it reaches
-## One that has a heavy memory/computational load. All threads will do this until
-## Eventually all 20 processes are stuck on targets that have serious comp. requirements
-## And the pipeline will stall.
-## If, alternatively, you run the pipeline so that each group must finish completely before
-## the next one starts, this will not be a problem, as all the processes will sync up at
-## Each step and wait for the heavier ones to finish.
-
-## Note - this section utilizes rules defined in an auxillary snakefile called 'panTF.snakefile'
-
-rule AGGREGATOR_copy_bam:
-    input:
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.1.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.2.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.3.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.4.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.5.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.6.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.7.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.8.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.9.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.10.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.11.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.12.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.13.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.14.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.15.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.16.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.17.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.18.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.19.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.20.bam",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.1.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.2.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.3.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.4.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.5.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.6.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.7.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.8.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.9.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.10.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.11.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.12.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.13.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.14.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.15.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.16.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.17.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.18.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.19.bai",
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.20.bai"
-    output:
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.bamcopy.done"
-    shell:
-        "touch {output}"
-
-rule PANTF_run_aggregator:
-    input:
-        "{path}footprints/data/processed/"
-    output:
-        "{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
-    script:
-        "scripts/panTF/snakeAggregateProcessedFootprintData.R"
-
-rule PANTF_copy_bam:
-    # The TF analysis script runs in 20 simultaneous processes
-    # Each process will need to access the bam file individually
-    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
-    # And assign each individual process a unique file to access
-    input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-    output:
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam"
-    shell:
-        "cp {input} {output}"
-
-rule PANTF_copy_bai:
-    # The TF analysis script runs in 20 simultaneous processes
-    # Each process will need to access the bam file individually
-    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
-    # And assign each individual process a unique file to access
-    input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
-    output:
-        "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bai"
-    shell:
-        "cp {input} {output}"
-
 rule PANTF_raw_footprint_analysis:
     input:
         "{path}preprocessing/11repmerged/copy/{mergedsample}-repmerged.{bamcopy}.bam",
@@ -1341,15 +1234,55 @@ rule PANTF_process_footprint_analysis:
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
-rule PANTF_remove_bamcopy:
+rule PANTF_generate_tf_graphs:
     input:
-        "{path}footprints/operations/{mergedsample}.rawTF.allgroups.done"
+        "{path}footprints/operations/processed/{mergedsample}.{gene}.processFP.bamcopy{bamcopy}.done"
     output:
-        "{path}footprints/operations/{mergedsample}.rawTF.analysis.done"
-    shell:
-         """
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-         touch {output}
-         """
+        "{path}footprints/operations/graphs/{mergedsample}.{gene}.graphFP.bamcopy{bamcopy}.done"
+    resources:
+        graphFootprint=1
+    script:
+        "scripts/panTF/snakeGenerateFootprintGraphs.R"
+
+rule PANTF_run_aggregator:
+    input:
+        "{path}footprints/data/processed/"
+    output:
+        "{path}footprints/operations/aggregated/{mergedsample}.aggregated.done"
+    script:
+        "scripts/panTF/snakeAggregateProcessedFootprintData.R"
+
+
+########################################################################################################################################
+#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
+########################################################################################################################################
+
+rule run_PWMscan:
+    # Run this rule to generate all needed data for scanning the genome for matches to PWMs
+    # Will generate data for all annotated genes in motifDB, for all unique motifs
+    input:
+        "sites/motifData.Rdata",
+        "sites/geneNames.txt",
+        "sites/operations/groups/PWMscan.allgroups.done"
+
+rule generate_motifData:
+    output:
+        "sites/motifData.Rdata"
+    script:
+        "scripts/scanPWM/generateMotifData.R"
+
+rule generate_geneNames:
+    output:
+        "sites/geneNames.txt"
+    script:
+        "scripts/scanPWM/generateNames.R"
+
+rule scanPWM:
+    input:
+        "sites/motifData.Rdata"
+    output:
+        'sites/operations/scans/{gene}.PWMscan.done'
+    resources:
+        scanPWM=1
+    script:
+        'scripts/scanPWM/snakeScanPWM.R'
