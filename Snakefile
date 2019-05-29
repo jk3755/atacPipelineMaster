@@ -1,7 +1,10 @@
-
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
+
+include: "snakeModules/mergeReplicates.snakefile"
+
+include: "snakeModules/xsampleCorrelation.snakefile"
 
 include: "snakeModules/panTFcopybam.snakefile"
 
@@ -39,21 +42,6 @@ rule preprocessing_lncap_group2:
         "lncap/cr05/operations/LNCaP-CR-05-pipeline.complete.txt",
          "lncap/cr08/operations/LNCaP-CR-08-pipeline.complete.txt"
 
-
-
-rule AGGREGATOR_pipeline:
-    input:
-        #"{path}operations/{mergedsample}-correlation.done.txt",
-        "{path}operations/{mergedsample}-peaks.done.txt",
-        #"{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt",
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        "{path}operations/{mergedsample}-downsample.final.txt",
-        "{path}operations/{mergedsample}.metrics.annotations.done.txt"
-    output:
-        "{path}operations/{mergedsample}-pipeline.complete.txt"
-    shell:
-        "touch {output}"
-
 ########################################################################################################################################
 #### SPOOL FOOTPRINTING ################################################################################################################
 ########################################################################################################################################
@@ -86,33 +74,40 @@ rule parse_pantf_lncap_group2:
         expand("lncap/cr05/footprints/operations/groups/LNCaP-CR-05.parseFP.group{param}.done", param=config["group"]),
         expand("lncap/cr08/footprints/operations/groups/LNCaP-CR-08.parseFP.group{param}.done", param=config["group"])
 
-########################################################################################################################################
-#### SPOOL TF saturation analysis ######################################################################################################
-########################################################################################################################################
-
-rule SATURATION_footprint_analysis:
-    input:
-        "snu61/wt01/operations/footsat/SNU61-WT-01-REP1of3.allprob.MNX1.done.parsed.txt"
-    output:
-        "snu61/wt01/operations/footsat/SNU61-WT-01-REP1of3.MNX1.footprint.satanalysis.done.txt"
-    shell:
-        "touch {output}"
-
-########################################################################################################################################
-#### SPOOL CROSS SAMPLE CORRELATION ####################################################################################################
-########################################################################################################################################
-
-rule run_xsample_corr_h508_snu61_ls1034:
-    input:
-        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
-
-rule run_xsample_corr_replicates_h508_snu61_ls1034:
-    input:
-        "xsample_analysis/correlation/H508-wt-01.LS1034-wt-01.SNU61-wt-01.spearman.heatmap.svg"
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
+
+rule AGGREGATOR_pipeline:
+    input:
+        #"{path}operations/{mergedsample}-correlation.done.txt",
+        "{path}operations/{mergedsample}-peaks.done.txt",
+        #"{path}footprints/operations/{mergedsample}.footprints.coadmr.done.txt",
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
+        "{path}operations/{mergedsample}-downsample.final.txt",
+        "{path}operations/{mergedsample}.metrics.annotations.done.txt"
+    output:
+        "{path}operations/{mergedsample}-pipeline.complete.txt"
+    shell:
+        "touch {output}"
+
+rule AGGREGATOR_peaks:
+    input:
+        "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
+    output:
+        "{path}operations/{mergedsample}-peaks.done.txt"
+    shell:
+        "touch {output}"
+
+rule AGGREGATOR_preprocessing_steps:
+    input:
+        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
+    output:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
+    shell:
+        "touch {output}"
+
 
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -161,10 +156,10 @@ rule STEP1_gunzip:
     # -k keep original files
     # -c write to standard output
     input:
-        a="{path}preprocessing/1gz/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq.gz",
+        a="{path}preprocessing/1gz/{sample}-REP{repnum}_L{lane}_R{read}.fastq.gz",
         b="{path}preprocessing/operations/dirtree.built.done"
     output:
-        c="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R{read}.fastq"
+        c="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R{read}.fastq"
     shell:
         "gunzip -k -c {input.a} > {output.c}"
 
@@ -178,11 +173,11 @@ rule STEP2_afterqc_fastqfiltering:
     # -t -1 autodetects number of bases to trim at tail
     # -s is the shortest trimmed read length allowed past QC filter
     input:
-        a="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.fastq",
-        b="{path}preprocessing/2fastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.fastq"
+        a="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R1.fastq",
+        b="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R2.fastq"
     output:
-        c="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.good.fq",
-        d="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.good.fq"
+        c="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
+        d="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
     shell:
         "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -f -1 -t -1 -s 15"
 
@@ -196,12 +191,12 @@ rule STEP3_mycoalign:
     # -S output file path
     # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
     input:
-        a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.good.fq",
-        b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.good.fq"
+        a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
+        b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
     output:
-        "{path}preprocessing/4mycoalign/{sample}-REP{repnum}of{reptot}_L{lane}.myco.sam"
+        "{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
     shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}of{wildcards.reptot}_L{wildcards.lane}.myco.alignment.txt"
+        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
 
 rule STEP4_hg38align:
     # params:
@@ -213,15 +208,15 @@ rule STEP4_hg38align:
     # -S output file path
     # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
     input:
-        a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R1.good.fq",
-        b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}of{reptot}_L{lane}_R2.good.fq",
-        c="{path}preprocessing/4mycoalign/{sample}-REP{repnum}of{reptot}_L{lane}.myco.sam"
+        a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
+        b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq",
+        c="{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
     output:
-        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.sam"
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     resources:
         hg38align=1
     shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}of{wildcards.reptot}_L{wildcards.lane}.hg38.alignment.txt"
+        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
 
 rule STEP5_coordsort_sam:
     # coordinate sorting the sam files is required for blacklist filtering
@@ -229,19 +224,19 @@ rule STEP5_coordsort_sam:
     # -o output file path
     # -O output file format
     input:
-        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.sam"
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     output:
-        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.cs.sam"
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
     shell:
         "samtools sort {input} -o {output} -O sam"
 
 rule STEP6_blacklistfilter_bamconversion:
     # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
     input:
-        "{path}preprocessing/5hg38align/{sample}-REP{repnum}of{reptot}_L{lane}.hg38.cs.sam"
+        "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
     output:
-        a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}of{reptot}_L{lane}.hg38blacklist.bam",
-        b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
+        a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}_L{lane}.hg38blacklist.bam",
+        b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
@@ -255,10 +250,10 @@ rule STEP7_chrM_contamination:
     # -U output filepath for reads matching blacklist region
     # -@ number of threads to use
     input:
-        "{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}of{reptot}_L{lane}.blrm.bam"
+        "{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
     output:
-        a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}of{reptot}_L{lane}.mitochondrial.bam",
-        b="{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.goodbam"
+        a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}_L{lane}.mitochondrial.bam",
+        b="{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
@@ -278,9 +273,9 @@ rule STEP8_addrgandcsbam:
     # I specifies the input file
     # O specifies the output file
     input:
-        "{path}preprocessing/6rawbam/{sample}-REP{repnum}of{reptot}_L{lane}.goodbam"
+        "{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
     output:
-        "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.rg.cs.bam"
+        "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     shell:
         "java -jar programs/picard/picard.jar AddOrReplaceReadGroups \
         I={input} \
@@ -300,9 +295,9 @@ rule STEP9_cleansam:
     # I specifies the input file
     # O specifies the output file
     input:
-        "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.rg.cs.bam"
+        "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     output:
-        "{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L{lane}.clean.bam"
+        "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.clean.bam"
     shell:
         "java -jar programs/picard/picard.jar CleanSam \
         I={input} \
@@ -317,12 +312,12 @@ rule STEP10_mergelanes:
     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
     # USE_THREADING allows multithreadded operation
     input:
-        a="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L1.clean.bam",
-        b="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L2.clean.bam",
-        c="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L3.clean.bam",
-        d="{path}preprocessing/7rgsort/{sample}-REP{repnum}of{reptot}_L4.clean.bam"
+        a="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L1.clean.bam",
+        b="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L2.clean.bam",
+        c="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L3.clean.bam",
+        d="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L4.clean.bam"
     output:
-        "{path}preprocessing/8merged/{sample}-REP{repnum}of{reptot}.lanemerge.bam"
+        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     shell:
         "java -jar programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
@@ -343,14 +338,14 @@ rule STEP11_purgeduplicates:
     # REMOVE_DUPLICATES enables removal of duplicate reads from the output file
     # ASSUME_SORTED indicates the input file is already sorted
     input:
-        "{path}preprocessing/8merged/{sample}-REP{repnum}of{reptot}.lanemerge.bam"
+        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
-        "{path}preprocessing/9dedup/{sample}-REP{repnum}of{reptot}.dp.bam"
+        "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     shell:
         "java -jar programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output} \
-        M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}of{wildcards.reptot}.duplication.txt \
+        M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
@@ -364,9 +359,9 @@ rule STEP12_mapqfilter:
     # -q only include reads with mapping quality X or higher
     # -b output as a bam file
     input:
-        "{path}preprocessing/9dedup/{sample}-REP{repnum}of{reptot}.dp.bam"
+        "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     output:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam"
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     shell:
         "samtools view -h -q 2 -b {input} > {output}"
 
@@ -377,89 +372,15 @@ rule STEP13_buildindex:
     # I specifies the input bam file
     # O specifies the output index file
     input:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam"
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bai"
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     shell:
         "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 
-rule STEP14_merge_1_replicate:
-    # If only one replicate is present, you can just copy the previous bam file to the next directory
-    input:
-        "{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam"
-    output:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-    shell:
-        "cp {input} {output}"
-
-# rule STEP14_merge_2_replicates:
-#     # This rule will be called when there are two input replicates
-#     # Merges the bam files from the infividual replicates
-#     # I specifies the input files for individual replicates
-#     # O specifies the merged output file
-#     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-#     # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-#     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-#     # USE_THREADING allows multithreadded operation
-#     input:
-#         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-#         b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam"
-#     output:
-#         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-#     shell:
-#         "java -jar programs/picard/picard.jar MergeSamFiles \
-#         I={input.a} \
-#         I={input.b} \
-#         O={output} \
-#         SORT_ORDER=coordinate \
-#         ASSUME_SORTED=true \
-#         MERGE_SEQUENCE_DICTIONARIES=true \
-#         USE_THREADING=true"
-
-# rule STEP14_merge_3_replicates:
-#     # This rule will be called when there are three input replicates
-#     # Merges the bam files from the infividual replicates
-#     # I specifies the input files for individual replicates
-#     # O specifies the merged output file
-#     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-#     # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-#     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-#     # USE_THREADING allows multithreadded operation
-#     input:
-#         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-#         b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-#         c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam"
-#     output:
-#         "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-#     shell:
-#         "java -jar programs/picard/picard.jar MergeSamFiles \
-#         I={input.a} \
-#         I={input.b} \
-#         I={input.c} \
-#         O={output} \
-#         SORT_ORDER=coordinate \
-#         ASSUME_SORTED=true \
-#         MERGE_SEQUENCE_DICTIONARIES=true \
-#         USE_THREADING=true"
-
-rule STEP15_index_replicate_merged:
-    # creates a bai index for the bam files
-    # this is required for many downstream operations
-    # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
-    # I specifies the input bam file
-    # O specifies the output index file
-    input:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam"
-    output:
-        "{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
-    shell:
-        "java -jar programs/picard/picard.jar BuildBamIndex \
-        I={input} \
-        O={output}"
-
-rule STEP16_makebigwig_bamcov_individual:
+rule STEP14_makebigwig_bamcov:
     # params:
     # -b bam input
     # -o output file
@@ -469,82 +390,16 @@ rule STEP16_makebigwig_bamcov_individual:
     # -v verbose mode
     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
     input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}of{reptot}.u.bai"
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}preprocessing/12bigwig/{sample}-REP{repnum}of{reptot}.bw"
+        "{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw"
     resources:
         make_bigwig=1
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-rule STEP17_makebigwig_bamcov_merged_1replicate:
-    # This rule will be used when only one replicate is present
-    # params:
-    # -b bam input
-    # -o output file
-    # -of output format
-    # -bs binsize in bp
-    # -p number of processors to use
-    # -v verbose mode
-    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-    input:
-        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        c="{path}preprocessing/12bigwig/{mergedsample}-REP1of1.bw"
-    output:
-        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-    resources:
-        make_bigwig=1
-    shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-
-# rule STEP17_makebigwig_bamcov_merged_2replicates:
-#     # This rule will be used when two replicates are present
-#     # params:
-#     # -b bam input
-#     # -o output file
-#     # -of output format
-#     # -bs binsize in bp
-#     # -p number of processors to use
-#     # -v verbose mode
-#     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-#     input:
-#         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-#         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-#         c="{path}preprocessing/12bigwig/{mergedsample}-REP1of2.bw",
-#         d="{path}preprocessing/12bigwig/{mergedsample}-REP2of2.bw"
-#     output:
-#         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-#     resources:
-#         make_bigwig=1
-#     shell:
-#         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-
-# rule STEP17_makebigwig_bamcov_merged_3replicates:
-#     # This rule will be used when three replicates are present
-#     # params:
-#     # -b bam input
-#     # -o output file
-#     # -of output format
-#     # -bs binsize in bp
-#     # -p number of processors to use
-#     # -v verbose mode
-#     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
-#     input:
-#         a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-#         b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-#         c="{path}preprocessing/12bigwig/{mergedsample}-REP1of3.bw",
-#         d="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw",
-#         e="{path}preprocessing/12bigwig/{mergedsample}-REP2of3.bw"
-#     output:
-#         "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-#     resources:
-#         make_bigwig=1
-#     shell:
-#         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
-
-rule STEP18_preprocessing_metrics_and_delete_intermediate_files:
+rule STEP15_preprocessing_metrics_and_delete_intermediate_files:
     # gather and determine the various preprocessing metrics, record to output text file
     # delete unnecessary intermediate preprocessing files
     # -f option will ignore nonexistent files
@@ -613,147 +468,10 @@ rule STEP20_MACS2_peaks_individual_local_normalization:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}_local_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
-rule STEP21_MACS2_peaks_merged_global_normilization_1replicate:
-    # see above for notes applicable to MACS2 peak calling
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP1of1.u.bai",
-        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-        d="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        e="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-        f="{path}peaks/macs2/individual/{mergedsample}-REP1of1_global_normalization_peaks.narrowPeak",
-        g="{path}peaks/macs2/individual/{mergedsample}-REP1of1_local_normalization_peaks.narrowPeak"
-    output:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.d} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# rule STEP21_MACS2_peaks_merged_global_normilization_2replicates:
-#     # see above for notes applicable to MACS2 peak calling
-#     input:
-#         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-#         b="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
-#         c="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
-#         d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai",
-#         e="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-#         f="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-#         g="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-#         h="{path}peaks/macs2/individual/{mergedsample}-REP1of2_global_normalization_peaks.narrowPeak",
-#         i="{path}peaks/macs2/individual/{mergedsample}-REP1of2_local_normalization_peaks.narrowPeak",
-#         j="{path}peaks/macs2/individual/{mergedsample}-REP2of2_global_normalization_peaks.narrowPeak",
-#         k="{path}peaks/macs2/individual/{mergedsample}-REP2of2_local_normalization_peaks.narrowPeak"
-#     output:
-#         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
-#     shell:
-#         "macs2 callpeak -t {input.f} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# rule STEP21_MACS2_peaks_merged_global_normilization_3replicates:
-#     # see above for notes applicable to MACS2 peak calling
-#     input:
-#         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-#         b="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
-#         c="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-#         d="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
-#         e="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
-#         f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai",
-#         g="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt",
-#         h="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-#         i="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai",
-#         j="{path}peaks/macs2/individual/{mergedsample}-REP1of3_global_normalization_peaks.narrowPeak",
-#         k="{path}peaks/macs2/individual/{mergedsample}-REP1of3_local_normalization_peaks.narrowPeak",
-#         l="{path}peaks/macs2/individual/{mergedsample}-REP2of3_global_normalization_peaks.narrowPeak",
-#         m="{path}peaks/macs2/individual/{mergedsample}-REP2of3_local_normalization_peaks.narrowPeak",
-#         n="{path}peaks/macs2/individual/{mergedsample}-REP3of3_global_normalization_peaks.narrowPeak",
-#         o="{path}peaks/macs2/individual/{mergedsample}-REP3of3_local_normalization_peaks.narrowPeak"
-#     output:
-#         "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
-#     shell:
-#         "macs2 callpeak -t {input.h} -n {wildcards.mergedsample}-merged_global_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP22_MACS2_peaks_merged_local_normilization:
-    # see above for notes applicable to MACS2 peak calling
-    input:
-        a="{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        c="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
-    output:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.b} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule AGGREGATOR_peaks:
-    input:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
-    output:
-        "{path}operations/{mergedsample}-peaks.done.txt"
-    shell:
-        "touch {output}"
-
-rule AGGREGATOR_preprocessing_steps:
-    input:
-        "{path}preprocessing/12bigwig/{mergedsample}-repmerged.bw"
-    output:
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
-    shell:
-        "touch {output}"
-
-########################################################################################################################################
-#### SAMPLE CORRELATION ANALYSIS RULES #################################################################################################
-########################################################################################################################################
-
-# rule STEP23_sample_correlation_spearman_2replicates:
-#     # parameters:
-#     # -b input bam files
-#     # -o output file name
-#     # -bs set the bin size used for comparison, default is 10000 bp
-#     # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-#     # -p set the number of computing processors to use
-#     # -v verbose mode
-#     input:
-#         a="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bam",
-#         b="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bam",
-#         c="{path}preprocessing/10unique/{mergedsample}-REP1of2.u.bai",
-#         d="{path}preprocessing/10unique/{mergedsample}-REP2of2.u.bai"
-#     output:
-#         "{path}correlation/{mergedsample}.spearman.corrTest"
-#     shell:
-#         "multiBamSummary bins -b {input.a} {input.b} -o {output} -bs 10000 -p 20 -v"
-
-# rule STEP23_sample_correlation_spearman_3replicates:
-#     # parameters:
-#     # -b input bam files
-#     # -o output file name
-#     # -bs set the bin size used for comparison, default is 10000 bp
-#     # -r to reduce computation time, a specific region of genome can be set, format: chr1:10000:20000
-#     # -p set the number of computing processors to use
-#     # -v verbose mode
-#     input:
-#         a="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bam",
-#         b="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bam",
-#         c="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bam",
-#         d="{path}preprocessing/10unique/{mergedsample}-REP1of3.u.bai",
-#         e="{path}preprocessing/10unique/{mergedsample}-REP2of3.u.bai",
-#         f="{path}preprocessing/10unique/{mergedsample}-REP3of3.u.bai"
-#     output:
-#         "{path}correlation/{mergedsample}.spearman.corrTest"
-#     shell:
-#         "multiBamSummary bins -b {input.a} {input.b} {input.c} -o {output} -bs 10000 -p 20 -v"
-
-# rule STEP24_makecorrheatmap:
-#     input:
-#         "{path}correlation/{sample}.spearman.corrTest"
-#     output:
-#         "{path}correlation/{sample}.spearman.heatmap.svg"
-#     shell:
-#         "plotCorrelation -in {input} -c spearman -p heatmap -o {output} --plotNumbers"
-
-# rule AGGREGATOR_correlation:
-#     input:
-#         "{path}correlation/{mergedsample}.spearman.heatmap.svg"
-#     output:
-#         "{path}operations/{mergedsample}-correlation.done.txt"
-#     shell:
-#         "touch {output}"
 
 ########################################################################################################################################
 #### SATURATION ANALYSIS RULES #########################################################################################################
