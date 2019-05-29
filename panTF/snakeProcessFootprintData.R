@@ -4,7 +4,7 @@ options(scipen = 999)
 ## will need to improve this code at some point
 options(warn = -1)
 
-## Set snakemake variables
+#### Set snakemake variables
 footprintDataPath <- snakemake@input[[1]]
 sampleTotalReadsPath <- snakemake@input[[2]]
 peaksPath <- snakemake@input[[3]]
@@ -13,21 +13,22 @@ sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
-##
-cat("Parsing and generating footprint statistics for", geneName, "from sample", sampleName, "\n")
+#### Set hg38 number of bases (haploid)
+hg38TotalBP <- 3272116950
 
-## Set the output filepath for the Rdata object and perform a filecheck
+#### Set the output filepath for the Rdata object and perform a filecheck
+cat("Processing footprint data for", geneName, "from sample", sampleName, "\n")
 dataOutPath <- gsub("operations/parse", "data/parsed", outPath)
 dataOutPath <- gsub("parseFP.bamcopy\\d+.done", "parsedFootprintData.Rdata", dataOutPath, perl = TRUE)
 cat("Output path for parsed data:", dataOutPath, "\n")
 
-## Perform a filecheck 
+#### Perform a filecheck 
 if (file.exists(dataOutPath) == TRUE){
   cat("File already exists, skipping", "\n")
 } else {
   
-  ## Load libraries
-  cat("Loading libraries...", "\n")
+  #### Load libraries
+  cat("Loading libraries", "\n")
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(stats4))
   suppressMessages(library(BiocGenerics))
@@ -38,17 +39,23 @@ if (file.exists(dataOutPath) == TRUE){
   suppressMessages(library(seqLogo))
   suppressMessages(library(ChIPpeakAnno))
   suppressMessages(library(rlist))
+  suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
   
-  ## Build functions
+  #### Load hg38 annotations
+  cat("Loading hg38 annotations from TxDb", "\n")
+  txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+  txdb <- keepStandardChromosomes(txdb, pruning.mode="coarse")
+  
+  #### Build functions
   cat("Building functions...", "\n")
   generateNullFP <- function(iterations, inputSignal, analysisWidth, motifWidth){
     # This script will be used to generate indiviudal null models at predicted motif binding sites across the genome when scanning for TF footprinting from ATAC-seq data. To generate these null models, the current model will need to:
-    #- Consider the total signal (number of insertions) at each specific ~200 bp locus
-    #- Use the actul underlying reference sequence of that ~200 bp stretch from the hg38 reference genome
-    #- Use published or experimentally derived models of Tn5 sequence specific insertion bias
-    #- For each locus, build a probablistic model of insertion site distributions based on the underlying sequence and Tn5 insertion bias
-    #- Generate the null model graph by weighted random residstribution of the total observed signal at that site
-    #- Importantly, the null model must be generated separately for the plus and minus strand, it can then be combined and compared to the combined signal from the reference observed signal at that sequence
+    # Consider the total signal (number of insertions) at each specific ~200 bp locus
+    # Use the actul underlying reference sequence of that ~200 bp stretch from the hg38 reference genome
+    # Use published or experimentally derived models of Tn5 sequence specific insertion bias
+    # For each locus, build a probablistic model of insertion site distributions based on the underlying sequence and Tn5 insertion bias
+    # Generate the null model graph by weighted random residstribution of the total observed signal at that site
+    # Importantly, the null model must be generated separately for the plus and minus strand, it can then be combined and compared to the combined signal from the reference observed signal at that sequence
     # These null models can then be used for a site-by-site comparison of the null model against the observed data to accept or reject the null hypothesis
     # iterations = number of iterations
     # inputSignals = unique values for total signal
@@ -82,43 +89,41 @@ if (file.exists(dataOutPath) == TRUE){
     return(averages)
   } # end generateNullFP function
   
-  ## Load the raw footprintData file
+  #### Load the raw footprintData file
   footprintDataPath <- gsub("operations", "data", footprintDataPath)
   footprintDataPath <- gsub("rawFPanalysis.bamcopy\\d+.done", "rawFootprintData.Rdata", footprintDataPath, perl = TRUE)
   cat("Loading raw footprintData file from path:", footprintDataPath, "\n")
   load(footprintDataPath)
   
-  ## To avoid errors, clear the list of any empty sub-lists first
+  #### To avoid errors, clear the list of any empty sub-lists first
   ## Remove motifs with 0 binding sites
   cat("Removing motifs that matched 0 genomic loci", "\n")
   footprintData <- list.clean(footprintData, function(footprintData) length(footprintData) == 0L, TRUE)
-  ## The number of unique motifs for the current gene
   numMotif <- length(footprintData)
-  cat("Found data for", numMotif, "non-0 unique motifs", "\n")
+  cat("Found data for", numMotif, "motifs", "\n")
   
-  ## If no raw data is found, skip
+  #### If no raw data is found, skip this footprint
   if (numMotif == 0){
     cat(numMotif, "No data to analyze. Skipping", "\n")
   } else {
     
-    ## Get the total number of reads in the sample
+    #### Get the total number of reads in the sample
     cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
     load(sampleTotalReadsPath)
     cat("Found", sampleTotalReads, "total reads in current sample", "\n")
     
-    ## Load the peaks data for current sample
+    #### Load the peaks data for current sample
     cat("Loading sample accesibility peak data from:", peaksPath, "\n")
     samplePeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
     samplePeaks <- keepStandardChromosomes(samplePeaks, pruning.mode="coarse")
+    samplePeaks <- trim(samplePeaks)
     
-    #### Perform the parse and stats analysis 
+    #### Loop over all motifs, perform the processing operations
     cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
-    
-    ##
     for (a in 1:numMotif){
       
-      ## Prepare the data from the raw footprint analysis
-      cat("Processing data for motif", a, "\n")
+      #### Pull the data from the raw footprint analysis
+      cat("Processing footprint data for motif", a, "\n")
       com <- paste0("tempData <- footprintData$motif", a)
       eval(parse(text = com))
       ##
@@ -134,35 +139,35 @@ if (file.exists(dataOutPath) == TRUE){
       ## the total number of sites to the row number of the insertion matrix here
       numSites <- length(insMatrix[,1])
       
-      #### Calculate basic statistics for each site ####
-      siteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
-      colnames(siteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+      #### Calculate basic statistics for each site with raw data
+      rawSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+      colnames(rawSiteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
                                     "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
                                     "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
       
-      ## Populate the basic stats matrix
+      #### Populate the basic stats matrix
       for (b in 1:numSites){
-        # Site index
-        siteBasicStats[b,1] <- b
-        # Total signal
-        siteBasicStats[b,2] <- sum(insMatrix[b,])
-        # Total signal per bp
-        siteBasicStats[b,3] <- siteBasicStats[b,2] / (500 + motifWidth)
-        # Motif signal per bp
-        siteBasicStats[b,4] <- sum(insMatrix[b,(250:(250+motifWidth))] / motifWidth)
-        # Flank signal per bp
-        siteBasicStats[b,5] <- (sum(insMatrix[b,200:250]) + sum(insMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
-        # Background signal per bp
-        siteBasicStats[b,6] <- (sum(insMatrix[b,1:50]) + sum(insMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
-        # Wide flank signal per bp
-        siteBasicStats[b,7] <- (sum(insMatrix[b,1:250]) + sum(insMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
-        # Flank / background
-        siteBasicStats[b,8] <- siteBasicStats[b,5] / siteBasicStats[b,6]
-        # Motif / flank
-        siteBasicStats[b,9] <- siteBasicStats[b,4] / siteBasicStats[b,5]
-        # Motif / wide flank
-        siteBasicStats[b,10] <- siteBasicStats[b,4] / siteBasicStats[b,7]
+        rawSiteBasicStats[b,1] <- b # Site index
+        rawSiteBasicStats[b,2] <- sum(insMatrix[b,]) # Total signal
+        rawSiteBasicStats[b,3] <- rawSiteBasicStats[b,2] / (500 + motifWidth) # Total signal per bp
+        rawSiteBasicStats[b,4] <- sum(insMatrix[b,(250:(250 + motifWidth))] / motifWidth) # Motif signal per bp
+        rawSiteBasicStats[b,5] <- (sum(insMatrix[b,200:250]) + sum(insMatrix[b,(250 + motifWidth):(300 + motifWidth)])) / 100 # Flank signal per bp
+        rawSiteBasicStats[b,6] <- (sum(insMatrix[b,1:50]) + sum(insMatrix[b,(500 + motifWidth-50):(500 + motifWidth)])) / 100 # Background signal per bp
+        rawSiteBasicStats[b,7] <- (sum(insMatrix[b,1:250]) + sum(insMatrix[b,(250 + motifWidth):(500 + motifWidth)])) / 500 # Wide flank signal per bp
+        rawSiteBasicStats[b,8] <- rawSiteBasicStats[b,5] / rawSiteBasicStats[b,6] # Flank / background
+        rawSiteBasicStats[b,9] <- rawSiteBasicStats[b,4] / rawSiteBasicStats[b,5] # Motif / flank
+        rawSiteBasicStats[b,10] <- rawSiteBasicStats[b,4] / rawSiteBasicStats[b,7] # Motif / wide flank
       } # end for (b in 1:numSites)
+      
+      #### Generate the insertion site probability vector for raw data
+      rawInsProb <- c()
+      for (c in 1:(500 + motifWidth)){
+        rawInsProb[c] <- sum(insMatrix[,c])
+      } # end for (c in 1:(500 + motifWidth))
+      rawTotalSignal<- sum(rawInsProb)
+      rawInsProb <- rawInsProb / rawTotalSignal
+        
+      
       
       
       ## NEED TO CHECK MATH ON THIS ##

@@ -1,15 +1,4 @@
-
-## Install libraries, if necessary
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("GenomicRanges", suppressUpdates = TRUE)
-#biocLite("stats4", suppressUpdates = TRUE)
-#biocLite("BiocGenerics", suppressUpdates = TRUE)
-#biocLite("parallel", suppressUpdates = TRUE)
-#biocLite("Rsamtools", suppressUpdates = TRUE)
-#biocLite("GenomicAlignments", suppressUpdates = TRUE)
-#biocLite("genomation", suppressUpdates = TRUE)
-
-## Disable scientific notation in variables
+#### Disable scientific notation in variables
 options(scipen = 999)
 
 ## Set snakemake variables
