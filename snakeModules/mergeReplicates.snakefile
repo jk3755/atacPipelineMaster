@@ -227,3 +227,41 @@ rule STEP22_MACS2_peaks_merged_local_normilization:
         "{path}peaks/macs2/merged/{mergedsample}-merged_local_normalization_peaks.narrowPeak"
     shell:
         "macs2 callpeak -t {input.b} -n {wildcards.mergedsample}-merged_local_normalization --outdir {wildcards.path}peaks/macs2/merged --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+# rule FINISH_saturation_2rep:
+#     input:
+#         "{path}operations/{mergedsample}-REP1of2-downsample.done.txt",
+#         "{path}operations/{mergedsample}-REP2of2-downsample.done.txt",
+#     output:
+#         "{path}operations/{mergedsample}-downsample.final.txt"
+#     shell:
+#         "touch {output}"
+
+# rule FINISH_saturation_3rep:
+#     input:
+#         "{path}operations/{mergedsample}-REP1of3-downsample.done.txt",
+#         "{path}operations/{mergedsample}-REP2of3-downsample.done.txt",
+#         "{path}operations/{mergedsample}-REP3of3-downsample.done.txt",
+#     output:
+#         "{path}operations/{mergedsample}-downsample.final.txt"
+#     shell:
+#         "touch {output}"
+
+# rule AGGREGATOR_fragsize_2reps:
+#     input:
+#         "{path}metrics/{mergedsample}-REP1of2.u.fragsizes.svg",
+#         "{path}metrics/{mergedsample}-REP2of2.u.fragsizes.svg"
+#     output:
+#         "{path}operations/{mergedsample}.fragsizes.done.txt"
+#     shell:
+#         "touch {output}"
+
+# rule AGGREGATOR_fragsize_3reps:
+#     input:
+#         "{path}metrics/{mergedsample}-REP1of3.u.fragsizes.svg",
+#         "{path}metrics/{mergedsample}-REP2of3.u.fragsizes.svg",
+#         "{path}metrics/{mergedsample}-REP3of3.u.fragsizes.svg"
+#     output:
+#         "{path}operations/{mergedsample}.fragsizes.done.txt"
+#     shell:
+#         "touch {output}"

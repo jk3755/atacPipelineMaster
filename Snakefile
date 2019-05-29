@@ -108,6 +108,93 @@ rule AGGREGATOR_preprocessing_steps:
     shell:
         "touch {output}"
 
+rule STEP15_preprocessing_metrics_and_delete_intermediate_files:
+    # gather and determine the various preprocessing metrics, record to output text file
+    # delete unnecessary intermediate preprocessing files
+    # -f option will ignore nonexistent files
+    input:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
+    output:
+        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+    shell:
+        """
+        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
+        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
+        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
+        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
+        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
+        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        touch {output}
+        """
+
+rule AGGREGATOR_saturation:
+    input:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.9.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.8.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.7.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.6.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.5.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.4.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.3.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.2.md.bai",
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.1.md.bai",
+        "{path}metrics/{mergedsample}-REP{repnum}.downsampled_library_size.txt",
+        "{path}metrics/{mergedsample}-REP{repnum}.downsampled_numpeaks.txt"       
+    output:
+        "{path}operations/{mergedsample}-REP{repnum}-downsample.done.txt"
+    shell:
+        "touch {output}"
+
+rule FINISH_saturation_1rep:
+    input:
+        "{path}operations/{mergedsample}-REP1of1-downsample.done.txt"
+    output:
+        "{path}operations/{mergedsample}-downsample.final.txt"
+    shell:
+        "touch {output}"
+
+rule AGGREGATOR_saturation_footprints:
+    input:
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.9.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.8.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.7.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.6.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.5.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.4.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.3.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.2.{gene}.parsed.finished.txt",
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.1.{gene}.parsed.finished.txt"
+    output:
+        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.allprob.{gene}.done.parsed.txt"
+    shell:
+        "touch {output}"
+
+rule AGGREGATOR_metrics_and_annotations:
+    input:
+        "{path}metrics/{mergedsample}.peak.genome.coverage.txt",
+        "{path}operations/{mergedsample}.fragsizes.done.txt",
+        "{path}operations/{mergedsample}.mergedpeak.annotations.done.txt",
+        "{path}metrics/{mergedsample}.totalreads.Rdata"
+    output:
+        "{path}operations/{mergedsample}.metrics.annotations.done.txt"
+    shell:
+        "touch {output}"
+
+"{path}operations/{sample}.globalpeak.annotations.done.txt"
+"{path}metrics/{mergedsample}.totalreads.Rdata"
+"{path}metrics/{mergedsample}-REP{repnum}.downsampled_library_size.txt"
+
+rule STEP19_fragment_size_distribution:
+    input:
+        "{path}metrics/{mergedsample}-REP{repnum}.u.fragsizes.svg"
+    output:
+        "{path}operations/{mergedsample}.fragsizes.done.txt"
+    shell:
+        "touch {output}"
+
 
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -399,29 +486,7 @@ rule STEP14_makebigwig_bamcov:
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
-rule STEP15_preprocessing_metrics_and_delete_intermediate_files:
-    # gather and determine the various preprocessing metrics, record to output text file
-    # delete unnecessary intermediate preprocessing files
-    # -f option will ignore nonexistent files
-    input:
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.aggregator.txt"
-    output:
-        "{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
-        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
-        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
-        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
-        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
-        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
-        touch {output}
-        """
-
-rule STEP19_MACS2_peaks_individual_global_normilization:
+rule STEP15_MACS2_peaks_individual_global_normilization:
     # notes:
     # because we are going to use the TCGA data downstream likely as a reference point,
     # we will need to call the peaks in the exact same way as they did in this paper:
@@ -439,15 +504,14 @@ rule STEP19_MACS2_peaks_individual_global_normilization:
     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
     # -p set the p-value cutoff for peak calling
     input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai",
-        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}peaks/macs2/individual/{mergedsample}-REP{repnum}of{reptot}_global_normalization_peaks.narrowPeak"
+        "{path}peaks/macs2/individual/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP20_MACS2_peaks_individual_local_normalization:
+rule STEP16_MACS2_peaks_individual_local_normalization:
     # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
     # params:
     # -t input bam file (treatment)
@@ -460,51 +524,83 @@ rule STEP20_MACS2_peaks_individual_local_normalization:
     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
     # -p set the p-value cutoff for peak calling
     input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai",
-        c="{path}preprocessing/operations/{mergedsample}-preprocessing.done.txt"
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}peaks/macs2/individual/{mergedsample}-REP{repnum}of{reptot}_local_normalization_peaks.narrowPeak"
+        "{path}peaks/macs2/individual/{sample}-REP{repnum}_local_normalization_peaks.narrowPeak"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}_local_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_local_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
-
-
-
-
-
-########################################################################################################################################
-#### SATURATION ANALYSIS RULES #########################################################################################################
-########################################################################################################################################
-
-rule STEP25_downsample_bam:
+rule STEP17_percent_peak_genome_coverage:
+    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
+    # parameters:
+    # --echo output will be at least a three-column bed file
+    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
+    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
     input:
-        "{path}preprocessing/8merged/{mergedsample}-REP{repnum}of{reptot}.lanemerge.bam"
+        a="{path}peaks/macs2/merged/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak",
+        b="genomes/hg38/hg38.extents.bed"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.bam"
+        "{path}metrics/{sample}.peak.genome.coverage.txt"
+    shell:
+        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
+
+rule STEP18_fragment_size_distribution:
+    input:
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+    output:
+        "{path}metrics/{sample}-REP{repnum}.u.fragsizes.svg"
+    script:
+        "scripts/snakeFragSizeDist.R"
+
+rule STEP19_annotate_peaks:
+    input:
+        "{path}peaks/macs2/merged/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak"
+    output:
+        "{path}operations/{sample}.globalpeak.annotations.done.txt"
+    script:
+        "scripts/snakeAnnotatePeaks.R"
+
+rule STEP19_sample_total_reads:
+    input:
+        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
+        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
+    output:
+        "{path}metrics/{mergedsample}.totalreads.Rdata"
+    script:
+        "scripts/snakeCountSampleReads.R"
+
+#### Downsampling and saturation analysis ####
+
+rule STEP20_downsample_bam:
+    input:
+        "{path}preprocessing/8merged/{mergedsample}-REP{repnum}.lanemerge.bam"
+    output:
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.bam"
     shell:
         "java -jar programs/picard/picard.jar DownsampleSam \
         I={input} \
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
 
-rule STEP26_sort_downsampled:
+rule STEP21_sort_downsampled:
     input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.bam"
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.bam"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.cs.bam"
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.cs.bam"
     shell:
         "java -jar programs/picard/picard.jar SortSam \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate"
 
-rule STEP27_purge_duplicates_downsampled:
+rule STEP22_purge_duplicates_downsampled:
     input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.cs.bam"
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.cs.bam"
     output:
-        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
-        b="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.{prob}.duplication-metrics.txt",
+        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bam",
+        b="{path}metrics/{mergedsample}-REP{repnum}.{prob}.duplication-metrics.txt"
     shell:
         "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
         I={input} \
@@ -513,38 +609,38 @@ rule STEP27_purge_duplicates_downsampled:
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
-rule STEP28_index_downsampled:
+rule STEP23_index_downsampled:
     input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam"
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bam"
     output:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai"
+        "{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bai"
     shell:
         "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
         O={output}"
 
-rule STEP29_analyze_complexity_downsampled:
+rule STEP24_analyze_complexity_downsampled:
     input:
-        a="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.9.duplication-metrics.txt",
-        b="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.8.duplication-metrics.txt",
-        c="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.7.duplication-metrics.txt",
-        d="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.6.duplication-metrics.txt",
-        e="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.5.duplication-metrics.txt",
-        f="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.4.duplication-metrics.txt",
-        g="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.3.duplication-metrics.txt",
-        h="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.2.duplication-metrics.txt",
-        i="{path}metrics/{mergedsample}-REP{repnum}of{reptot}.1.duplication-metrics.txt",
-        j="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.9.md.bai",
-        k="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.8.md.bai",
-        l="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.7.md.bai",
-        m="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.6.md.bai",
-        n="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.5.md.bai",
-        o="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.4.md.bai",
-        p="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.3.md.bai",
-        q="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.2.md.bai",
-        r="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.1.md.bai",
+        a="{path}metrics/{mergedsample}-REP{repnum}.9.duplication-metrics.txt",
+        b="{path}metrics/{mergedsample}-REP{repnum}.8.duplication-metrics.txt",
+        c="{path}metrics/{mergedsample}-REP{repnum}.7.duplication-metrics.txt",
+        d="{path}metrics/{mergedsample}-REP{repnum}.6.duplication-metrics.txt",
+        e="{path}metrics/{mergedsample}-REP{repnum}.5.duplication-metrics.txt",
+        f="{path}metrics/{mergedsample}-REP{repnum}.4.duplication-metrics.txt",
+        g="{path}metrics/{mergedsample}-REP{repnum}.3.duplication-metrics.txt",
+        h="{path}metrics/{mergedsample}-REP{repnum}.2.duplication-metrics.txt",
+        i="{path}metrics/{mergedsample}-REP{repnum}.1.duplication-metrics.txt",
+        j="{path}saturation/downsampled/{mergedsample}-REP{repnum}.9.md.bai",
+        k="{path}saturation/downsampled/{mergedsample}-REP{repnum}.8.md.bai",
+        l="{path}saturation/downsampled/{mergedsample}-REP{repnum}.7.md.bai",
+        m="{path}saturation/downsampled/{mergedsample}-REP{repnum}.6.md.bai",
+        n="{path}saturation/downsampled/{mergedsample}-REP{repnum}.5.md.bai",
+        o="{path}saturation/downsampled/{mergedsample}-REP{repnum}.4.md.bai",
+        p="{path}saturation/downsampled/{mergedsample}-REP{repnum}.3.md.bai",
+        q="{path}saturation/downsampled/{mergedsample}-REP{repnum}.2.md.bai",
+        r="{path}saturation/downsampled/{mergedsample}-REP{repnum}.1.md.bai"
     output:
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt"
+        "{path}metrics/{mergedsample}-REP{repnum}.downsampled_library_size.txt"
     shell:
         """
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
@@ -558,77 +654,32 @@ rule STEP29_analyze_complexity_downsampled:
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
         """
     
-rule STEP30_MACS2_peaks_downsampled:
+rule STEP25_MACS2_peaks_downsampled:
     input:
-        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
-        b="{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai"
+        a="{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bam",
+        b="{path}saturation/downsampled/{mergedsample}-REP{repnum}.{prob}.md.bai"
     output:
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.{prob}_global_normalization_peaks.xls"
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.{prob}_global_normalization_peaks.xls"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}of{wildcards.reptot}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.mergedsample}-REP{wildcards.repnum}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-rule STEP31_analyze_peak_saturation_downsampled:
+rule STEP26_analyze_peak_saturation_downsampled:
     input:
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.9_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.8_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.7_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.6_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.5_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.4_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.3_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.2_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{mergedsample}-REP{repnum}of{reptot}.1_global_normalization_peaks.xls"
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.9_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.8_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.7_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.6_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.5_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.4_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.3_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.2_global_normalization_peaks.xls",
+        "{path}saturation/peaks/{mergedsample}-REP{repnum}.1_global_normalization_peaks.xls"
     output:
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_numpeaks.txt"
+        "{path}metrics/{mergedsample}-REP{repnum}.downsampled_numpeaks.txt"
     shell:
         "wc -l < {input} >> {output}"
 
-rule AGGREGATOR_saturation:
-    input:
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.9.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.8.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.7.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.6.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.5.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.4.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.3.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.2.md.bai",
-        "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.1.md.bai",
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_library_size.txt",
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.downsampled_numpeaks.txt"       
-    output:
-        "{path}operations/{mergedsample}-REP{repnum}of{reptot}-downsample.done.txt"
-    shell:
-        "touch {output}"
-
-rule FINISH_saturation_1rep:
-    input:
-        "{path}operations/{mergedsample}-REP1of1-downsample.done.txt"
-    output:
-        "{path}operations/{mergedsample}-downsample.final.txt"
-    shell:
-        "touch {output}"
-
-# rule FINISH_saturation_2rep:
-#     input:
-#         "{path}operations/{mergedsample}-REP1of2-downsample.done.txt",
-#         "{path}operations/{mergedsample}-REP2of2-downsample.done.txt",
-#     output:
-#         "{path}operations/{mergedsample}-downsample.final.txt"
-#     shell:
-#         "touch {output}"
-
-# rule FINISH_saturation_3rep:
-#     input:
-#         "{path}operations/{mergedsample}-REP1of3-downsample.done.txt",
-#         "{path}operations/{mergedsample}-REP2of3-downsample.done.txt",
-#         "{path}operations/{mergedsample}-REP3of3-downsample.done.txt",
-#     output:
-#         "{path}operations/{mergedsample}-downsample.final.txt"
-#     shell:
-#         "touch {output}"
-
-rule STEP32_make_footprint_by_chr_downsampled:
+rule STEP27_make_footprint_by_chr_downsampled:
     input:
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bam",
         "{path}saturation/downsampled/{mergedsample}-REP{repnum}of{reptot}.{prob}.md.bai",
@@ -686,103 +737,11 @@ rule STEP34_parse_footprint_downsampled:
     script:
         "scripts/saturation/snakeParseFPDownsampled.R"
 
-rule AGGREGATOR_saturation_footprints:
-    input:
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.9.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.8.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.7.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.6.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.5.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.4.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.3.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.2.{gene}.parsed.finished.txt",
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.1.{gene}.parsed.finished.txt"
-    output:
-        "{path}operations/footsat/{mergedsample}-REP{repnum}of{reptot}.allprob.{gene}.done.parsed.txt"
-    shell:
-        "touch {output}"
 
-########################################################################################################################################
-#### METRICS AND ANNOTATIONS RULES #####################################################################################################
-########################################################################################################################################
 
-rule METRICS_percent_peak_genome_coverage:
-    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
-    # parameters:
-    # --echo output will be at least a three-column bed file
-    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
-    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
-    input:
-        a="{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak",
-        b="genomes/hg38/hg38.extents.bed"
-    output:
-        "{path}metrics/{mergedsample}.peak.genome.coverage.txt"
-    shell:
-        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
 
-rule METRICS_fragment_size_distributions:
-    input:
-        a="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bam",
-        b="{path}preprocessing/10unique/{mergedsample}-REP{repnum}of{reptot}.u.bai"
-    output:
-        "{path}metrics/{mergedsample}-REP{repnum}of{reptot}.u.fragsizes.svg"
-    script:
-        "scripts/snakeFragSizeDist.R"
 
-rule AGGREGATOR_fragsize_1rep:
-    input:
-        "{path}metrics/{mergedsample}-REP1of1.u.fragsizes.svg"
-    output:
-        "{path}operations/{mergedsample}.fragsizes.done.txt"
-    shell:
-        "touch {output}"
 
-# rule AGGREGATOR_fragsize_2reps:
-#     input:
-#         "{path}metrics/{mergedsample}-REP1of2.u.fragsizes.svg",
-#         "{path}metrics/{mergedsample}-REP2of2.u.fragsizes.svg"
-#     output:
-#         "{path}operations/{mergedsample}.fragsizes.done.txt"
-#     shell:
-#         "touch {output}"
-
-# rule AGGREGATOR_fragsize_3reps:
-#     input:
-#         "{path}metrics/{mergedsample}-REP1of3.u.fragsizes.svg",
-#         "{path}metrics/{mergedsample}-REP2of3.u.fragsizes.svg",
-#         "{path}metrics/{mergedsample}-REP3of3.u.fragsizes.svg"
-#     output:
-#         "{path}operations/{mergedsample}.fragsizes.done.txt"
-#     shell:
-#         "touch {output}"
-
-rule METRICS_annotate_peaks_merged:
-    input:
-        "{path}peaks/macs2/merged/{mergedsample}-merged_global_normalization_peaks.narrowPeak"
-    output:
-        "{path}operations/{mergedsample}.mergedpeak.annotations.done.txt"
-    script:
-        "scripts/snakeAnnotateATAC.R"
-
-rule METRICS_sample_total_reads:
-    input:
-        a="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bam",
-        b="{path}preprocessing/11repmerged/{mergedsample}-repmerged.bai"
-    output:
-        "{path}metrics/{mergedsample}.totalreads.Rdata"
-    script:
-        "scripts/snakeCountSampleReads.R"
-
-rule AGGREGATOR_metrics_and_annotations:
-    input:
-        "{path}metrics/{mergedsample}.peak.genome.coverage.txt",
-        "{path}operations/{mergedsample}.fragsizes.done.txt",
-        "{path}operations/{mergedsample}.mergedpeak.annotations.done.txt",
-        "{path}metrics/{mergedsample}.totalreads.Rdata"
-    output:
-        "{path}operations/{mergedsample}.metrics.annotations.done.txt"
-    shell:
-        "touch {output}"
 
 ########################################################################################################################################
 #### XSAMPLE ANALYSIS RULES ############################################################################################################
