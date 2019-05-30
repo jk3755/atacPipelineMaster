@@ -80,11 +80,27 @@ if (file.exists(footprintDataPath) == TRUE){
       ## Convert seqlevs Rle to matrix
       #rangeNames <- as.matrix(allSites@seqnames)
       #allSites <- setNames(allSites, rangeNames)
+      numSites <- length(allSites)
+      
+      #### Define the bins
+      binSize <- numSites / 20
+      binSize <- floor(binSize)
       
       #### Doesn't make sense to subset by chromosome, subset into 20 equal sized bins
-      allSites <- allSites["chr1"]
-      ##
+      currentBin <- as.numeric(currentBin)
+      
+      #### Subset the sites for only the currently selected bin
+      if (currentBin == 1){
+        allSites <- allSites[1:binSize]
+      } else if (currentBin >= 2 && currentBin <= 19){
+        allSites <- allSites[((currentBin - 1) * binSize):(binSize * currentBin)]
+      } else if (currentBin == 20){
+        allSites <- allSites[(19 * binSize):numSites]
+      }
+      
+      #### Reset the number of sites
       numSites <- length(allSites)
+      
       cat("Found", numSites, "motif binding sites", "\n")
       
       ## If no binding sites are found, skip this motif
