@@ -1,7 +1,8 @@
 #### Disable scientific notation in variables
 options(scipen = 999)
 
-## Set snakemake variables
+
+#### Set snakemake variables
 cat("Setting snakemake variables...", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
@@ -10,18 +11,23 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
+currentChr <- snakemake@wildcards[["chr"]]
 
-## Set the output path for Rdata file and perform a filecheck
+
+#### Set the output path for Rdata file and perform a filecheck
 footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
 
+
+####
 if (file.exists(footprintDataPath) == TRUE){
-  
   cat("File already exists, skipping", "\n")
-  
 } else {
   
-  ## Load libraries
-  cat("Loading libraries...", "\n")
+  ####
+  cat("Processing raw footprint data for sample", sampleName, "for gene", geneName, "on chromosome", currentChr, "\n")
+  
+  #### Load libraries
+  cat("Loading libraries", "\n")
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(stats4))
   suppressMessages(library(BiocGenerics))
@@ -30,13 +36,15 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(GenomicAlignments))
   suppressMessages(library(genomation))
   
-  ##
-  cat("Loading binding sites...", "\n")
+  
+  ####
+  cat("Loading binding sites", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
   bamFile <- BamFile(bamPath)
   
-  ## Initiate an R object to hold all generated data
+  
+  #### Initiate an R object to hold all generated data
   footprintData <- list()
   for (a in 1:numMotif){
     com <- paste0("footprintData$motif", a, " <- list()")
@@ -46,22 +54,35 @@ if (file.exists(footprintDataPath) == TRUE){
   cat("Analyzing footprints for", geneName, "\n")
   cat("Found", numMotif, "unique motifs", "\n")
   
-  ## If no motifs are found, skip
+  
+  #### If no motifs are found, skip
   if (numMotif ==0){
     cat("No motifs found. Skipping", "\n")
   } else {
     
-    ## Index counter for motif naming
+    #### Index counter for motif naming
     idxMotif <- 1
     
-    ## Begin analysis
+    #### Begin analysis
     for (b in 1:numMotif){
       
-      ## Binding Sites
+      #### Binding Sites
       cat("Analyzing motif", b, "\n")
       PWM <- bindingSites[[b]][["PWM"]]
       motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
       allSites <- bindingSites[[b]][["sites"]]
+      
+      #### Subset the binding sites based on the current chromosome
+      ## Subset to standard chromosomes only
+      allSites <- keepStandardChromosomes(allSites, pruning.mode="coarse")
+      allSites <- trim(allSites)
+      ## Need to regenerate the names() field from seqlevs
+      ## Convert seqlevs Rle to matrix
+      rangeNames <- as.matrix(allSites@seqnames)
+      allSites <- setNames(allSites, rangeNames)
+      ##
+      allSites <- allSites["chr1"]
+      ##
       numSites <- length(allSites)
       cat("Found", numSites, "motif binding sites", "\n")
       
