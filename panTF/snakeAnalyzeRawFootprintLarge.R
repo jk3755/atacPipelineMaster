@@ -11,7 +11,7 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
-currentChr <- snakemake@wildcards[["chr"]]
+currentBin <- snakemake@wildcards[["bin"]]
 
 
 #### Set the output path for Rdata file and perform a filecheck
@@ -80,7 +80,8 @@ if (file.exists(footprintDataPath) == TRUE){
       ## Convert seqlevs Rle to matrix
       rangeNames <- as.matrix(allSites@seqnames)
       allSites <- setNames(allSites, rangeNames)
-      ##
+      
+      #### Doesn't make sense to subset by chromosome, subset into 20 equal sized bins
       allSites <- allSites["chr1"]
       ##
       numSites <- length(allSites)
