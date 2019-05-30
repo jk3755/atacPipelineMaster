@@ -169,7 +169,7 @@ rule AGGREGATOR_saturation_footprints_genes:
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
-        "{path}preprocessing/operations/dirtree.built.done"
+        "{path}preprocessing/operations/dirtree.built"
     shell:
         """
         mkdir -p -v {wildcards.path}preprocessing
@@ -217,7 +217,7 @@ rule STEP1_gunzip:
     # -c write to standard output
     input:
         a="{path}preprocessing/1gz/{sample}-REP{repnum}_L{lane}_R{read}.fastq.gz",
-        b="{path}preprocessing/operations/dirtree.built.done"
+        b="{path}preprocessing/operations/dirtree.built"
     output:
         c="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R{read}.fastq"
     shell:

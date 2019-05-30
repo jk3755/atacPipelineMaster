@@ -74,8 +74,8 @@ while (b <= 40){
   b <- b+1
 }
 
-#### Groups 40-55
-while (b <= 55){
+#### Groups 40-45
+while (b <= 45){
   
   ##
   c <- a
@@ -126,16 +126,10 @@ while (a <= 1229){
   ##
   c <- a
   d <- a+1
-  e <- a+2
-  f <- a+3
-  g <- a+4
 
   ##
   tmp1 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[c], ".rawFPanalysis.bamcopy1.done", "', ")
   tmp2 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[d], ".rawFPanalysis.bamcopy2.done", "', ")
-  tmp3 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[e], ".rawFPanalysis.bamcopy3.done", "', ")
-  tmp4 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[f], ".rawFPanalysis.bamcopy4.done", "', ")
-  tmp5 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[g], ".rawFPanalysis.bamcopy5.done", "', ")
   
   ##
   strings[b] <- paste0(
@@ -143,20 +137,20 @@ while (a <= 1229){
     b,
     ":\n",
     "\tinput:\n\t\t",
-    tmp1, "\n\t\t", tmp2, "\n\t\t", tmp3, "\n\t\t", tmp4, "\n\t\t", tmp5, "\n\t",
+    tmp1, "\n\t\t", tmp2, "\n\t",
     "output:\n\t\t",
     "'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group", b, ".done'\n",
     "\tshell:\n\t\t",
     "'touch {output}'")
   
   ##
-  a <- a+5
+  a <- a+2
   b <- b+1
 }
 
 
 #### Write the file ####
-outPath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\names\\panTFnameRaw.snakefile"
+outPath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\names\\panTFraw.snakefile"
 
 ##
 write.table(
