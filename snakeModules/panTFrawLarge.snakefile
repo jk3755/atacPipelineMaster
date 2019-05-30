@@ -1,4 +1,8 @@
 
+
+
+
+
 rule rawFPanalysis_large_group1:
 	input:
 		'{path}footprints/operations/raw/{sample}.TFDP1.rawFPanalysis.bamcopy1.done', 
