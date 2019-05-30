@@ -62,6 +62,8 @@ if (file.exists(footprintDataPath) == TRUE){
       PWM <- bindingSites[[b]][["PWM"]]
       motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
       allSites <- bindingSites[[b]][["sites"]]
+      allSites <- keepStandardChromosomes(allSites, pruning.mode="coarse")
+      allSites <- trim(allSites)
       numSites <- length(allSites)
       cat("Found", numSites, "motif binding sites", "\n")
       

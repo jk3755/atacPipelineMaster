@@ -78,8 +78,8 @@ if (file.exists(footprintDataPath) == TRUE){
       allSites <- trim(allSites)
       ## Need to regenerate the names() field from seqlevs
       ## Convert seqlevs Rle to matrix
-      rangeNames <- as.matrix(allSites@seqnames)
-      allSites <- setNames(allSites, rangeNames)
+      #rangeNames <- as.matrix(allSites@seqnames)
+      #allSites <- setNames(allSites, rangeNames)
       
       #### Doesn't make sense to subset by chromosome, subset into 20 equal sized bins
       allSites <- allSites["chr1"]
