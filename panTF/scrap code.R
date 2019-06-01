@@ -1,4 +1,41 @@
 
+## NEED TO CHECK MATH ON THIS ##
+#### Normalize values in insertion matrix with z-scores
+insStandardDeviation <- sd(insMatrix)
+insMean <- mean(insMatrix)
+##
+zscoreInsMatrix <- ((insMatrix - insMean) / insStandardDeviation)
+
+## Calculate basic statistics for z-score normalized matrix
+zscoreBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+colnames(zscoreBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+                                "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
+                                "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
+
+## Populate the zscore stats matrix
+for (b in 1:numSites){
+  # Site index
+  zscoreBasicStats[b,1] <- b
+  # Total signal
+  zscoreBasicStats[b,2] <- sum(zscoreInsMatrix[b,])
+  # Total signal per bp
+  zscoreBasicStats[b,3] <- zscoreBasicStats[b,2] / (500 + motifWidth)
+  # Motif signal per bp
+  zscoreBasicStats[b,4] <- sum(zscoreInsMatrix[b,(250:(250+motifWidth))] / motifWidth)
+  # Flank signal per bp
+  zscoreBasicStats[b,5] <- (sum(zscoreInsMatrix[b,200:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
+  # Background signal per bp
+  zscoreBasicStats[b,6] <- (sum(zscoreInsMatrix[b,1:50]) + sum(zscoreInsMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
+  # Wide flank signal per bp
+  zscoreBasicStats[b,7] <- (sum(zscoreInsMatrix[b,1:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
+  # Flank / background
+  zscoreBasicStats[b,8] <- zscoreBasicStats[b,5] / zscoreBasicStats[b,6]
+  # Motif / flank
+  zscoreBasicStats[b,9] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,5]
+  # Motif / wide flank
+  zscoreBasicStats[b,10] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,7]
+} # end for (b in 1:numSites)
+#######################################################################################################
 
 ##########
 rawInsProb

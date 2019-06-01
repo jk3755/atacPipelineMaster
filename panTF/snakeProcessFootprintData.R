@@ -173,87 +173,49 @@ if (file.exists(dataOutPath) == TRUE){
       
       ##
       factorCPM <- sampleTotalReads / 1000000
-      insMatrixNormalizedCPM <- insMatrix / factorCPM
+      CPMNinsMatrix <- insMatrix / factorCPM
       
       ##
       #### Calculate basic statistics for each site with raw data
-      CPMNormalizedSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
-      colnames(CPMNormalizedSiteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+      CPMNSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+      colnames(CPMNSiteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
                                        "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
                                        "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
       
       #### Populate the basic stats matrix
       for (b in 1:numSites){
-        CPMNormalizedSiteBasicStats[b,1] <- b # Site index
-        CPMNormalizedSiteBasicStats[b,2] <- sum(insMatrixNormalizedCPM[b,]) # Total signal
-        CPMNormalizedSiteBasicStats[b,3] <- rawSiteBasicStats[b,2] / (500 + motifWidth) # Total signal per bp
-        CPMNormalizedSiteBasicStats[b,4] <- sum(insMatrixNormalizedCPM[b,(250:(250 + motifWidth))] / motifWidth) # Motif signal per bp
-        CPMNormalizedSiteBasicStats[b,5] <- (sum(insMatrixNormalizedCPM[b,200:250]) + sum(insMatrixNormalizedCPM[b,(250 + motifWidth):(300 + motifWidth)])) / 100 # Flank signal per bp
-        CPMNormalizedSiteBasicStats[b,6] <- (sum(insMatrixNormalizedCPM[b,1:50]) + sum(insMatrixNormalizedCPM[b,(500 + motifWidth-50):(500 + motifWidth)])) / 100 # Background signal per bp
-        CPMNormalizedSiteBasicStats[b,7] <- (sum(insMatrixNormalizedCPM[b,1:250]) + sum(insMatrixNormalizedCPM[b,(250 + motifWidth):(500 + motifWidth)])) / 500 # Wide flank signal per bp
-        CPMNormalizedSiteBasicStats[b,8] <- CPMNormalizedSiteBasicStats[b,5] / CPMNormalizedSiteBasicStats[b,6] # Flank / background
-        CPMNormalizedSiteBasicStats[b,9] <- CPMNormalizedSiteBasicStats[b,4] / CPMNormalizedSiteBasicStats[b,5] # Motif / flank
-        CPMNormalizedSiteBasicStats[b,10] <- CPMNormalizedSiteBasicStats[b,4] / CPMNormalizedSiteBasicStats[b,7] # Motif / wide flank
+        CPMNSiteBasicStats[b,1] <- b # Site index
+        CPMNSiteBasicStats[b,2] <- sum(CPMNinsMatrix[b,]) # Total signal
+        CPMNSiteBasicStats[b,3] <- CPMNSiteBasicStats[b,2] / (500 + motifWidth) # Total signal per bp
+        CPMNSiteBasicStats[b,4] <- sum(CPMNinsMatrix[b,(250:(250 + motifWidth))] / motifWidth) # Motif signal per bp
+        CPMNSiteBasicStats[b,5] <- (sum(CPMNinsMatrix[b,200:250]) + sum(CPMNinsMatrix[b,(250 + motifWidth):(300 + motifWidth)])) / 100 # Flank signal per bp
+        CPMNSiteBasicStats[b,6] <- (sum(CPMNinsMatrix[b,1:50]) + sum(CPMNinsMatrix[b,(500 + motifWidth-50):(500 + motifWidth)])) / 100 # Background signal per bp
+        CPMNSiteBasicStats[b,7] <- (sum(CPMNinsMatrix[b,1:250]) + sum(CPMNinsMatrix[b,(250 + motifWidth):(500 + motifWidth)])) / 500 # Wide flank signal per bp
+        CPMNSiteBasicStats[b,8] <- CPMNSiteBasicStats[b,5] / CPMNSiteBasicStats[b,6] # Flank / background
+        CPMNSiteBasicStats[b,9] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,5] # Motif / flank
+        CPMNSiteBasicStats[b,10] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,7] # Motif / wide flank
       } # end for (b in 1:numSites)
       
       #### Generate the insertion site probability vector for raw data
-      CPMNormalizedInsProb <- c()
+      CPMNInsProb <- c()
       ##
       for (c in 1:(500 + motifWidth)){
-        CPMNormalizedInsProb[c] <- sum(insMatrixNormalizedCPM[,c])
+        CPMNInsProb[c] <- sum(CPMNinsMatrix[,c])
       } # end for (c in 1:(500 + motifWidth))
       ##
-      CPMNormalizedTotalSignal<- sum(CPMNormalizedInsProb)
-      CPMNormalizedInsProb <- CPMNormalizedInsProb / CPMNormalizedTotalSignal 
-      
-      
-      
-      ## NEED TO CHECK MATH ON THIS ##
-      #### Normalize values in insertion matrix with z-scores
-      insStandardDeviation <- sd(insMatrix)
-      insMean <- mean(insMatrix)
-      ##
-      zscoreInsMatrix <- ((insMatrix - insMean) / insStandardDeviation)
-      
-      ## Calculate basic statistics for z-score normalized matrix
-      zscoreBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
-      colnames(zscoreBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
-                                      "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
-                                      "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
-      
-      ## Populate the zscore stats matrix
-      for (b in 1:numSites){
-        # Site index
-        zscoreBasicStats[b,1] <- b
-        # Total signal
-        zscoreBasicStats[b,2] <- sum(zscoreInsMatrix[b,])
-        # Total signal per bp
-        zscoreBasicStats[b,3] <- zscoreBasicStats[b,2] / (500 + motifWidth)
-        # Motif signal per bp
-        zscoreBasicStats[b,4] <- sum(zscoreInsMatrix[b,(250:(250+motifWidth))] / motifWidth)
-        # Flank signal per bp
-        zscoreBasicStats[b,5] <- (sum(zscoreInsMatrix[b,200:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(300+motifWidth)])) / 100
-        # Background signal per bp
-        zscoreBasicStats[b,6] <- (sum(zscoreInsMatrix[b,1:50]) + sum(zscoreInsMatrix[b,(500+motifWidth-50):(500+motifWidth)])) / 100
-        # Wide flank signal per bp
-        zscoreBasicStats[b,7] <- (sum(zscoreInsMatrix[b,1:250]) + sum(zscoreInsMatrix[b,(250+motifWidth):(500+motifWidth)])) / 500
-        # Flank / background
-        zscoreBasicStats[b,8] <- zscoreBasicStats[b,5] / zscoreBasicStats[b,6]
-        # Motif / flank
-        zscoreBasicStats[b,9] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,5]
-        # Motif / wide flank
-        zscoreBasicStats[b,10] <- zscoreBasicStats[b,4] / zscoreBasicStats[b,7]
-      } # end for (b in 1:numSites)
+      CPMNTotalSignal<- sum(CPMNInsProb)
+      CPMNInsProb <- CPMNInsProb / CPMNTotalSignal
       
       #### Generate null models, use BF and BH correction to parse ####
-      
       ## Find the unique values for total signal and generate null models
-      uniqueTotalSignals <- unique(siteBasicStats[,2])
+      ## Generate null models based on raw signal, correct for CPM after
+      uniqueTotalSignals <- unique(rawSiteBasicStats[,2])
       siteWidth <- 500 + motifWidth
       
       ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
       nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
       colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
+      CPMNnullModels <- nullModels / factorCPM
       
       ## Calculate the null models
       for (c in 1:length(uniqueTotalSignals)){
