@@ -4,12 +4,12 @@
 ## Install libraries, if necessary
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("ChIPseeker", suppressUpdates = TRUE)
-biocLite("genomation", suppressUpdates = TRUE)
-biocLite("GenomicRanges", suppressUpdates = TRUE)
-biocLite("clusterProfiler", suppressUpdates = TRUE)
-biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene", suppressUpdates = TRUE)
-biocLite("org.Hs.eg.db", suppressUpdates = TRUE)
-biocLite("ReactomePA", suppressUpdates = TRUE)
+#biocLite("genomation", suppressUpdates = TRUE)
+#biocLite("GenomicRanges", suppressUpdates = TRUE)
+#biocLite("clusterProfiler", suppressUpdates = TRUE)
+#biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene", suppressUpdates = TRUE)
+#biocLite("org.Hs.eg.db", suppressUpdates = TRUE)
+#biocLite("ReactomePA", suppressUpdates = TRUE)
 
 ##
 cat("Loading libraries...", "\n")
