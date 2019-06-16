@@ -718,60 +718,43 @@ rule SATURATION_analyze_peak_saturation_localnorm:
     shell:
         "wc -l < {input} >> {output}"
 
-# ########################################################################################################################################
-# #### FOOTPRINTS ########################################################################################################################
-# ########################################################################################################################################
+########################################################################################################################################
+#### FOOTPRINTS ########################################################################################################################
+########################################################################################################################################
+rule AGGREGATOR_saturation_footprints_genes:
+    input:
+        "{path}operations/{sample}-REP{repnum}.CTCF.footprint.downsampled.done.txt"
+    output:
+        "{path}operations/{sample}-REP{repnum}.allgenes.footprint.downsampled.done.txt"
+    shell:
+        "touch {output}"
 
-# rule STEP28_analyze_raw_footprint_downsampled:
-#     input:
-#         "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam",
-#         "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bai",
-#         "sites/data/{gene}.bindingSites.Rdata",
-#         "{path}operations/{sample}-REP{repnum}.downsample.done.txt"
-#     output:
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
-#     script:
-#         "scripts/panTF/snakeAnalyzeRawFootprint.R"
+rule AGGREGATOR_saturation_footprints:
+    input:
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done",          
+    output:
+        "{path}operations/{sample}-REP{repnum}.{gene}.footprint.downsampled.done.txt"
+    shell:
+        "touch {output}"
 
-# rule AGGREGATOR_saturation_footprints:
-#     input:
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
-#         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done",          
-#     output:
-#         "{path}operations/{sample}-REP{repnum}.{gene}.footprint.downsampled.done.txt"
-#     shell:
-#         "touch {output}"
-
-
-# rule AGGREGATOR_saturation_footprints_genes:
-#     input:
-#         "{path}operations/{sample}-REP{repnum}.CTCF.footprint.downsampled.done.txt",
-#         "{path}operations/{sample}-REP{repnum}.MNX1.footprint.downsampled.done.txt",
-#         "{path}operations/{sample}-REP{repnum}.CDX2.footprint.downsampled.done.txt"
-#     output:
-#         "{path}operations/{sample}-REP{repnum}.allgenes.footprint.downsampled.done.txt"
-#     shell:
-#         "touch {output}"
-
-# # Clean up intermediate data to this point
-# rule STEP12b_clean_intermediate_data:
-#     input:
-#         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
-#     output:
-#         "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
-#     shell:
-#         """
-#         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
-#         touch {output}
-#         """
+rule SATURATION_analyze_raw_footprint_downsampled:
+    input:
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam",
+        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bai",
+        "sites/data/{gene}.bindingSites.Rdata",
+        "{path}operations/{sample}-REP{repnum}.downsample.done.txt"
+    output:
+        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
+    script:
+        "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
