@@ -258,7 +258,12 @@ rule STEP10_mergelanes:
         USE_THREADING=true"
 
 # Clean up intermediate data to this point
+# Also copy the fastq filtering QC files to the metrics folder
 rule STEP10b_clean_intermediate_data:
+    # -rm removes files
+    # -f forces the removal
+    # -a is recursive option for cp
+    # /. causes cp to copy all contents of folder including hidden items
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
@@ -274,6 +279,10 @@ rule STEP10b_clean_intermediate_data:
         rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
         rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
         rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        ##
+        cp -a {wildcards.path}preprocessing/QC/. {wildcards.path}metrics/
+        rm -f {wildcards.path}preprocessing/QC/*
+        rmdir {wildcards.path}preprocessing/QC
         touch {output}
         """
 
