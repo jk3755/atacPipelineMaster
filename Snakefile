@@ -24,10 +24,10 @@ rule AGGREGATOR_preprocessing:
     	#"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
-        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
-        #"{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
-        #"{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
-        #"{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
+        "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
+        "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
+        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
         #"{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
         #"{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done",
         #"{path}operations/{sample}-REP{repnum}.localpeak.annotations.done",
@@ -476,6 +476,7 @@ rule STEP17a_percent_peak_genome_coverage_globalnorm:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
 # Calculate percent genome coverage from peaks with local normalization
+
 rule STEP17b_percent_peak_genome_coverage_localnorm:
     # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
     # parameters:
@@ -486,7 +487,7 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
         a="{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
     output:
-        "{path}metrics/{sample}-REP{repnum}.peak.localnormnorm.genomecov.txt"
+        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.genomecov.localnorm.benchmark.txt'
     shell:
