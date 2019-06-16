@@ -27,8 +27,8 @@ rule AGGREGATOR_preprocessing:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
-        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
-        #"{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
+        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
         #"{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done",
         #"{path}operations/{sample}-REP{repnum}.localpeak.annotations.done",
         #"{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
