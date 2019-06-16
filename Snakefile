@@ -31,11 +31,8 @@ rule AGGREGATOR_preprocessing:
         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
-        #"{path}operations/{sample}-REP{repnum}.downsample.done.txt",
-        #"{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
-        #"{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
-        #"{path}operations/{sample}-REP{repnum}.allgenes.footprint.downsampled.done.txt"
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     output:
         "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
     shell:
@@ -70,7 +67,7 @@ rule PREP_builddirstructure:
         ##
         mkdir -p -v {wildcards.path}preprocessing/saturation
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints {wildcards.path}preprocessing/saturation/complexity
-        mkdir -p -v {wildcards.path}preprocessing/saturation/peaks {wildcards.path}preprocessing/saturation/preprocessing
+        mkdir -p -v {wildcards.path}preprocessing/saturation/peaks {wildcards.path}preprocessing/saturation/downsampled
         ## 
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/data 
@@ -82,6 +79,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
         ##
         mkdir -p -v {wildcards.path}metrics
+        mkdir -p -v {wildcards.path}metrics/saturation
         ##
         touch {output}
         """
@@ -363,7 +361,6 @@ rule STEP12b_clean_intermediate_data:
         "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
         rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
         touch {output}
         """
@@ -538,6 +535,14 @@ rule STEP20_sample_total_reads:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
         "snakeResources/scripts/QC/snakeCountSampleReads.R"
+
+rule STEP21_saturation_analysis:
+    input:
+        "{path}operations/{sample}-REP{repnum}.downsample.done"
+    output:
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
+    shell:
+    	"touch {output}"
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
