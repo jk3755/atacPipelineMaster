@@ -9,40 +9,40 @@ rule SITES_build_dir_structure:
         "snakeResources/sites/operations/dirtree.built"
     shell:
         """
-        mkdir -p -v snakeResources/sites/operations snakeResources/sites/scripts snakeResources/sites/data snakeResources/sites/genes
+        mkdir -p -v snakeResources/sites/operations snakeResources/sites/scripts snakeResources/sites/data snakeResources/sites/data/genes
         ##
         touch {output}
         """
 
 # Generate the motif data Rdata file
-rule generate_motifData:
+rule SITES_generate_motifData:
     input:
         "snakeResources/sites/operations/dirtree.built"
     output:
         "snakeResources/sites/data/motifData.Rdata"
     script:
-        "snakeResources/sites/scripts/generateMotifData.R"
+        "../sites/scripts/generateMotifData.R"
 
 # Generate the gene names file
-rule generate_geneNames:
+rule SITES_generate_geneNames:
     input:
         "snakeResources/sites/data/motifData.Rdata"
     output:
         "snakeResources/sites/data/geneNames.txt"
     script:
-        "snakeResources/sites/scripts/generateNames.R"
+        "../sites/scripts/generateNames.R"
 
 # Use the PWM information to scan the genome for matches and store the data
-rule scanPWM:
+rule SITES_scanPWM:
     input:
         "snakeResources/sites/data/motifData.Rdata"
     output:
         "snakeResources/sites/operations/genes/{gene}.PWMscan.done"
     script:
-        'snakeResources/sites/scripts/scanPWM/snakeScanPWM.R'
+        '../sites/scripts/snakeScanPWM.R'
 
 ####
-rule PWMscan_group_aggregator:
+rule SITES__group_aggregator:
     input:
         'snakeResources/sites/operations/groups/PWMscan.group1.done',
         'snakeResources/sites/operations/groups/PWMscan.group2.done',

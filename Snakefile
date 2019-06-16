@@ -1,7 +1,7 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
-#include: "snakeResources/modules/generateSites.snakefile"
+include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 #include: "snakeResources/modules/saturationAnalysis.snakefile"
 #include: "snakeResources/modules/spoolFootprinting.snakefile"
