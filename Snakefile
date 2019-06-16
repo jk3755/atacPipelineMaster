@@ -544,8 +544,8 @@ rule STEP21_saturation_analysis:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
         "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done",
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt",
-        "{path}operations/preprocessing/saturation/clean2.{sample}.{repnum}.done"
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
+        #"{path}operations/preprocessing/saturation/clean2.{sample}.{repnum}.done"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     shell:
@@ -687,7 +687,7 @@ rule SATURATION_peaks_localnorm:
     output:
         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_localnorm_peaks.xls"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_localnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
 rule SATURATION_analyze_peak_saturation_globalnorm:
     input:
