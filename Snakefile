@@ -13,9 +13,9 @@ include: "snakeResources/modules/spoolPreprocessing.snakefile"
 rule AGGREGATOR_preprocessing:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        #"{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw",
-        #"{path}peaks/macs2/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
-        #"{path}peaks/macs2/individual/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
+        "{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw",
+        "{path}peaks/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
+        "{path}peaks/individual/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
         #"{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
         #"{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
         #"{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
@@ -147,8 +147,7 @@ rule STEP4_hg38align:
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
-# Coordinate sort the aligned reads
-# This is required for blacklist filtering
+# Coordinate sort the aligned reads. This is required for blacklist filtering
 rule STEP5_coordsort_sam:
     # -o output file path
     # -O output file format
@@ -346,7 +345,7 @@ rule STEP12_mapqfilter:
         "samtools view -h -q 2 -b {input} > {output}"
     
 # Clean up intermediate data to this point
-rule STEP12b_clean:
+rule STEP12b_clean_intermediate_data:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
@@ -404,7 +403,7 @@ rule STEP15_MACS2_peaks_global_normilization:
     # we will need to call the peaks in the exact same way as they did in this paper:
     # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
     # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-    ## params:
+    # params:
     # -t input bam file (treatment)
     # -n base name for output files
     # --outdir output directory
@@ -497,7 +496,7 @@ rule STEP18_fragment_size_distribution:
 # Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
-        "{path}peaks/macs2/individual/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt"
     script:
@@ -506,7 +505,7 @@ rule STEP19_annotate_peaks_global:
 # Annotate the peaks with local normalization
 rule STEP19_annotate_peaks_local:
     input:
-        "{path}peaks/macs2/individual/{sample}-REP{repnum}_local_normalization_peaks.narrowPeak"
+        "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     output:
         "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done.txt"
     script:
