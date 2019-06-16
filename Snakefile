@@ -1,9 +1,9 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
-#include: "snakeResources/modules/generateSites.snakefile"
+include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
-#include: "snakeResources/modules/saturationAnalysis.snakefile"
+include: "snakeResources/modules/saturationAnalysis.snakefile"
 #include: "snakeResources/modules/spoolFootprinting.snakefile"
 #include: "snakeResources/modules/rawFootprintGroups.snakefile"
 
@@ -538,7 +538,7 @@ rule STEP20_sample_total_reads:
 
 rule STEP21_saturation_analysis:
     input:
-        "{path}operations/{sample}-REP{repnum}.downsample.done"
+        "{path}operations/saturation/{sample}-REP{repnum}.downsample.done"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     shell:

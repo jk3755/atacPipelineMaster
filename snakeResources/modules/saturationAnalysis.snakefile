@@ -32,7 +32,7 @@ rule SATURATION_downsample_bam:
         PROBABILITY=0.{wildcards.prob}"
 
 #
-rule STEP22_sort_downsampled:
+rule SATURATION_sort_downsampled:
     input:
         "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
     output:
@@ -44,7 +44,7 @@ rule STEP22_sort_downsampled:
         SORT_ORDER=coordinate"
 
 #
-rule STEP23_purge_duplicates_downsampled:
+rule SATURATION_purge_duplicates_downsampled:
     input:
         "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
     output:
@@ -59,11 +59,11 @@ rule STEP23_purge_duplicates_downsampled:
         ASSUME_SORTED=true"
 
 #
-rule STEP24_index_downsampled:
+rule SATURATION_index_downsampled:
     input:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam"
+        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam"
     output:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
+        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
     shell:
         "java -jar programs/picard/picard.jar BuildBamIndex \
         I={input} \
