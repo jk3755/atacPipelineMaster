@@ -1,11 +1,11 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
-include: "snakeModules/generateSites.snakefile"
+#include: "snakeModules/generateSites.snakefile"
 include: "snakeModules/spoolPreprocessing.snakefile"
-include: "snakeModules/saturationAnalysis.snakefile"
-include: "snakeModules/spoolFootprinting.snakefile"
-include: "snakeModules/rawFootprintGroups.snakefile"
+#include: "snakeModules/saturationAnalysis.snakefile"
+#include: "snakeModules/spoolFootprinting.snakefile"
+#include: "snakeModules/rawFootprintGroups.snakefile"
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
@@ -172,6 +172,7 @@ rule STEP6_blacklistfilter_bamconversion:
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
+# Remove reads mapping to mitochondrial DNA
 rule STEP7_chrM_contamination:
     # remove mitochondrial reads
     # params:
@@ -189,6 +190,7 @@ rule STEP7_chrM_contamination:
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
 
+# Add @RG tags to the reads and perform coordinate sorting
 rule STEP8_addrgandcsbam:
     # refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
     # note - proper specification of RG tags is critical for downstream analysis and unique sample identification when submitting for publication
@@ -202,6 +204,7 @@ rule STEP8_addrgandcsbam:
     # RGPL (read group platform) - ILLUMINA
     # RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
     # RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
+    # params:
     # I specifies the input file
     # O specifies the output file
     input:
@@ -219,8 +222,8 @@ rule STEP8_addrgandcsbam:
         RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
         RGSM={wildcards.sample}"
 
+# Clean the bam file
 rule STEP9_cleansam:
-    # params:
     # soft-clips bases aligned past the end of the ref sequence
     # soft-clipping retains the bases in the SEQ string, but they are not displayed or used in downstream data analysis
     # sets MAPQ score to 0 for unmapped reads
@@ -235,6 +238,7 @@ rule STEP9_cleansam:
         I={input} \
         O={output}"
 
+# Merge reads from different NextSeq lanes
 rule STEP10_mergelanes:
     # Merge files for individual lanes
     # I specifies input files for each lane
@@ -345,9 +349,10 @@ rule STEP13_buildindex:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     shell:
         "java -jar programs/picard/picard.jar BuildBamIndex \
-        I={input.a} \
+        I={input.b} \
         O={output}"
 
+# Make a bigwig file from the bam file
 rule STEP14_makebigwig_bamcov:
     # params:
     # -b bam input
@@ -361,12 +366,11 @@ rule STEP14_makebigwig_bamcov:
         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw"
-    resources:
-        make_bigwig=1
+        "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw"
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
 
+# Call peaks using global normalization
 rule STEP15_MACS2_peaks_global_normilization:
     # notes:
     # because we are going to use the TCGA data downstream likely as a reference point,
@@ -388,10 +392,11 @@ rule STEP15_MACS2_peaks_global_normilization:
         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}peaks/macs2/individual/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_global_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_globalnorm --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
+# Call peaks using local normalization
 rule STEP16_MACS2_peaks_local_normalization:
     # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
     # params:
@@ -408,9 +413,9 @@ rule STEP16_MACS2_peaks_local_normalization:
         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}peaks/macs2/individual/{sample}-REP{repnum}_local_normalization_peaks.narrowPeak"
+        "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_local_normalization --outdir {wildcards.path}peaks/macs2/individual --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
 rule STEP17_percent_peak_genome_coverage:
     # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
