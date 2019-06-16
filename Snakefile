@@ -17,11 +17,11 @@ rule AGGREGATOR_preprocessing:
         "{path}peaks/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/individual/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
-        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
-        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
-        #"{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt",
-        #"{path}operations/{sample}-REP{repnum}.localpeak.annotations.done.txt"
-        #"{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
+        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done",
+        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done",
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
         #"{path}operations/{sample}-REP{repnum}.downsample.done.txt",
         #"{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
         #"{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
@@ -515,6 +515,7 @@ rule STEP19_annotate_peaks_local:
     script:
         "scripts/snakeAnnotatePeaks.R"
 
+# Count the total number of reads in the sample
 rule STEP20_sample_total_reads:
     input:
         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
