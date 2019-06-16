@@ -2,65 +2,10 @@
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 
-include: "snakeModules/mergeReplicates.snakefile"
-
-include: "snakeModules/xsampleCorrelation.snakefile"
-
-include: "snakeModules/panTFcopybam.snakefile"
-
-include: "snakeModules/panTFraw.snakefile"
-
-include: "snakeModules/panTFparse.snakefile"
-
-include: "snakeModules/panTFprocess.snakefile"
-
-#include: "snakeModules/panTFgraphs.snakefile"
-
-include: "snakeModules/scanPWM.snakefile"
-
-#configfile: "snakeModules/config.yaml"
-
-########################################################################################################################################
-#### SPOOL PREPROCESSING ###############################################################################################################
-########################################################################################################################################
-
-rule preprocessing_h508_wt01:
-    input:
-        "h508/wt01/operations/H508-WT-01-REP1.preprocessing.complete.clean.txt",
-        "h508/wt01/operations/H508-WT-01-REP2.preprocessing.complete.clean.txt",
-        "h508/wt01/operations/H508-WT-01-REP3.preprocessing.complete.clean.txt"
-
-rule preprocessing_lncap_group1:
-    input:
-        "lncap/wt02/operations/LNCaP-WT-02-pipeline.complete.txt",
-        "lncap/cr01/operations/LNCaP-CR-01-pipeline.complete.txt",
-        "lncap/cr04/operations/LNCaP-CR-04-pipeline.complete.txt",
-        "lncap/cr07/operations/LNCaP-CR-07-pipeline.complete.txt"
-
-rule preprocessing_lncap_group2:
-    input:
-        "lncap/wt01/operations/LNCaP-WT-01-pipeline.complete.txt",
-        "lncap/cr02/operations/LNCaP-CR-02-pipeline.complete.txt",
-        "lncap/cr05/operations/LNCaP-CR-05-pipeline.complete.txt",
-         "lncap/cr08/operations/LNCaP-CR-08-pipeline.complete.txt"
-
-########################################################################################################################################
-#### SPOOL FOOTPRINTING ################################################################################################################
-########################################################################################################################################
-
-rule run_pantf_lncap_group1:
-    input:
-        expand("lncap/wt02/footprints/operations/groups/LNCaP-WT-02.rawFPanalysis.group{param}.done", param=config["group"]),
-        expand("lncap/cr01/footprints/operations/groups/LNCaP-CR-01.rawFPanalysis.group{param}.done", param=config["group"]),
-        expand("lncap/cr04/footprints/operations/groups/LNCaP-CR-04.rawFPanalysis.group{param}.done", param=config["group"]),
-        expand("lncap/cr07/footprints/operations/groups/LNCaP-CR-07.rawFPanalysis.group{param}.done", param=config["group"])
-
-rule run_pantf_lncap_group2:
-    input:
-        expand("lncap/wt01/footprints/operations/groups/LNCaP-WT-01.rawFPanalysis.group{param}.done", param=config["group"]),
-        expand("lncap/cr02/footprints/operations/groups/LNCaP-CR-02.rawFPanalysis.group{param}.done", param=config["group"]),
-        expand("lncap/cr05/footprints/operations/groups/LNCaP-CR-05.rawFPanalysis.group{param}.done", param=config["group"]),
-        expand("lncap/cr08/footprints/operations/groups/LNCaP-CR-08.rawFPanalysis.group{param}.done", param=config["group"])
+include: "snakeModules/spoolPreprocessing.snakefile"
+include: "snakeModules/spoolFootprinting.snakefile"
+include: "snakeModules/generateSites.snakefile"
+include: "snakeModules/rawFootprintGroups.snakefile"
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
@@ -720,15 +665,86 @@ rule PANTF_run_aggregator:
     script:
         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
 
-########################################################################################################################################
-#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
-########################################################################################################################################
-
-rule run_PWMscan:
-    # Run this rule to generate all needed data for scanning the genome for matches to PWMs
-    # Will generate data for all annotated genes in motifDB, for all unique motifs
+rule AGGREGATOR_copy_bam:
     input:
-        "sites/motifData.Rdata",
-        "sites/geneNames.txt",
-        "sites/operations/groups/PWMscan.allgroups.done"
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.1.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.2.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.3.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.4.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.5.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.6.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.7.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.8.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.9.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.10.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.11.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.12.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.13.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.14.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.15.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.16.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.17.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.18.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.19.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.20.bam",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.1.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.2.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.3.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.4.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.5.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.6.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.7.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.8.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.9.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.10.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.11.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.12.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.13.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.14.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.15.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.16.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.17.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.18.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.19.bai",
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.20.bai"
+    output:
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.bamcopy.done"
+    shell:
+        "touch {output}"
 
+rule PANTF_copy_bam:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
+    input:
+        "{path}preprocessing/11repmerged/{sample}-REP{repnum}.bam"
+    output:
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bam"
+    shell:
+        "cp {input} {output}"
+
+rule PANTF_copy_bai:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
+    input:
+        "{path}preprocessing/11repmerged/{sample}-REP{repnum}.bai"
+    output:
+        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bai"
+    shell:
+        "cp {input} {output}"
+
+rule PANTF_remove_bamcopy:
+    input:
+        "{path}footprints/operations/{sample}.rawTF.allgroups.done"
+    output:
+        "{path}footprints/operations/{sample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
