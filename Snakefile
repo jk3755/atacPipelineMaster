@@ -56,7 +56,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/6rawbam 
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
-        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11bigwig
+        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/10unique/copy {wildcards.path}preprocessing/11bigwig
         ##
         mkdir -p -v {wildcards.path}preprocessing/saturation
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints {wildcards.path}preprocessing/saturation/complexity
@@ -513,7 +513,7 @@ rule STEP19_annotate_peaks_local:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
-        "scripts/snakeAnnotatePeaks.R"
+        "snakeResources/scripts/snakeAnnotatePeaks.R"
 
 # Count the total number of reads in the sample
 rule STEP20_sample_total_reads:
@@ -522,17 +522,87 @@ rule STEP20_sample_total_reads:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
-        "scripts/snakeCountSampleReads.R"
+        "snakeResources/scripts/snakeCountSampleReads.R"
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
 
-rule PANTF_raw_footprint_analysis:
+# Copy the .bam and .bai files so that different footprinting processes dont access the same file
+rule FOOTPRINTING_copy_bam_bai:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
     input:
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bai",
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.bai"
+    output:
+        a="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
+        b="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.footprinting.copybambai.txt'
+    shell:
+        """
+        cp {input.a} {output.a}
+        cp {input.b} {output.b}
+        """
+
+# An aggregator for the 20 file copies from rule above
+rule AGGREGATOR_copy_bam_bai:
+    input:
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bai"
+    output:
+        "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
+    shell:
+        "touch {output}"
+
+rule FOOTPRINTING_raw_analysis:
+    input:
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai",
         "sites/data/{gene}.bindingSites.Rdata",
         "{path}peaks/macs2/merged/{sample}-REP{repnum}-merged_global_normalization_peaks.narrowPeak",
         "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.bamcopy.done"
@@ -544,6 +614,8 @@ rule PANTF_raw_footprint_analysis:
         '{path}footprints/benchmark/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
         "scripts/panTF/snakeAnalyzeRawFootprint.R"
+
+
 
 rule PANTF_parse_and_generate_footprint_statistics:
     input:
@@ -559,6 +631,8 @@ rule PANTF_parse_and_generate_footprint_statistics:
     script:
         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
+
+
 rule PANTF_process_footprint_analysis:
     input:
         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
@@ -571,6 +645,8 @@ rule PANTF_process_footprint_analysis:
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
+
+
 rule PANTF_generate_tf_graphs:
     input:
         "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
@@ -581,6 +657,8 @@ rule PANTF_generate_tf_graphs:
     script:
         "scripts/panTF/snakeGenerateFootprintGraphs.R"
 
+
+
 rule PANTF_run_aggregator:
     input:
         "{path}footprints/data/processed/"
@@ -589,76 +667,9 @@ rule PANTF_run_aggregator:
     script:
         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
 
-rule AGGREGATOR_copy_bam:
-    input:
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.1.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.2.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.3.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.4.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.5.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.6.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.7.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.8.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.9.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.10.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.11.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.12.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.13.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.14.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.15.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.16.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.17.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.18.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.19.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.20.bam",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.1.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.2.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.3.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.4.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.5.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.6.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.7.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.8.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.9.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.10.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.11.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.12.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.13.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.14.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.15.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.16.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.17.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.18.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.19.bai",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.20.bai"
-    output:
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.bamcopy.done"
-    shell:
-        "touch {output}"
 
-rule PANTF_copy_bam:
-    # The TF analysis script runs in 20 simultaneous processes
-    # Each process will need to access the bam file individually
-    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
-    # And assign each individual process a unique file to access
-    input:
-        "{path}preprocessing/11repmerged/{sample}-REP{repnum}.bam"
-    output:
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bam"
-    shell:
-        "cp {input} {output}"
 
-rule PANTF_copy_bai:
-    # The TF analysis script runs in 20 simultaneous processes
-    # Each process will need to access the bam file individually
-    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
-    # And assign each individual process a unique file to access
-    input:
-        "{path}preprocessing/11repmerged/{sample}-REP{repnum}.bai"
-    output:
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.{bamcopy}.bai"
-    shell:
-        "cp {input} {output}"
+
 
 rule PANTF_remove_bamcopy:
     input:
