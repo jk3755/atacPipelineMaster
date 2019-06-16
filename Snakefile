@@ -286,7 +286,7 @@ rule STEP10_mergelanes:
         ASSUME_SORTED=true \
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
-    
+
 # Clean up intermediate data to this point
 # Also copy the fastq filtering QC files to the metrics folder
 rule STEP10b_clean_intermediate_data:
@@ -363,8 +363,8 @@ rule STEP12b_clean_intermediate_data:
         "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/8merged/*.bam
-        rm -f {wildcards.path}preprocessing/9dedup/*.bam
+        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
         touch {output}
         """
 
