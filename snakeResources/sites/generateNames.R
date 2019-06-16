@@ -59,7 +59,8 @@ for (gene in uniqueGenes){
 
 ##################### Output text file
 ## Set the output filepath
-outPath <- snakemake@output[[1]]
+#outPath <- snakemake@output[[1]]
+outPath <- "C:\\Users\\jsk33\\Desktop\\sites.txt"
 numGenes <- length(motifData)
 uniqueGenes <- names(motifData)
 strings <- c()
@@ -94,26 +95,26 @@ while (a <= numGenes){
   v <- a+19
   
   ##
-  tmp1 <- paste0("'sites/operations/", uniqueGenes[c], ".PWMscan.done", "', ")
-  tmp2 <- paste0("'sites/operations/", uniqueGenes[d], ".PWMscan.done", "', ")
-  tmp3 <- paste0("'sites/operations/", uniqueGenes[e], ".PWMscan.done", "', ")
-  tmp4 <- paste0("'sites/operations/", uniqueGenes[f], ".PWMscan.done", "', ")
-  tmp5 <- paste0("'sites/operations/", uniqueGenes[g], ".PWMscan.done", "', ")
-  tmp6 <- paste0("'sites/operations/", uniqueGenes[h], ".PWMscan.done", "', ")
-  tmp7 <- paste0("'sites/operations/", uniqueGenes[i], ".PWMscan.done", "', ")
-  tmp8 <- paste0("'sites/operations/", uniqueGenes[j], ".PWMscan.done", "', ")
-  tmp9 <- paste0("'sites/operations/", uniqueGenes[k], ".PWMscan.done", "', ")
-  tmp10 <- paste0("'sites/operations/", uniqueGenes[l], ".PWMscan.done", "', ")
-  tmp11 <- paste0("'sites/operations/", uniqueGenes[m], ".PWMscan.done", "', ")
-  tmp12 <- paste0("'sites/operations/", uniqueGenes[n], ".PWMscan.done", "', ")
-  tmp13 <- paste0("'sites/operations/", uniqueGenes[o], ".PWMscan.done", "', ")
-  tmp14 <- paste0("'sites/operations/", uniqueGenes[p], ".PWMscan.done", "', ")
-  tmp15 <- paste0("'sites/operations/", uniqueGenes[q], ".PWMscan.done", "', ")
-  tmp16 <- paste0("'sites/operations/", uniqueGenes[r], ".PWMscan.done", "', ")
-  tmp17 <- paste0("'sites/operations/", uniqueGenes[s], ".PWMscan.done", "', ")
-  tmp18 <- paste0("'sites/operations/", uniqueGenes[t], ".PWMscan.done", "', ")
-  tmp19 <- paste0("'sites/operations/", uniqueGenes[u], ".PWMscan.done", "', ")
-  tmp20 <- paste0("'sites/operations/", uniqueGenes[v], ".PWMscan.done", "'")
+  tmp1 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[c], ".PWMscan.done", "', ")
+  tmp2 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[d], ".PWMscan.done", "', ")
+  tmp3 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[e], ".PWMscan.done", "', ")
+  tmp4 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[f], ".PWMscan.done", "', ")
+  tmp5 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[g], ".PWMscan.done", "', ")
+  tmp6 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[h], ".PWMscan.done", "', ")
+  tmp7 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[i], ".PWMscan.done", "', ")
+  tmp8 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[j], ".PWMscan.done", "', ")
+  tmp9 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[k], ".PWMscan.done", "', ")
+  tmp10 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[l], ".PWMscan.done", "', ")
+  tmp11 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[m], ".PWMscan.done", "', ")
+  tmp12 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[n], ".PWMscan.done", "', ")
+  tmp13 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[o], ".PWMscan.done", "', ")
+  tmp14 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[p], ".PWMscan.done", "', ")
+  tmp15 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[q], ".PWMscan.done", "', ")
+  tmp16 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[r], ".PWMscan.done", "', ")
+  tmp17 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[s], ".PWMscan.done", "', ")
+  tmp18 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[t], ".PWMscan.done", "', ")
+  tmp19 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[u], ".PWMscan.done", "', ")
+  tmp20 <- paste0("'snakeResources/sites/operations/genes/", uniqueGenes[v], ".PWMscan.done", "'")
   
   ##
   strings[b] <- paste0(
@@ -126,7 +127,7 @@ while (a <= numGenes){
                       tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t",
                       tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20, "\n\t",
                       "output:\n\t\t",
-                      "'sites/operations/PWMscan.group", b, ".done'\n",
+                      "'snakeResources/sites/operations/groups/PWMscan.group", b, ".done'\n",
                       "\tshell:\n\t\t",
                       "'touch {output}'\n")
   
