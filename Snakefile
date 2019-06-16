@@ -29,9 +29,9 @@ rule AGGREGATOR_preprocessing:
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
         "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
-        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done",
-        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done"
-        #"{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+        "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
         #"{path}operations/{sample}-REP{repnum}.downsample.done.txt",
         #"{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
         #"{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
@@ -510,7 +510,7 @@ rule STEP19_annotate_peaks_global:
     input:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
-        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done"
+        "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
@@ -521,7 +521,7 @@ rule STEP19_annotate_peaks_local:
     input:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     output:
-        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done"
+        "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
@@ -537,7 +537,7 @@ rule STEP20_sample_total_reads:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
-        "snakeResources/scripts/snakeCountSampleReads.R"
+        "snakeResources/scripts/QC/snakeCountSampleReads.R"
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
