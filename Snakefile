@@ -57,37 +57,37 @@ rule PREP_builddirstructure:
         "{path}preprocessing/operations/dirtree.built"
     shell:
         """
+        mkdir -p -v {wildcards.path}benchmark
+        mkdir -p -v {wildcards.path}benchmark/preprocessing {wildcards.path}benchmark/footprints
+        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
+        ##
         mkdir -p -v {wildcards.path}operations
         mkdir -p -v {wildcards.path}operations/preprocessing {wildcards.path}operations/footprints {wildcards.path}operations/saturation
+        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
+        mkdir -p -v {wildcards.path}operations/footprints/groups
+        mkdir -p -v {wildcards.path}operations/footprints/groups/raw {wildcards.path}operations/footprints/groups/parsed {wildcards.path}operations/footprints/groups/processed
         ##
         mkdir -p -v {wildcards.path}preprocessing
         mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
-        mkdir -p -v {wildcards.path}preprocessing/6rawbam {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
-        mkdir -p -v {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11bigwig
+        mkdir -p -v {wildcards.path}preprocessing/6rawbam 
+        mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
+        mkdir -p -v {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
+        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11bigwig
 		##
 		mkdir -p -v {wildcards.path}preprocessing/saturation
 		mkdir -p -v {wildcards.path}preprocessing/saturation/footprints {wildcards.path}preprocessing/saturation/complexity
         mkdir -p -v {wildcards.path}preprocessing/saturation/peaks {wildcards.path}preprocessing/saturation/preprocessing
         ## 
         mkdir -p -v {wildcards.path}footprints
-        mkdir -p -v {wildcards.path}footprints/benchmark
-        mkdir -p -v {wildcards.path}footprints/benchmark/parse {wildcards.path}footprints/benchmark/raw {wildcards.path}footprints/benchmark/processed
         mkdir -p -v {wildcards.path}footprints/data 
-        mkdir -p -v {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
+        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/graphs
 		mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
-		mkdir -p -v {wildcards.path}footprints/operations
-        mkdir -p -v {wildcards.path}footprints/operations/groups {wildcards.path}footprints/operations/parse {wildcards.path}footprints/operations/graphs
-        mkdir -p -v {wildcards.path}footprints/operations/raw {wildcards.path}footprints/operations/processed {wildcards.path}footprints/operations/aggregated
         ##
         mkdir -p -v {wildcards.path}peaks
-        mkdir -p -v {wildcards.path}peaks/genrich
-        mkdir -p -v {wildcards.path}peaks/macs2
-        mkdir -p -v {wildcards.path}peaks/macs2/individual {wildcards.path}peaks/macs2/merged
+        mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
         ##
-        
         mkdir -p -v {wildcards.path}metrics
-        mkdir -p -v {wildcards.path}correlation
         ##
         touch {output}
         """
