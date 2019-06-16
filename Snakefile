@@ -22,7 +22,7 @@ rule AGGREGATOR_preprocessing:
     input:
     	#"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
+        #"{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
@@ -65,6 +65,8 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/10unique/copy {wildcards.path}preprocessing/11bigwig
         ##
         mkdir -p -v {wildcards.path}preprocessing/saturation
+        mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
+        mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled/raw {wildcards.path}preprocessing/saturation/downsampled/cs {wildcards.path}preprocessing/saturation/downsampled/md
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints {wildcards.path}preprocessing/saturation/complexity
         mkdir -p -v {wildcards.path}preprocessing/saturation/peaks {wildcards.path}preprocessing/saturation/downsampled
         ## 
@@ -538,7 +540,7 @@ rule STEP20_sample_total_reads:
 rule STEP21_saturation_analysis:
     input:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
+        "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     shell:
@@ -547,18 +549,17 @@ rule STEP21_saturation_analysis:
 ########################################################################################################################################
 #### DOWNSAMPLE RULES ##################################################################################################################
 ########################################################################################################################################
-
 rule AGGREGATOR_saturation:
     input:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.9.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.8.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.7.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.6.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.5.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.4.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.3.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.2.md.bai",
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.1.md.bai"      
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.8.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.7.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.6.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.5.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.4.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.3.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.2.md.bai",
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.1.md.bai"      
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done"
     shell:
@@ -568,7 +569,7 @@ rule SATURATION_downsample_bam:
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
+        "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
     shell:
         "java -jar snakeResources/programs/picard/picard.jar DownsampleSam \
         I={input} \
@@ -577,9 +578,9 @@ rule SATURATION_downsample_bam:
 
 rule SATURATION_sort_downsampled:
     input:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
+        "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
     output:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
+        "{path}preprocessing/saturation/downsampled/cs/{sample}-REP{repnum}.{prob}.cs.bam"
     shell:
         "java -jar snakeResources/programs/picard/picard.jar SortSam \
         I={input} \
@@ -588,9 +589,9 @@ rule SATURATION_sort_downsampled:
 
 rule SATURATION_purge_duplicates_downsampled:
     input:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
+        "{path}preprocessing/saturation/downsampled/cs/{sample}-REP{repnum}.{prob}.cs.bam"
     output:
-        a="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
+        a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
         b="{path}metrics/saturation/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
     shell:
         "java -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
@@ -602,9 +603,9 @@ rule SATURATION_purge_duplicates_downsampled:
 
 rule SATURATION_index_downsampled:
     input:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam"
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam"
     output:
-        "{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
+        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
     shell:
         "java -jar snakeResources/programs/picard/picard.jar BuildBamIndex \
         I={input} \
@@ -613,7 +614,6 @@ rule SATURATION_index_downsampled:
 ########################################################################################################################################
 #### LIBRARY COMPLEXITY ################################################################################################################
 ########################################################################################################################################
-
 rule SATURATION_analyze_complexity_downsampled:
     input:
         a="{path}metrics/saturation/{sample}-REP{repnum}.9.duplication-metrics.txt",
@@ -625,15 +625,15 @@ rule SATURATION_analyze_complexity_downsampled:
         g="{path}metrics/saturation/{sample}-REP{repnum}.3.duplication-metrics.txt",
         h="{path}metrics/saturation/{sample}-REP{repnum}.2.duplication-metrics.txt",
         i="{path}metrics/saturation/{sample}-REP{repnum}.1.duplication-metrics.txt",
-        j="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.9.md.bai",
-        k="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.8.md.bai",
-        l="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.7.md.bai",
-        m="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.6.md.bai",
-        n="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.5.md.bai",
-        o="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.4.md.bai",
-        p="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.3.md.bai",
-        q="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.2.md.bai",
-        r="{path}preprocessing/saturation/downsampled/{sample}-REP{repnum}.1.md.bai"
+        j="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
+        k="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.8.md.bai",
+        l="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.7.md.bai",
+        m="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.6.md.bai",
+        n="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.5.md.bai",
+        o="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.4.md.bai",
+        p="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.3.md.bai",
+        q="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.2.md.bai",
+        r="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.1.md.bai"
     output:
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
     shell:
@@ -649,10 +649,23 @@ rule SATURATION_analyze_complexity_downsampled:
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
         """
 
+# Clean up intermediate data to this point
+rule SATURATION_clean_intermediate_data1:
+    input:
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
+    output:
+        "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done"
+    shell:
+        """
+        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
+        touch {output}
+        """
+
 # ########################################################################################################################################
 # #### PEAKS #############################################################################################################################
 # ########################################################################################################################################
-    
 # rule STEP26_MACS2_peaks_downsampled:
 #     input:
 #         a="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
@@ -677,8 +690,6 @@ rule SATURATION_analyze_complexity_downsampled:
 #         "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
 #     shell:
 #         "wc -l < {input} >> {output}"
-
-
 
 # ########################################################################################################################################
 # #### FOOTPRINTS ########################################################################################################################
