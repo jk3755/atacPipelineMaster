@@ -14,13 +14,14 @@ include: "snakeResources/modules/spoolPreprocessing.snakefile"
 # Will generate data for all annotated genes in motifDB, for all unique motifs
 rule run_PWMscan:
     input:
-        "snakeResources/sites/PWMscan.allgroups.done"
+        "snakeResources/sites/operations/PWMscan.allgroups.done"
 
 ########################################################################################################################################
 #### PREPROCESSING AGGREGATOR ##########################################################################################################
 ########################################################################################################################################
 rule AGGREGATOR_preprocessing:
     input:
+    	#"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",

@@ -1,3 +1,8 @@
+########################################################################################################################################
+#### SATURATION AGGREGATORS ############################################################################################################
+########################################################################################################################################
+
+#
 rule AGGREGATOR_saturation:
     input:
         "{path}saturation/downsampled/{sample}-REP{repnum}.9.md.bai",
@@ -14,6 +19,7 @@ rule AGGREGATOR_saturation:
     shell:
         "touch {output}"
 
+#
 rule AGGREGATOR_saturation_footprints:
     input:
         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
@@ -30,6 +36,7 @@ rule AGGREGATOR_saturation_footprints:
     shell:
         "touch {output}"
 
+#
 rule AGGREGATOR_saturation_footprints_genes:
     input:
         "{path}operations/{sample}-REP{repnum}.CTCF.footprint.downsampled.done.txt",
@@ -40,9 +47,12 @@ rule AGGREGATOR_saturation_footprints_genes:
     shell:
         "touch {output}"
 
-#### Downsampling and saturation analysis ####
+########################################################################################################################################
+#### DOWNSAMPLE RULES ##################################################################################################################
+########################################################################################################################################
 
-rule STEP21_downsample_bam:
+#
+rule SATURATION_downsample_bam:
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
@@ -53,6 +63,7 @@ rule STEP21_downsample_bam:
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
 
+#
 rule STEP22_sort_downsampled:
     input:
         "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
@@ -64,6 +75,7 @@ rule STEP22_sort_downsampled:
         O={output} \
         SORT_ORDER=coordinate"
 
+#
 rule STEP23_purge_duplicates_downsampled:
     input:
         "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
@@ -78,6 +90,7 @@ rule STEP23_purge_duplicates_downsampled:
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
+#
 rule STEP24_index_downsampled:
     input:
         "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam"
@@ -88,6 +101,12 @@ rule STEP24_index_downsampled:
         I={input} \
         O={output}"
 
+########################################################################################################################################
+#### LIBRARY COMPLEXITY ################################################################################################################
+########################################################################################################################################
+
+
+#
 rule STEP25_analyze_complexity_downsampled:
     input:
         a="{path}metrics/{sample}-REP{repnum}.9.duplication-metrics.txt",
