@@ -310,9 +310,7 @@ rule STEP10b_clean_intermediate_data:
         rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
         rm -f {wildcards.path}preprocessing/7rgsort/*.bam
         ##
-        #cp -a {wildcards.path}preprocessing/QC/. {wildcards.path}metrics/
-        #rm -f {wildcards.path}preprocessing/QC/*
-        #rmdir {wildcards.path}preprocessing/QC
+        cp -a {wildcards.path}preprocessing/QC/. {wildcards.path}metrics/
         touch {output}
         """
 
