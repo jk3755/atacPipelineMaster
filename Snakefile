@@ -300,15 +300,15 @@ rule STEP10b_clean_intermediate_data:
         "{path}operations/preprocessing/clean10b.{sample}.{repnum}.done"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
-        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
-        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
-        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
-        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
-        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        rm -f {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*.fastq
+        rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*.fq
+        rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*.sam
+        rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*.sam
+        rm -f {wildcards.path}preprocessing/6rawbam/*REP{wildcards.repnum}*.goodbam
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam
         ##
         cp -a {wildcards.path}preprocessing/QC/. {wildcards.path}metrics/
         touch {output}
