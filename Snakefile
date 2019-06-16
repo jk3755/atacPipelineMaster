@@ -139,6 +139,7 @@ rule STEP3_mycoalign:
     
 # Align reads to human hg38 build
 rule STEP4_hg38align:
+    # use 'snakemake --resources hg38align=1' to limit the number of parallel instances of this rule
     # -q fastq input file format
     # -p num threads to use
     # -X1000 align to a maximum of 2000 bp frag length
@@ -154,6 +155,8 @@ rule STEP4_hg38align:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
+    resources:
+        hg38align=1
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
