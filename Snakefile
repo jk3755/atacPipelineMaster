@@ -1,7 +1,7 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
-include: "snakeResources/modules/generateSites.snakefile"
+#include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 #include: "snakeResources/modules/saturationAnalysis.snakefile"
 #include: "snakeResources/modules/spoolFootprinting.snakefile"
@@ -24,8 +24,8 @@ rule AGGREGATOR_preprocessing:
     	#"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
-        #"{path}peaks/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
-        #"{path}peaks/individual/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+        #"{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
         #"{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
         #"{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
         #"{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
