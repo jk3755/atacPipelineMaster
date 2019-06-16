@@ -3,44 +3,41 @@
 ########################################################################################################################################
 
 # Build the directory structure for the sites database
-rule PREP_builddirstructure:
+rule SITES_build_dir_structure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
-        "{path}operations/preprocessing/dirtree.built"
+        "snakeResources/sites/operations/dirtree.built"
     shell:
         """
-        mkdir -p -v {wildcards.path}benchmark
-        mkdir -p -v {wildcards.path}benchmark/preprocessing {wildcards.path}benchmark/footprints
-        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
-
+        mkdir -p -v snakeResources/sites/operations snakeResources/sites/scripts snakeResources/sites/data snakeResources/sites/genes
         ##
         touch {output}
         """
 
-
-{wildcards.path}operations/sites
-        mkdir -p -v {wildcards.path}operations/sites/groups {wildcards.path}operations/sites/genes
-
-#
+# Generate the motif data Rdata file
 rule generate_motifData:
+    input:
+        "snakeResources/sites/operations/dirtree.built"
     output:
-        "snakeResources/sites/motifData.Rdata"
+        "snakeResources/sites/data/motifData.Rdata"
     script:
-        "../snakeResources/sites/scanPWM/generateMotifData.R"
+        "snakeResources/sites/scripts/generateMotifData.R"
 
-#
+# Generate the gene names file
 rule generate_geneNames:
+    input:
+        "snakeResources/sites/data/motifData.Rdata"
     output:
-        "sites/geneNames.txt"
+        "snakeResources/sites/data/geneNames.txt"
     script:
-        "../scripts/scanPWM/generateNames.R"
+        "snakeResources/sites/scripts/generateNames.R"
 
-#
+# Use the PWM information to scan the genome for matches and store the data
 rule scanPWM:
     input:
-        "sites/motifData.Rdata"
+        "snakeResources/sites/data/motifData.Rdata"
     output:
-        '../sites/operations/scans/{gene}.PWMscan.done'
+        "snakeResources/sites/operations/genes/{gene}.PWMscan.done"
     resources:
         scanPWM=1
     script:
@@ -48,10 +45,11 @@ rule scanPWM:
  
 
 "snakeResources/sites/operations/PWMscan.allgroups.done"
- 
-#
+
+####
 rule PWMscan_group_aggregator:
     input:
+    "snakeResources/sites/operations/PWMscan.allgroups.done"
         'sites/operations/groups/PWMscan.group1.done',
         'sites/operations/groups/PWMscan.group2.done',
         'sites/operations/groups/PWMscan.group3.done',
@@ -118,6 +116,8 @@ rule PWMscan_group_aggregator:
         "sites/operations/groups/PWMscan.allgroups.done"
     shell:
         "touch {output}"
+
+####
 rule PWMscan_group1:
 	input:
 		'sites/operations/scans/TFAP2A.PWMscan.done', 
