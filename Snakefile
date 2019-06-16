@@ -1,11 +1,20 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
-#include: "snakeResources/modules/generateSites.snakefile"
+include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 #include: "snakeResources/modules/saturationAnalysis.snakefile"
 #include: "snakeResources/modules/spoolFootprinting.snakefile"
 #include: "snakeResources/modules/rawFootprintGroups.snakefile"
+
+########################################################################################################################################
+#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
+########################################################################################################################################
+# Run this rule to generate all needed data for scanning the genome for matches to PWMs
+# Will generate data for all annotated genes in motifDB, for all unique motifs
+rule run_PWMscan:
+    input:
+        "snakeResources/sites/PWMscan.allgroups.done"
 
 ########################################################################################################################################
 #### PREPROCESSING AGGREGATOR ##########################################################################################################

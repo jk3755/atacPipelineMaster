@@ -1,33 +1,41 @@
 ########################################################################################################################################
-#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
+################################ GENERATE SITES DATABASE ###############################################################################
 ########################################################################################################################################
 
-rule run_PWMscan:
-    # Run this rule to generate all needed data for scanning the genome for matches to PWMs
-    # Will generate data for all annotated genes in motifDB, for all unique motifs
-    input:
-        "sites/motifData.Rdata",
-        "sites/geneNames.txt",
-        "sites/operations/groups/PWMscan.allgroups.done"
+# Build the directory structure for the sites database
+rule PREP_builddirstructure:
+    # params: -p ignore error if existing, make parent dirs, -v verbose
+    output:
+        "{path}operations/preprocessing/dirtree.built"
+    shell:
+        """
+        mkdir -p -v {wildcards.path}benchmark
+        mkdir -p -v {wildcards.path}benchmark/preprocessing {wildcards.path}benchmark/footprints
+        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
 
-########################################################################################################################################
-################################ GENERAL INFO ##########################################################################################
-########################################################################################################################################
-# This script is provided for modularization purposes to the ATACseq snakemake workflow
-# It should be included in the main workflow using 'include'
+        ##
+        touch {output}
+        """
 
+
+{wildcards.path}operations/sites
+        mkdir -p -v {wildcards.path}operations/sites/groups {wildcards.path}operations/sites/genes
+
+#
 rule generate_motifData:
     output:
-        "sites/motifData.Rdata"
+        "snakeResources/sites/motifData.Rdata"
     script:
-        "../scripts/scanPWM/generateMotifData.R"
+        "../snakeResources/sites/scanPWM/generateMotifData.R"
 
+#
 rule generate_geneNames:
     output:
         "sites/geneNames.txt"
     script:
         "../scripts/scanPWM/generateNames.R"
 
+#
 rule scanPWM:
     input:
         "sites/motifData.Rdata"
@@ -37,7 +45,11 @@ rule scanPWM:
         scanPWM=1
     script:
         '../scripts/scanPWM/snakeScanPWM.R'
-   
+ 
+
+"snakeResources/sites/operations/PWMscan.allgroups.done"
+ 
+#
 rule PWMscan_group_aggregator:
     input:
         'sites/operations/groups/PWMscan.group1.done',
