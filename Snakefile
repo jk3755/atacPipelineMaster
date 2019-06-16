@@ -28,9 +28,9 @@ rule AGGREGATOR_preprocessing:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
         "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
-        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
-        #"{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done",
-        #"{path}operations/{sample}-REP{repnum}.localpeak.annotations.done",
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
+        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done",
+        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done"
         #"{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
         #"{path}operations/{sample}-REP{repnum}.downsample.done.txt",
         #"{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
@@ -514,7 +514,7 @@ rule STEP19_annotate_peaks_global:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
-        "snakeResources/scripts/snakeAnnotatePeaks.R"
+        "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
 
 # Annotate the peaks with local normalization
 rule STEP19_annotate_peaks_local:
@@ -525,7 +525,7 @@ rule STEP19_annotate_peaks_local:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
-        "snakeResources/scripts/snakeAnnotatePeaks.R"
+        "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
 
 # Count the total number of reads in the sample
 rule STEP20_sample_total_reads:
