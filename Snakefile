@@ -37,7 +37,6 @@ rule CLEAN_preprocessing:
         "{path}operations/{sample}-REP{repnum}.preprocessing.complete.clean.txt"
     shell:
         """
-        
         rm -f {wildcards.path}preprocessing/8merged/*.bam
         rm -f {wildcards.path}preprocessing/9dedup/*.bam
         touch {output}
@@ -267,7 +266,7 @@ rule STEP10_mergelanes:
         USE_THREADING=true"
 
 # Clean up intermediate data to this point
-rule STEP10b_clean:
+rule STEP10b_clean_intermediate_data:
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
@@ -417,14 +416,15 @@ rule STEP16_MACS2_peaks_local_normalization:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
-rule STEP17_percent_peak_genome_coverage:
+# Calculate percent genome coverage from peaks with global normalization
+rule STEP17a_percent_peak_genome_coverage_globalnorm:
     # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
     # parameters:
     # --echo output will be at least a three-column bed file
     # --bases-uniq the number of distinct bases from ref covered by overlap bed file
     # --delim change output delimeter from '|' to <delim>, e.g. '\t'
     input:
-        a="{path}peaks/macs2/individual/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak",
+        a="{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
     output:
         "{path}metrics/{sample}-REP{repnum}.peak.genome.coverage.txt"
