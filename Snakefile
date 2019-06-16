@@ -491,14 +491,16 @@ rule STEP18_fragment_size_distribution:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
     script:
-        "snakeResources/scripts/snakeFragSizeDist.R"
+        "snakeResources/scripts/QC/snakeFragSizeDist.R"
     
 # Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
-        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt"
+        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/snakeAnnotatePeaks.R"
 
@@ -507,7 +509,9 @@ rule STEP19_annotate_peaks_local:
     input:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     output:
-        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done.txt"
+        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
         "scripts/snakeAnnotatePeaks.R"
 
