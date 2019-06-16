@@ -544,7 +544,8 @@ rule STEP21_saturation_analysis:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
         "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done",
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt",
+        "{path}operations/preprocessing/saturation/clean2.{sample}.{repnum}.done"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     shell:
@@ -757,6 +758,20 @@ rule SATURATION_analyze_raw_footprint_downsampled:
         "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
     script:
         "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
+
+# Clean up intermediate data to this point
+rule SATURATION_clean_intermediate_data2:
+    input:
+        "{path}operations/saturation/{sample}-REP{repnum}.allgenes.footprint.downsampled.done",
+    output:
+        "{path}operations/preprocessing/saturation/clean2.{sample}.{repnum}.done"
+    shell:
+        """
+        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
+        touch {output}
+        """
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
