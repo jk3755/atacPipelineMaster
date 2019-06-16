@@ -1,52 +1,44 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
-#include: "snakeModules/generateSites.snakefile"
-include: "snakeModules/spoolPreprocessing.snakefile"
-#include: "snakeModules/saturationAnalysis.snakefile"
-#include: "snakeModules/spoolFootprinting.snakefile"
-#include: "snakeModules/rawFootprintGroups.snakefile"
+#include: "snakeResources/modules/generateSites.snakefile"
+include: "snakeResources/modules/spoolPreprocessing.snakefile"
+#include: "snakeResources/modules/saturationAnalysis.snakefile"
+#include: "snakeResources/modules/spoolFootprinting.snakefile"
+#include: "snakeResources/modules/rawFootprintGroups.snakefile"
 
 ########################################################################################################################################
-#### PREPROCESSING RULES ###############################################################################################################
+#### PREPROCESSING AGGREGATOR ##########################################################################################################
 ########################################################################################################################################
 rule AGGREGATOR_preprocessing:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw",
-        "{path}peaks/macs2/individual/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak",
-        "{path}peaks/macs2/individual/{sample}-REP{repnum}_local_normalization_peaks.narrowPeak",
-        "{path}metrics/{sample}-REP{repnum}.peak.genome.coverage.txt",
-        "{path}metrics/{sample}-REP{repnum}.u.fragsizes.svg",
-        "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt",
-        "{path}operations/{sample}-REP{repnum}.localpeak.annotations.done.txt",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}operations/{sample}-REP{repnum}.downsample.done.txt",
-        "{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
-        "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
+        #"{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw",
+        #"{path}peaks/macs2/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
+        #"{path}peaks/macs2/individual/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
+        #"{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
+        #"{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
+        #"{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+        #"{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt",
+        #"{path}operations/{sample}-REP{repnum}.localpeak.annotations.done.txt"
+        #"{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+        #"{path}operations/{sample}-REP{repnum}.downsample.done.txt",
+        #"{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt",
+        #"{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
         #"{path}operations/{sample}-REP{repnum}.allgenes.footprint.downsampled.done.txt"
     output:
         "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
     shell:
         "touch {output}"
 
-rule CLEAN_preprocessing:
-    input:
-        "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
-    output:
-        "{path}operations/{sample}-REP{repnum}.preprocessing.complete.clean.txt"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/8merged/*.bam
-        rm -f {wildcards.path}preprocessing/9dedup/*.bam
-        touch {output}
-        """
-
+########################################################################################################################################
+#### PREPROCESSING RULES ###############################################################################################################
+########################################################################################################################################
 # Build the directory structure
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
-        "{path}preprocessing/operations/dirtree.built"
+        "{path}operations/preprocessing/dirtree.built"
     shell:
         """
         mkdir -p -v {wildcards.path}benchmark
@@ -211,7 +203,7 @@ rule STEP8_addrgandcsbam:
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     shell:
-        "java -jar programs/picard/picard.jar AddOrReplaceReadGroups \
+        "java -jar snakeResources/programs/picard/picard.jar AddOrReplaceReadGroups \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate \
@@ -233,7 +225,7 @@ rule STEP9_cleansam:
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.clean.bam"
     shell:
-        "java -jar programs/picard/picard.jar CleanSam \
+        "java -jar snakeResources/programs/picard/picard.jar CleanSam \
         I={input} \
         O={output}"
 
@@ -254,7 +246,7 @@ rule STEP10_mergelanes:
     output:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     shell:
-        "java -jar programs/picard/picard.jar MergeSamFiles \
+        "java -jar snakeResources/programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
         I={input.b} \
         I={input.c} \
@@ -270,7 +262,7 @@ rule STEP10b_clean_intermediate_data:
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
-        "{path}operations/preprocessing/clean10b.done"
+        "{path}operations/preprocessing/clean10b.{sample}.{repnum}.done"
     shell:
         """
         rm -f {wildcards.path}preprocessing/2fastq/*.fastq
@@ -293,12 +285,13 @@ rule STEP11_purgeduplicates:
     # REMOVE_DUPLICATES enables removal of duplicate reads from the output file
     # ASSUME_SORTED indicates the input file is already sorted
     input:
-        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
+        a="{path}operations/preprocessing/clean10b.{sample}.{repnum}.done",
+        b="{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     shell:
-        "java -jar programs/picard/picard.jar MarkDuplicates \
-        I={input} \
+        "java -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        I={input.b} \
         O={output} \
         M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
         REMOVE_DUPLICATES=true \
@@ -326,7 +319,7 @@ rule STEP12b_clean:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
-        "{path}operations/preprocessing/clean12b.done"
+        "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
     shell:
         """
         rm -f {wildcards.path}preprocessing/8merged/*.bam
@@ -335,19 +328,19 @@ rule STEP12b_clean:
         """
 
 # Build the .bai index for the processed bam file
-rule STEP13_buildindex:
+rule STEP13_build_index:
     # creates a bai index for the bam files
     # this is required for many downstream operations
     # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
     # I specifies the input bam file
     # O specifies the output index file
     input:
-    	a="{path}operations/preprocessing/clean12b.done"
+        "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done",
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     shell:
-        "java -jar programs/picard/picard.jar BuildBamIndex \
+        "java -jar snakeResources/programs/picard/picard.jar BuildBamIndex \
         I={input.b} \
         O={output}"
 
@@ -427,27 +420,45 @@ rule STEP17a_percent_peak_genome_coverage_globalnorm:
         a="{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
     output:
-        "{path}metrics/{sample}-REP{repnum}.peak.genome.coverage.txt"
+        "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt"
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
 
+# Calculate percent genome coverage from peaks with local normalization
+rule STEP17b_percent_peak_genome_coverage_localnorm:
+    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
+    # parameters:
+    # --echo output will be at least a three-column bed file
+    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
+    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
+    input:
+        a="{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
+        b="genomes/hg38/hg38.extents.bed"
+    output:
+        "{path}metrics/{sample}-REP{repnum}.peak.localnormnorm.genomecov.txt"
+    shell:
+        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
+
+# Generate the fragment size distribution graph
 rule STEP18_fragment_size_distribution:
     input:
         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
-        "{path}metrics/{sample}-REP{repnum}.u.fragsizes.svg"
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
     script:
-        "scripts/snakeFragSizeDist.R"
+        "snakeResources/scripts/snakeFragSizeDist.R"
 
+# Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
         "{path}peaks/macs2/individual/{sample}-REP{repnum}_global_normalization_peaks.narrowPeak"
     output:
         "{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt"
     script:
-        "scripts/snakeAnnotatePeaks.R"
+        "snakeResources/scripts/snakeAnnotatePeaks.R"
 
+# Annotate the peaks with local normalization
 rule STEP19_annotate_peaks_local:
     input:
         "{path}peaks/macs2/individual/{sample}-REP{repnum}_local_normalization_peaks.narrowPeak"
