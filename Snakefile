@@ -1,9 +1,9 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
+include: "snakeModules/generateSites.snakefile"
 include: "snakeModules/spoolPreprocessing.snakefile"
 include: "snakeModules/spoolFootprinting.snakefile"
-include: "snakeModules/generateSites.snakefile"
 include: "snakeModules/rawFootprintGroups.snakefile"
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
@@ -480,128 +480,9 @@ rule STEP20_sample_total_reads:
     script:
         "scripts/snakeCountSampleReads.R"
 
-#### Downsampling and saturation analysis ####
-
-rule STEP21_downsample_bam:
-    input:
-        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
-    output:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
-    shell:
-        "java -jar programs/picard/picard.jar DownsampleSam \
-        I={input} \
-        O={output} \
-        PROBABILITY=0.{wildcards.prob}"
-
-rule STEP22_sort_downsampled:
-    input:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam"
-    output:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
-    shell:
-        "java -jar programs/picard/picard.jar SortSam \
-        I={input} \
-        O={output} \
-        SORT_ORDER=coordinate"
-
-rule STEP23_purge_duplicates_downsampled:
-    input:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.cs.bam"
-    output:
-        a="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
-        b="{path}metrics/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
-    shell:
-        "java -Xmx5g -jar programs/picard/picard.jar MarkDuplicates \
-        I={input} \
-        O={output.a} \
-        M={output.b} \
-        REMOVE_DUPLICATES=true \
-        ASSUME_SORTED=true"
-
-rule STEP24_index_downsampled:
-    input:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam"
-    output:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
-    shell:
-        "java -jar programs/picard/picard.jar BuildBamIndex \
-        I={input} \
-        O={output}"
-
-rule STEP25_analyze_complexity_downsampled:
-    input:
-        a="{path}metrics/{sample}-REP{repnum}.9.duplication-metrics.txt",
-        b="{path}metrics/{sample}-REP{repnum}.8.duplication-metrics.txt",
-        c="{path}metrics/{sample}-REP{repnum}.7.duplication-metrics.txt",
-        d="{path}metrics/{sample}-REP{repnum}.6.duplication-metrics.txt",
-        e="{path}metrics/{sample}-REP{repnum}.5.duplication-metrics.txt",
-        f="{path}metrics/{sample}-REP{repnum}.4.duplication-metrics.txt",
-        g="{path}metrics/{sample}-REP{repnum}.3.duplication-metrics.txt",
-        h="{path}metrics/{sample}-REP{repnum}.2.duplication-metrics.txt",
-        i="{path}metrics/{sample}-REP{repnum}.1.duplication-metrics.txt",
-        j="{path}saturation/downsampled/{sample}-REP{repnum}.9.md.bai",
-        k="{path}saturation/downsampled/{sample}-REP{repnum}.8.md.bai",
-        l="{path}saturation/downsampled/{sample}-REP{repnum}.7.md.bai",
-        m="{path}saturation/downsampled/{sample}-REP{repnum}.6.md.bai",
-        n="{path}saturation/downsampled/{sample}-REP{repnum}.5.md.bai",
-        o="{path}saturation/downsampled/{sample}-REP{repnum}.4.md.bai",
-        p="{path}saturation/downsampled/{sample}-REP{repnum}.3.md.bai",
-        q="{path}saturation/downsampled/{sample}-REP{repnum}.2.md.bai",
-        r="{path}saturation/downsampled/{sample}-REP{repnum}.1.md.bai"
-    output:
-        "{path}metrics/{sample}-REP{repnum}.downsampled_library_size.txt"
-    shell:
-        """
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.b} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.c} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.d} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.e} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.f} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.g} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
-        """
-    
-rule STEP26_MACS2_peaks_downsampled:
-    input:
-        a="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
-        b="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
-    output:
-        "{path}saturation/peaks/{sample}-REP{repnum}.{prob}_global_normalization_peaks.xls"
-    shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
-rule STEP27_analyze_peak_saturation_downsampled:
-    input:
-        "{path}saturation/peaks/{sample}-REP{repnum}.9_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.8_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.7_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.6_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.5_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.4_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.3_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.2_global_normalization_peaks.xls",
-        "{path}saturation/peaks/{sample}-REP{repnum}.1_global_normalization_peaks.xls"
-    output:
-        "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
-    shell:
-        "wc -l < {input} >> {output}"
-
-rule STEP28_analyze_raw_footprint_downsampled:
-    input:
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bam",
-        "{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.bai",
-        "sites/data/{gene}.bindingSites.Rdata",
-        "{path}operations/{sample}-REP{repnum}.downsample.done.txt"
-    output:
-        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
-    script:
-        "scripts/panTF/snakeAnalyzeRawFootprint.R"
-
-########################################################################################################################################
-#### PAN TF FOOTPRINTING ANALYSIS ######################################################################################################
-########################################################################################################################################
+########################################################################################################################
+#### FOOTPRINTING ######################################################################################################
+########################################################################################################################
 
 rule PANTF_raw_footprint_analysis:
     input:
