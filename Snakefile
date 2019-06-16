@@ -540,7 +540,9 @@ rule STEP20_sample_total_reads:
 rule STEP21_saturation_analysis:
     input:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
-        "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done"
+        "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done",
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt",
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     shell:
@@ -663,33 +665,58 @@ rule SATURATION_clean_intermediate_data1:
         touch {output}
         """
 
-# ########################################################################################################################################
-# #### PEAKS #############################################################################################################################
-# ########################################################################################################################################
-# rule STEP26_MACS2_peaks_downsampled:
-#     input:
-#         a="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bam",
-#         b="{path}saturation/downsampled/{sample}-REP{repnum}.{prob}.md.bai"
-#     output:
-#         "{path}saturation/peaks/{sample}-REP{repnum}.{prob}_global_normalization_peaks.xls"
-#     shell:
-#         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_global_normalization --outdir {wildcards.path}saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+########################################################################################################################################
+#### PEAKS #############################################################################################################################
+########################################################################################################################################
+rule SATURATION_peaks_globalnorm:
+    input:
+        a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
+        b="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
+    output:
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_globalnorm_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# rule STEP27_analyze_peak_saturation_downsampled:
-#     input:
-#         "{path}saturation/peaks/{sample}-REP{repnum}.9_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.8_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.7_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.6_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.5_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.4_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.3_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.2_global_normalization_peaks.xls",
-#         "{path}saturation/peaks/{sample}-REP{repnum}.1_global_normalization_peaks.xls"
-#     output:
-#         "{path}metrics/{sample}-REP{repnum}.downsampled_numpeaks.txt"
-#     shell:
-#         "wc -l < {input} >> {output}"
+rule SATURATION_peaks_localnorm:
+    input:
+        a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
+        b="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
+    output:
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_localnorm_peaks.xls"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+
+rule SATURATION_analyze_peak_saturation_globalnorm:
+    input:
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_globalnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_globalnorm_peaks.xls"
+    output:
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt"
+    shell:
+        "wc -l < {input} >> {output}"
+
+rule SATURATION_analyze_peak_saturation_localnorm:
+    input:
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_localnorm_peaks.xls",
+        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_localnorm_peaks.xls"
+    output:
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
+    shell:
+        "wc -l < {input} >> {output}"
 
 # ########################################################################################################################################
 # #### FOOTPRINTS ########################################################################################################################
