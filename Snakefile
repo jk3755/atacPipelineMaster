@@ -103,11 +103,11 @@ rule STEP2_afterqc_fastqfiltering:
     output:
         c="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
         d="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
-    shell:
-        "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -f -1 -t -1 -s 15"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.fastqfilter.benchmark.txt'
-
+    shell:
+        "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -f -1 -t -1 -s 15"
+    
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
     # -q fastq input file format
@@ -122,11 +122,11 @@ rule STEP3_mycoalign:
         b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
     output:
         "{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
-    shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
-
+    shell:
+        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
+    
 # Align reads to human hg38 build
 rule STEP4_hg38align:
     # -q fastq input file format
@@ -142,11 +142,11 @@ rule STEP4_hg38align:
         c="{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
     output:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
-    shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
-
+    shell:
+        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
+    
 # Coordinate sort the aligned reads
 # This is required for blacklist filtering
 rule STEP5_coordsort_sam:
@@ -156,11 +156,11 @@ rule STEP5_coordsort_sam:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     output:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
-    shell:
-        "samtools sort {input} -o {output} -O sam"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.coordsort.benchmark.txt'
-
+    shell:
+        "samtools sort {input} -o {output} -O sam"
+    
 # Remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
 rule STEP6_blacklistfilter_bamconversion:
     input:
@@ -168,11 +168,11 @@ rule STEP6_blacklistfilter_bamconversion:
     output:
         a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}_L{lane}.hg38blacklist.bam",
         b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
-    shell:
-        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.bamconvert.benchmark.txt'
-
+    shell:
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
+    
 # Remove reads mapping to mitochondrial DNA
 rule STEP7_chrM_contamination:
     # remove mitochondrial reads
@@ -188,11 +188,11 @@ rule STEP7_chrM_contamination:
     output:
         a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}_L{lane}.mitochondrial.bam",
         b="{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
-    shell:
-        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.chrMfilter.benchmark.txt'
-
+    shell:
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
+    
 # Add @RG tags to the reads and perform coordinate sorting
 rule STEP8_addrgandcsbam:
     # refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
@@ -214,6 +214,8 @@ rule STEP8_addrgandcsbam:
         "{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar AddOrReplaceReadGroups \
         I={input} \
@@ -224,9 +226,7 @@ rule STEP8_addrgandcsbam:
         RGPL=ILLUMINA \
         RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
         RGSM={wildcards.sample}"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
-
+    
 # Clean the bam file
 rule STEP9_cleansam:
     # soft-clips bases aligned past the end of the ref sequence
@@ -238,13 +238,13 @@ rule STEP9_cleansam:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.clean.bam"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar CleanSam \
         I={input} \
         O={output}"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
-
+    
 # Merge reads from different NextSeq lanes
 rule STEP10_mergelanes:
     # Merge files for individual lanes
@@ -261,6 +261,8 @@ rule STEP10_mergelanes:
         d="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L4.clean.bam"
     output:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.mergelanes.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar MergeSamFiles \
         I={input.a} \
@@ -272,9 +274,7 @@ rule STEP10_mergelanes:
         ASSUME_SORTED=true \
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.mergelanes.benchmark.txt'
-
+    
 # Clean up intermediate data to this point
 # Also copy the fastq filtering QC files to the metrics folder
 rule STEP10b_clean_intermediate_data:
@@ -316,6 +316,8 @@ rule STEP11_purgeduplicates:
         b="{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
         I={input.b} \
@@ -323,9 +325,7 @@ rule STEP11_purgeduplicates:
         M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
-
+    
 # Filter reads for only uniquely mapping
 rule STEP12_mapqfilter:
     # Remove multimapping reads
@@ -340,11 +340,11 @@ rule STEP12_mapqfilter:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
-    shell:
-        "samtools view -h -q 2 -b {input} > {output}"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.mapqfilter.benchmark.txt'
-
+    shell:
+        "samtools view -h -q 2 -b {input} > {output}"
+    
 # Clean up intermediate data to this point
 rule STEP12b_clean:
     input:
@@ -370,13 +370,13 @@ rule STEP13_build_index:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar BuildBamIndex \
         I={input.b} \
         O={output}"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.buildindex.benchmark.txt'
-
+    
 # Make a bigwig file from the bam file
 rule STEP14_makebigwig_bamcov:
     # params:
@@ -392,11 +392,11 @@ rule STEP14_makebigwig_bamcov:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw"
-    shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.makebigwig.benchmark.txt'
-
+    shell:
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+    
 # Call peaks using global normalization
 rule STEP15_MACS2_peaks_global_normilization:
     # notes:
@@ -420,12 +420,11 @@ rule STEP15_MACS2_peaks_global_normilization:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_globalnorm --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
-
-
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_globalnorm --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+    
 # Call peaks using local normalization
 rule STEP16_MACS2_peaks_local_normalization:
     # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
@@ -444,11 +443,11 @@ rule STEP16_MACS2_peaks_local_normalization:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
-    shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
-
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+    
 # Calculate percent genome coverage from peaks with global normalization
 rule STEP17a_percent_peak_genome_coverage_globalnorm:
     # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
@@ -461,11 +460,11 @@ rule STEP17a_percent_peak_genome_coverage_globalnorm:
         b="genomes/hg38/hg38.extents.bed"
     output:
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt"
-    shell:
-        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.genomecov.globalnorm.benchmark.txt'
-
+    shell:
+        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
+    
 # Calculate percent genome coverage from peaks with local normalization
 rule STEP17b_percent_peak_genome_coverage_localnorm:
     # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
@@ -478,11 +477,11 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
         b="genomes/hg38/hg38.extents.bed"
     output:
         "{path}metrics/{sample}-REP{repnum}.peak.localnormnorm.genomecov.txt"
-    shell:
-        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.genomecov.localnorm.benchmark.txt'
-
+    shell:
+        "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
+    
 # Generate the fragment size distribution graph
 rule STEP18_fragment_size_distribution:
     input:
@@ -490,11 +489,11 @@ rule STEP18_fragment_size_distribution:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
-    script:
-        "snakeResources/scripts/snakeFragSizeDist.R"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
-
+    script:
+        "snakeResources/scripts/snakeFragSizeDist.R"
+    
 # Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
