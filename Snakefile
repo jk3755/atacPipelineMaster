@@ -6,10 +6,10 @@ include: "snakeModules/spoolPreprocessing.snakefile"
 include: "snakeModules/saturationAnalysis.snakefile"
 include: "snakeModules/spoolFootprinting.snakefile"
 include: "snakeModules/rawFootprintGroups.snakefile"
+
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
-
 rule AGGREGATOR_preprocessing:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
@@ -37,20 +37,13 @@ rule CLEAN_preprocessing:
         "{path}operations/{sample}-REP{repnum}.preprocessing.complete.clean.txt"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
-        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
-        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
-        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
-        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
-        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        
         rm -f {wildcards.path}preprocessing/8merged/*.bam
         rm -f {wildcards.path}preprocessing/9dedup/*.bam
         touch {output}
         """
 
+# Build the directory structure
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
@@ -73,16 +66,16 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
         mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/11bigwig
-		##
-		mkdir -p -v {wildcards.path}preprocessing/saturation
-		mkdir -p -v {wildcards.path}preprocessing/saturation/footprints {wildcards.path}preprocessing/saturation/complexity
+        ##
+        mkdir -p -v {wildcards.path}preprocessing/saturation
+        mkdir -p -v {wildcards.path}preprocessing/saturation/footprints {wildcards.path}preprocessing/saturation/complexity
         mkdir -p -v {wildcards.path}preprocessing/saturation/peaks {wildcards.path}preprocessing/saturation/preprocessing
         ## 
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}footprints/data 
         mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/graphs
-		mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
+        mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
         ##
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
@@ -92,20 +85,20 @@ rule PREP_builddirstructure:
         touch {output}
         """
 
+# Gunzip the fastq files
 rule STEP1_gunzip:
-    # params:
     # -k keep original files
     # -c write to standard output
     input:
         a="{path}preprocessing/1gz/{sample}-REP{repnum}_L{lane}_R{read}.fastq.gz",
-        b="{path}preprocessing/operations/dirtree.built"
+        b="{path}operations/preprocessing/dirtree.built"
     output:
         c="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R{read}.fastq"
     shell:
         "gunzip -k -c {input.a} > {output.c}"
 
+# Fastq QC Filtering
 rule STEP2_afterqc_fastqfiltering:
-    # params:
     # -1 specifies read 1 fastq file
     # -2 specifies read 2 fastq file
     # -g specifies the output directory for the good fastq files
@@ -122,8 +115,8 @@ rule STEP2_afterqc_fastqfiltering:
     shell:
         "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -f -1 -t -1 -s 15"
 
+# Check for mycoplasma contamination
 rule STEP3_mycoalign:
-    # params:
     # -q fastq input file format
     # -p num threads to use
     # -X1000 align to a maximum of 2000 bp frag length
@@ -139,8 +132,8 @@ rule STEP3_mycoalign:
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
 
+# Align reads to human hg38 build
 rule STEP4_hg38align:
-    # params:
     # -q fastq input file format
     # -p num threads to use
     # -X1000 align to a maximum of 2000 bp frag length
@@ -154,14 +147,12 @@ rule STEP4_hg38align:
         c="{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
     output:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
-    resources:
-        hg38align=1
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
 
+# Coordinate sort the aligned reads
+# This is required for blacklist filtering
 rule STEP5_coordsort_sam:
-    # coordinate sorting the sam files is required for blacklist filtering
-    # params:
     # -o output file path
     # -O output file format
     input:
@@ -171,8 +162,8 @@ rule STEP5_coordsort_sam:
     shell:
         "samtools sort {input} -o {output} -O sam"
 
+# Remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
 rule STEP6_blacklistfilter_bamconversion:
-    # remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
     input:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
     output:
@@ -271,8 +262,28 @@ rule STEP10_mergelanes:
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
 
+# Clean up intermediate data to this point
+rule STEP10b_clean:
+    input:
+        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
+    output:
+        "{path}operations/preprocessing/clean10b.done"
+    shell:
+        """
+        rm -f {wildcards.path}preprocessing/2fastq/*.fastq
+        rm -f {wildcards.path}preprocessing/3goodfastq/*.fq
+        rm -f {wildcards.path}preprocessing/4mycoalign/*.sam
+        rm -f {wildcards.path}preprocessing/5hg38align/*.sam
+        rm -f {wildcards.path}preprocessing/6rawbam/*.goodbam
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*.bam
+        rm -f {wildcards.path}preprocessing/7rgsort/*.bam
+        touch {output}
+        """
+
+# Purge PCR duplicate reads
 rule STEP11_purgeduplicates:
-    # params:
     # I specifies the input file
     # O specifies the output file
     # M specifies the duplication metrics output file
@@ -290,6 +301,7 @@ rule STEP11_purgeduplicates:
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
+# Filter reads for only uniquely mapping
 rule STEP12_mapqfilter:
     # Remove multimapping reads
     # for an explanation of how bowtie2 calculates mapq scores:
@@ -306,6 +318,20 @@ rule STEP12_mapqfilter:
     shell:
         "samtools view -h -q 2 -b {input} > {output}"
 
+# Clean up intermediate data to this point
+rule STEP12b_clean:
+    input:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
+    output:
+        "{path}operations/preprocessing/clean12b.done"
+    shell:
+        """
+        rm -f {wildcards.path}preprocessing/8merged/*.bam
+        rm -f {wildcards.path}preprocessing/9dedup/*.bam
+        touch {output}
+        """
+
+# Build the .bai index for the processed bam file
 rule STEP13_buildindex:
     # creates a bai index for the bam files
     # this is required for many downstream operations
@@ -313,12 +339,13 @@ rule STEP13_buildindex:
     # I specifies the input bam file
     # O specifies the output index file
     input:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
+    	a="{path}operations/preprocessing/clean12b.done"
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     shell:
         "java -jar programs/picard/picard.jar BuildBamIndex \
-        I={input} \
+        I={input.a} \
         O={output}"
 
 rule STEP14_makebigwig_bamcov:
