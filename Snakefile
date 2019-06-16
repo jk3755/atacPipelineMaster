@@ -16,9 +16,9 @@ rule AGGREGATOR_preprocessing:
         "{path}preprocessing/12bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/individual/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/individual/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
-        #"{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
-        #"{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
-        #"{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+        "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
+        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
         #"{path}operations/{sample}-REP{repnum}.globalpeak.annotations.done.txt",
         #"{path}operations/{sample}-REP{repnum}.localpeak.annotations.done.txt"
         #"{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"

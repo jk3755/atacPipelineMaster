@@ -1,15 +1,16 @@
-cat("Loading libraries...", "\n")
-#BiocManager::install("ATACseqQC")
+##
+cat("Loading libraries", "\n")
 suppressMessages(library(ATACseqQC))
 
 ##
-cat("Setting snakemake vars...", "\n")
+cat("Setting snakemake variables", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 outputSVG <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
 sampleRep <- snakemake@wildcards[["repnum"]]
-#
+
+##
 sampleLabel <- paste0(sampleName, "-", sampleRep)
 
 ##
