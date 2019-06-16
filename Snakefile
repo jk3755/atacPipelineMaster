@@ -599,15 +599,15 @@ rule AGGREGATOR_copy_bam_bai:
     shell:
         "touch {output}"
 
+# Generate the raw data used for downstream footprint analysis
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai",
-        "sites/data/{gene}.bindingSites.Rdata",
-        "{path}peaks/macs2/merged/{sample}-REP{repnum}-merged_global_normalization_peaks.narrowPeak",
-        "{path}preprocessing/11repmerged/copy/{sample}-REP{repnum}.bamcopy.done"
+        "snakeResources/sites/data/{gene}.bindingSites.Rdata",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
     output:
-        "{path}footprints/operations/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     resources:
         analyzeRawFP=1
     benchmark:
@@ -615,13 +615,26 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
-
-
-rule PANTF_parse_and_generate_footprint_statistics:
+# Remove the extra bam and bai files when raw processing is complete
+rule FOOTPRINTING_remove_bamcopy:
     input:
-        "{path}footprints/operations/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+        "{path}operations/footprints/groups/raw/{sample}.rawTF.allgroups.done"
+    output:
+        "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
+
+# Parse the sites based on the signals present
+rule FOOTPRINTING_parse_sites:
+    input:
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}peaks/macs2/merged/{sample}-REP{repnum}-merged_global_normalization_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
     resources:
@@ -631,9 +644,8 @@ rule PANTF_parse_and_generate_footprint_statistics:
     script:
         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
-
-
-rule PANTF_process_footprint_analysis:
+# Process the sites and perform data analysis
+rule FOOTPRINTING_process_sites:
     input:
         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
     output:
@@ -645,9 +657,8 @@ rule PANTF_process_footprint_analysis:
     script:
         "scripts/panTF/snakeProcessFootprint.R"
 
-
-
-rule PANTF_generate_tf_graphs:
+# Generate the footprinting figures from the data
+rule FOOTPRINTING_generate_figures:
     input:
         "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
     output:
@@ -657,29 +668,11 @@ rule PANTF_generate_tf_graphs:
     script:
         "scripts/panTF/snakeGenerateFootprintGraphs.R"
 
-
-
-rule PANTF_run_aggregator:
+# Aggregate the footprinting data into a single R object
+rule FOOTPRINTING_aggregate_data:
     input:
         "{path}footprints/data/processed/"
     output:
         "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
     script:
         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
-
-
-
-
-
-rule PANTF_remove_bamcopy:
-    input:
-        "{path}footprints/operations/{sample}.rawTF.allgroups.done"
-    output:
-        "{path}footprints/operations/{sample}.rawTF.analysis.done"
-    shell:
-         """
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-         touch {output}
-         """
