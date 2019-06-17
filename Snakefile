@@ -10,6 +10,7 @@
 include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
+include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/rawFPgroups.snakefile"
 
 ########################################################################################################################################
