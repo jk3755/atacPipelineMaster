@@ -1,7 +1,9 @@
 
-####
-#namePath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\names\\bindingSitesSizeOrdered.txt"
-namePath <- "C:\\Users\\Jordan\\Documents\\git\\atacPipelineMaster\\panTF\\names\\bindingSitesSizeOrdered.txt"
+##
+namePath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\snakeResources\\scripts\\footprinting\\names\\bindingSitesSizeOrdered.txt"
+#namePath <- "C:\\Users\\Jordan\\Documents\\git\\atacPipelineMaster\\panTF\\names\\bindingSitesSizeOrdered.txt"
+
+##
 orderedNames <- readLines(namePath)
 numGenes <- length(orderedNames)
 strings <- c()
@@ -149,7 +151,8 @@ while (a <= 1229){
 
 #### Write the file ####
 #outPath <- "C:\\Users\\jsk33\\Documents\\git\\atacPipelineMaster\\panTF\\names\\panTFraw.snakefile"
-outPath <- "C:\\Users\\Jordan\\Desktop\\names.txt"
+#woutPath <- "C:\\Users\\Jordan\\Desktop\\names.txt"
+outPath <- "C:\\Users\\jsk33\\Desktop\\names.txt"
 
 ##
 write.table(

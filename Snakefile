@@ -4,9 +4,6 @@
 # Spool the pipeline with the following parameters:
 # snakemake -j 20 [rule] --resources hg38align=1 --config group=$i
 
-
-
-
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
@@ -42,7 +39,7 @@ rule AGGREGATOR_preprocessing:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     output:
-        "{path}operations/{sample}-REP{repnum}.preprocessing.complete.txt"
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete.txt"
     shell:
         "touch {output}"
 
@@ -776,6 +773,13 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
+rule FOOTPRINTING_analysis:
+    input:
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete.txt"
+    output:
+        "{path}operations/footprints/{sample}-REP{repnum}.saturation_analysis.done"
+    shell:
+    	"touch {output}"
 
 # Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
 rule FOOTPRINTING_copy_bam_bai:

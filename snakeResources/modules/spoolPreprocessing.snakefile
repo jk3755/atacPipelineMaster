@@ -3,9 +3,9 @@
 ########################################################################################################################################
 rule preprocessing_test:
     input:
-        "test/operations/test-REP1.preprocessing.complete.txt",
-        "test/operations/test-REP2.preprocessing.complete.txt",
-        "test/operations/test-REP3.preprocessing.complete.txt"
+        "test/operations/preprocessing/test-REP1.preprocessing.complete",
+        "test/operations/preprocessing/test-REP2.preprocessing.complete",
+        "test/operations/preprocessing/test-REP3.preprocessing.complete"
 
 ########################################################################################################################################
 #### H508 ##############################################################################################################################
