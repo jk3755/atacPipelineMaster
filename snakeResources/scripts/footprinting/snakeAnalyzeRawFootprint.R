@@ -2,26 +2,27 @@
 options(scipen = 999)
 
 ## Set snakemake variables
-cat("Setting snakemake variables...", "\n")
+cat("Setting snakemake variables", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 sitesPath <- snakemake@input[[3]]
 outPath <- snakemake@output[[1]]
-sampleName <- snakemake@wildcards[["mergedsample"]]
+sampleName <- snakemake@wildcards[["sample"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, "-REP", sampleRep, ".", geneName, ".rawFootprintData.Rdata")
+cat("Output path for raw footprint data:", footprintDataPath, "\n")
 
+##
 if (file.exists(footprintDataPath) == TRUE){
-  
   cat("File already exists, skipping", "\n")
-  
 } else {
   
   ## Load libraries
-  cat("Loading libraries...", "\n")
+  cat("Loading libraries", "\n")
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(stats4))
   suppressMessages(library(BiocGenerics))
@@ -31,7 +32,7 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(genomation))
   
   ##
-  cat("Loading binding sites...", "\n")
+  cat("Loading binding sites", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
   bamFile <- BamFile(bamPath)
