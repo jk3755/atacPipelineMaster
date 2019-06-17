@@ -799,7 +799,9 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 rule AGGREGATOR_raw_fp_analysis:
     input:
         '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group1.done',
-        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group2.done'
+        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group2.done',
+        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group3.done',
+        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group4.done'
     output:
         "{path}operations/footprints/{sample}.rawFPanalysis.all.done"
     shell:
@@ -880,6 +882,10 @@ rule FOOTPRINTING_raw_analysis:
         "{path}operations/footprints/{sample}-REP{repnum}.bamcopy.done"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+    benchmark:
+        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
+    resources:
+        rawFPanalysis=1
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
