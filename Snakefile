@@ -2,7 +2,7 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 # Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 --config group=$i
+# snakemake -j 20 [rule] --resources hg38align=1 purgeduplicates=1 --config group=$i
 
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
@@ -327,6 +327,7 @@ rule STEP10b_clean_intermediate_data:
 
 # Purge PCR duplicate reads
 rule STEP11_purgeduplicates:
+	# -Xmx10g specifies a 10 gb memory limit per process
     # I specifies the input file
     # O specifies the output file
     # M specifies the duplication metrics output file
@@ -340,7 +341,7 @@ rule STEP11_purgeduplicates:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        "java -Xmx10g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
         I={input.b} \
         O={output} \
         M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
@@ -607,8 +608,10 @@ rule SATURATION_purge_duplicates_downsampled:
     output:
         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
         b="{path}metrics/saturation/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
+    resources:
+        purgeduplicates=1
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        "java -Xmx10g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
