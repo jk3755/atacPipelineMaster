@@ -20,3 +20,25 @@ rule preprocessing_lncap_ex01:
         "lncap/ex01/cr05/operations/preprocessing/LNCaP-CR-05-REP1.preprocessing.complete",
         "lncap/ex01/cr07/operations/preprocessing/LNCaP-CR-07-REP1.preprocessing.complete",
         "lncap/ex01/cr08/operations/preprocessing/LNCaP-CR-08-REP1.preprocessing.complete"
+
+########################################################################################################################################
+#### SNU-16 ############################################################################################################################
+########################################################################################################################################
+rule preprocessing_snu16_wt01:
+    input:
+        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP1A.preprocessing.complete",
+        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP2A.preprocessing.complete",
+        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP3A.preprocessing.complete",
+        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP1F.preprocessing.complete",
+        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP2F.preprocessing.complete",
+        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP3F.preprocessing.complete"
+
+########################################################################################################################################
+#### MDST8 #############################################################################################################################
+########################################################################################################################################
+rule preprocessing_mdst8_wt01:
+    input:
+        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP1.preprocessing.complete",
+        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP2.preprocessing.complete"
+
+
