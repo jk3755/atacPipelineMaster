@@ -797,72 +797,6 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
 
-# Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
-rule FOOTPRINTING_copy_bam_bai:
-    # The TF analysis script runs in 20 simultaneous processes
-    # Each process will need to access the bam file individually
-    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
-    # And assign each individual process a unique file to access
-    input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
-    output:
-        a="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
-        b="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai"
-    shell:
-        """
-        cp {input.a} {output.a}
-        cp {input.b} {output.b}
-        """
-
-# An aggregator for the 20 file copies from rule above
-rule AGGREGATOR_copy_bam_bai:
-    input:
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bai",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bai"
-    output:
-        "{path}operations/footprints/{sample}-REP{repnum}.bamcopy.done"
-    shell:
-        "touch {output}"
-
 # Generate the raw data used for downstream footprint analysis
 rule FOOTPRINTING_raw_analysis:
     input:
@@ -879,33 +813,23 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
-#### The final group should remove the extra .bam and .bai copied files to clear up space
-# Remove the extra bam and bai files when raw processing is complete
-rule rawFPanalysis_group41:
-    output:
-        "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
-    shell:
-         """
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-         touch {output}
-         """
 
-# Parse the sites based on the signals present
-rule FOOTPRINTING_parse_sites:
-    input:
-        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
-    output:
-        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
-    resources:
-        parseFootprint=1
-    benchmark:
-        '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-    script:
-        "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
+
+
+# # Parse the sites based on the signals present
+# rule FOOTPRINTING_parse_sites:
+#     input:
+#         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+#         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+#         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+#     output:
+#         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
+#     resources:
+#         parseFootprint=1
+#     benchmark:
+#         '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+#     script:
+#         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
 # # Process the sites and perform data analysis
 # rule FOOTPRINTING_process_sites:
