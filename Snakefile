@@ -7,6 +7,7 @@
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
+configfile: "snakeResources/config/config.yaml"
 include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
@@ -796,16 +797,22 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
 
-rule AGGREGATOR_raw_fp_analysis:
+rule testFP:
     input:
-        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group1.done',
-        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group2.done',
-        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group3.done',
-        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group4.done'
-    output:
-        "{path}operations/footprints/{sample}.rawFPanalysis.all.done"
-    shell:
-        "touch {output}"
+        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP1.preprocessing.complete",
+        expand("mdst8/wt01/operations/footprints/raw/MDST8-WT-01-REP1.{genename}.rawFPanalysis.bamcopy1.done", genename=config["geneNames"])
+
+## For some reason, doing it this way causes uninterruptible sleep for the threads and stalls
+# rule AGGREGATOR_raw_fp_analysis:
+#     input:
+#         '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group1.done',
+#         '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group2.done',
+#         '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group3.done',
+#         '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group4.done'
+#     output:
+#         "{path}operations/footprints/{sample}.rawFPanalysis.all.done"
+#     shell:
+#         "touch {output}"
 
 # Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
 rule FOOTPRINTING_copy_bam_bai:
@@ -883,7 +890,7 @@ rule FOOTPRINTING_raw_analysis:
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     benchmark:
-        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
+        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.bamcopy{bamcopy}.txt'
     resources:
         rawFPanalysis=1
     script:

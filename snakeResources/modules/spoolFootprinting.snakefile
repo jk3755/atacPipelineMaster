@@ -21,3 +21,11 @@ rule rawFP_mdst8_wt01:
         "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP2.preprocessing.complete",
         expand("mdst8/wt01/operations/footprints/groups/raw/MDST8-WT-01-REP1.rawFPanalysis.group{param}.done", param=config["group"]),
         expand("mdst8/wt01/operations/footprints/groups/raw/MDST8-WT-01-REP2.rawFPanalysis.group{param}.done", param=config["group"])
+
+rule testFP:
+    input:
+        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP1.preprocessing.complete",
+        expand("mdst8/wt01/operations/footprints/raw/MDST8-WT-01-REP1.{genename}.rawFPanalysis.bamcopy1.done", genename=config["geneNames"]),
+
+
+
