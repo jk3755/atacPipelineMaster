@@ -55,7 +55,7 @@ rule PREP_builddirstructure:
     shell:
         """
         mkdir -p -v {wildcards.path}benchmark
-        mkdir -p -v {wildcards.path}benchmark/preprocessing {wildcards.path}benchmark/footprints
+        mkdir -p -v {wildcards.path}benchmark/preprocessing {wildcards.path}benchmark/footprints {wildcards.path}benchmark/correlation
         mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
         ##
         mkdir -p -v {wildcards.path}operations
@@ -91,6 +91,8 @@ rule PREP_builddirstructure:
         ##
         mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}metrics/saturation
+        ##
+        mkdir -p -v {wildcards.path}correlation
         ##
         touch {output}
         """
@@ -623,9 +625,6 @@ rule SATURATION_index_downsampled:
         I={input} \
         O={output}"
 
-########################################################################################################################################
-#### LIBRARY COMPLEXITY ################################################################################################################
-########################################################################################################################################
 rule SATURATION_analyze_complexity_downsampled:
     input:
         a="{path}metrics/saturation/{sample}-REP{repnum}.9.duplication-metrics.txt",
@@ -661,7 +660,6 @@ rule SATURATION_analyze_complexity_downsampled:
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
         """
 
-# Clean up intermediate data to this point
 rule SATURATION_clean_intermediate_data1:
     input:
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
@@ -675,9 +673,6 @@ rule SATURATION_clean_intermediate_data1:
         touch {output}
         """
 
-########################################################################################################################################
-#### PEAKS #############################################################################################################################
-########################################################################################################################################
 rule SATURATION_peaks_globalnorm:
     input:
         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
@@ -728,9 +723,6 @@ rule SATURATION_analyze_peak_saturation_localnorm:
     shell:
         "wc -l < {input} >> {output}"
 
-########################################################################################################################################
-#### FOOTPRINTS ########################################################################################################################
-########################################################################################################################################
 rule AGGREGATOR_saturation_footprints_genes:
     input:
         "{path}operations/saturation/footprints/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
@@ -774,7 +766,6 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
-
 # Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
 rule FOOTPRINTING_copy_bam_bai:
     # The TF analysis script runs in 20 simultaneous processes
