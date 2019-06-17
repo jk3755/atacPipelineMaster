@@ -2,7 +2,7 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 # Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 purgeduplicates=9 --config group=$i
+# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisLarge=1 purgeduplicates=9
 
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
@@ -86,10 +86,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/7rgsort
         mkdir -p -v {wildcards.path}preprocessing/8merged
         mkdir -p -v {wildcards.path}preprocessing/9dedup
-        #
         mkdir -p -v {wildcards.path}preprocessing/10unique
-        mkdir -p -v {wildcards.path}preprocessing/10unique/copy
-        #
         mkdir -p -v {wildcards.path}preprocessing/11bigwig
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}preprocessing/saturation
@@ -106,7 +103,10 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}footprints
         #
         mkdir -p -v {wildcards.path}footprints/data 
-        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
+        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
+        mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
+        #
+        mkdir -p -v {wildcards.path}footprints/data/temp
         #
         mkdir -p -v {wildcards.path}footprints/graphs
         mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
@@ -812,18 +812,44 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
+rule test_large:
+	input:
+
+
+#
+rule AGGREGATOR_raw_analysis_large:
+	input:
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk1.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk2.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk3.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk4.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk5.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk6.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk7.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk8.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk9.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk10.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk11.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk12.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk13.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk14.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk15.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk16.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk17.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk18.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk19.Rdata",
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk20.Rdata"
+
 # Generate the raw data used for downstream footprint analysis, using special script for very large files
-rule FOOTPRINTING_raw_analysis_large:
+rule FOOTPRINTING_raw_analysis_large_chunk:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
     output:
-        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
-    benchmark:
-        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.bamcopy{bamcopy}.txt'
+        "{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk1.Rdata",
     resources:
-        rawFPanalysis=1
+        rawFPanalysisLarge=1
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintLarge.R"
 
