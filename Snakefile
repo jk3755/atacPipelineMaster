@@ -2,7 +2,7 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 # Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 purgeduplicates=1 --config group=$i
+# snakemake -j 20 [rule] --resources hg38align=1 purgeduplicates=9 --config group=$i
 
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
@@ -340,6 +340,8 @@ rule STEP11_purgeduplicates:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
+    resources:
+        purgeduplicates=1
     shell:
         "java -Xmx10g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
         I={input.b} \
