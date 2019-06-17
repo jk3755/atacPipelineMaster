@@ -36,26 +36,26 @@ while (b <= 40){
   v <- a+19
   
   ##
-  tmp1 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[c], ".rawFPanalysis.bamcopy1.done", "', ")
-  tmp2 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[d], ".rawFPanalysis.bamcopy2.done", "', ")
-  tmp3 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[e], ".rawFPanalysis.bamcopy3.done", "', ")
-  tmp4 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[f], ".rawFPanalysis.bamcopy4.done", "', ")
-  tmp5 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[g], ".rawFPanalysis.bamcopy5.done", "', ")
-  tmp6 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[h], ".rawFPanalysis.bamcopy6.done", "', ")
-  tmp7 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[i], ".rawFPanalysis.bamcopy7.done", "', ")
-  tmp8 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[j], ".rawFPanalysis.bamcopy8.done", "', ")
-  tmp9 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[k], ".rawFPanalysis.bamcopy9.done", "', ")
-  tmp10 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[l], ".rawFPanalysis.bamcopy10.done", "', ")
-  tmp11 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[m], ".rawFPanalysis.bamcopy11.done", "', ")
-  tmp12 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[n], ".rawFPanalysis.bamcopy12.done", "', ")
-  tmp13 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[o], ".rawFPanalysis.bamcopy13.done", "', ")
-  tmp14 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[p], ".rawFPanalysis.bamcopy14.done", "', ")
-  tmp15 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[q], ".rawFPanalysis.bamcopy15.done", "', ")
-  tmp16 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[r], ".rawFPanalysis.bamcopy16.done", "', ")
-  tmp17 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[s], ".rawFPanalysis.bamcopy17.done", "', ")
-  tmp18 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[t], ".rawFPanalysis.bamcopy18.done", "', ")
-  tmp19 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[u], ".rawFPanalysis.bamcopy19.done", "', ")
-  tmp20 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[v], ".rawFPanalysis.bamcopy20.done", "'")
+  tmp1 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[c], ".rawFPanalysis.bamcopy1.done", "', ")
+  tmp2 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[d], ".rawFPanalysis.bamcopy2.done", "', ")
+  tmp3 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[e], ".rawFPanalysis.bamcopy3.done", "', ")
+  tmp4 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[f], ".rawFPanalysis.bamcopy4.done", "', ")
+  tmp5 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[g], ".rawFPanalysis.bamcopy5.done", "', ")
+  tmp6 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[h], ".rawFPanalysis.bamcopy6.done", "', ")
+  tmp7 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[i], ".rawFPanalysis.bamcopy7.done", "', ")
+  tmp8 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[j], ".rawFPanalysis.bamcopy8.done", "', ")
+  tmp9 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[k], ".rawFPanalysis.bamcopy9.done", "', ")
+  tmp10 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[l], ".rawFPanalysis.bamcopy10.done", "', ")
+  tmp11 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[m], ".rawFPanalysis.bamcopy11.done", "', ")
+  tmp12 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[n], ".rawFPanalysis.bamcopy12.done", "', ")
+  tmp13 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[o], ".rawFPanalysis.bamcopy13.done", "', ")
+  tmp14 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[p], ".rawFPanalysis.bamcopy14.done", "', ")
+  tmp15 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[q], ".rawFPanalysis.bamcopy15.done", "', ")
+  tmp16 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[r], ".rawFPanalysis.bamcopy16.done", "', ")
+  tmp17 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[s], ".rawFPanalysis.bamcopy17.done", "', ")
+  tmp18 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[t], ".rawFPanalysis.bamcopy18.done", "', ")
+  tmp19 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[u], ".rawFPanalysis.bamcopy19.done", "', ")
+  tmp20 <- paste0("'{path}operations/footprints/raw/{sample}.", orderedNames[v], ".rawFPanalysis.bamcopy20.done", "'")
   
   ##
   strings[b] <- paste0(
@@ -68,7 +68,7 @@ while (b <= 40){
     tmp11, "\n\t\t", tmp12, "\n\t\t", tmp13, "\n\t\t", tmp14, "\n\t\t", tmp15, "\n\t\t",
     tmp16, "\n\t\t", tmp17, "\n\t\t", tmp18, "\n\t\t", tmp19, "\n\t\t", tmp20, "\n\t",
     "output:\n\t\t",
-    "'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group", b, ".done'\n",
+    "'{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group", b, ".done'\n",
     "\tshell:\n\t\t",
     "'touch {output}'")
   
@@ -122,31 +122,31 @@ while (b <= 40){
 #   b <- b+1
 # }
 
-
-## Remaining
-while (a <= 1229){
-  
-  ##
-  c <- a
-  ##
-  tmp1 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[c], ".rawFPanalysis.bamcopy1.done", "', ")
-
-  ##
-  strings[b] <- paste0(
-    "rule rawFPanalysis_group",
-    b,
-    ":\n",
-    "\tinput:\n\t\t",
-    tmp1, "\n\t",
-    "output:\n\t\t",
-    "'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group", b, ".done'\n",
-    "\tshell:\n\t\t",
-    "'touch {output}'")
-  
-  ##
-  a <- a+1
-  b <- b+1
-}
+# 
+# ## Remaining
+# while (a <= 1229){
+#   
+#   ##
+#   c <- a
+#   ##
+#   tmp1 <- paste0("'{path}footprints/operations/raw/{mergedsample}.", orderedNames[c], ".rawFPanalysis.bamcopy1.done", "', ")
+# 
+#   ##
+#   strings[b] <- paste0(
+#     "rule rawFPanalysis_group",
+#     b,
+#     ":\n",
+#     "\tinput:\n\t\t",
+#     tmp1, "\n\t",
+#     "output:\n\t\t",
+#     "'{path}footprints/operations/groups/{mergedsample}.rawFPanalysis.group", b, ".done'\n",
+#     "\tshell:\n\t\t",
+#     "'touch {output}'")
+#   
+#   ##
+#   a <- a+1
+#   b <- b+1
+# }
 
 
 #### Write the file ####

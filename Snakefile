@@ -39,7 +39,7 @@ rule AGGREGATOR_preprocessing:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     output:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete.txt"
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
     shell:
         "touch {output}"
 
@@ -773,13 +773,6 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
-rule FOOTPRINTING_analysis:
-    input:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete.txt"
-    output:
-        "{path}operations/footprints/{sample}-REP{repnum}.saturation_analysis.done"
-    shell:
-    	"touch {output}"
 
 # Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
 rule FOOTPRINTING_copy_bam_bai:
@@ -788,13 +781,11 @@ rule FOOTPRINTING_copy_bam_bai:
     # To significantly speed this analysis up, temporarily make 20 copies of the bam file
     # And assign each individual process a unique file to access
     input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.bai"
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         a="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
         b="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.footprinting.copybambai.txt'
     shell:
         """
         cp {input.a} {output.a}
@@ -845,7 +836,7 @@ rule AGGREGATOR_copy_bam_bai:
         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bai",
         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bai"
     output:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
+        "{path}operations/footprints/{sample}-REP{repnum}.bamcopy.done"
     shell:
         "touch {output}"
 
@@ -854,75 +845,71 @@ rule FOOTPRINTING_raw_analysis:
     input:
         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai",
-        "snakeResources/sites/data/{gene}.bindingSites.Rdata",
-        "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
+        "{path}operations/footprints/{sample}-REP{repnum}.bamcopy.done"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
-    resources:
-        analyzeRawFP=1
-    benchmark:
-        '{path}footprints/benchmark/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
     script:
-        "scripts/panTF/snakeAnalyzeRawFootprint.R"
+        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
-# Remove the extra bam and bai files when raw processing is complete
-rule FOOTPRINTING_remove_bamcopy:
-    input:
-        "{path}operations/footprints/groups/raw/{sample}.rawTF.allgroups.done"
-    output:
-        "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
-    shell:
-         """
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-         touch {output}
-         """
+# # Remove the extra bam and bai files when raw processing is complete
+# rule FOOTPRINTING_remove_bamcopy:
+#     input:
+#         "{path}operations/footprints/groups/raw/{sample}.rawTF.allgroups.done"
+#     output:
+#         "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
+#     shell:
+#          """
+#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+#          touch {output}
+#          """
 
-# Parse the sites based on the signals present
-rule FOOTPRINTING_parse_sites:
-    input:
-        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
-    output:
-        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
-    resources:
-        parseFootprint=1
-    benchmark:
-        '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-    script:
-        "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
+# # Parse the sites based on the signals present
+# rule FOOTPRINTING_parse_sites:
+#     input:
+#         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+#         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+#         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+#     output:
+#         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
+#     resources:
+#         parseFootprint=1
+#     benchmark:
+#         '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+#     script:
+#         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
-# Process the sites and perform data analysis
-rule FOOTPRINTING_process_sites:
-    input:
-        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
-    output:
-        "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
-    resources:
-        processFootprint=1
-    benchmark:
-        '{path}footprints/benchmark/processed/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-    script:
-        "scripts/panTF/snakeProcessFootprint.R"
+# # Process the sites and perform data analysis
+# rule FOOTPRINTING_process_sites:
+#     input:
+#         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
+#     output:
+#         "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
+#     resources:
+#         processFootprint=1
+#     benchmark:
+#         '{path}footprints/benchmark/processed/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+#     script:
+#         "scripts/panTF/snakeProcessFootprint.R"
 
-# Generate the footprinting figures from the data
-rule FOOTPRINTING_generate_figures:
-    input:
-        "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
-    output:
-        "{path}footprints/operations/graphs/{sample}-REP{repnum}.{gene}.graphFP.bamcopy{bamcopy}.done"
-    resources:
-        graphFootprint=1
-    script:
-        "scripts/panTF/snakeGenerateFootprintGraphs.R"
+# # Generate the footprinting figures from the data
+# rule FOOTPRINTING_generate_figures:
+#     input:
+#         "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
+#     output:
+#         "{path}footprints/operations/graphs/{sample}-REP{repnum}.{gene}.graphFP.bamcopy{bamcopy}.done"
+#     resources:
+#         graphFootprint=1
+#     script:
+#         "scripts/panTF/snakeGenerateFootprintGraphs.R"
 
-# Aggregate the footprinting data into a single R object
-rule FOOTPRINTING_aggregate_data:
-    input:
-        "{path}footprints/data/processed/"
-    output:
-        "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
-    script:
-        "scripts/panTF/snakeAggregateProcessedFootprintData.R"
+# # Aggregate the footprinting data into a single R object
+# rule FOOTPRINTING_aggregate_data:
+#     input:
+#         "{path}footprints/data/processed/"
+#     output:
+#         "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
+#     script:
+#         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
