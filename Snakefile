@@ -8,11 +8,11 @@
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 configfile: "snakeResources/config/config.yaml"
+#
 include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
-include: "snakeResources/modules/rawFPgroups.snakefile"
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
@@ -800,10 +800,24 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 # Generate the raw data used for downstream footprint analysis
 rule FOOTPRINTING_raw_analysis:
     input:
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
-        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
-        "{path}operations/footprints/{sample}-REP{repnum}.bamcopy.done"
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
+    output:
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
+    benchmark:
+        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
+    resources:
+        rawFPanalysis=1
+    script:
+        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
+
+# Generate the raw data used for downstream footprint analysis, using special script for very large files
+rule FOOTPRINTING_raw_analysis_large:
+    input:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
     benchmark:
@@ -811,10 +825,7 @@ rule FOOTPRINTING_raw_analysis:
     resources:
         rawFPanalysis=1
     script:
-        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
-
-
-
+        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintLarge.R"
 
 # # Parse the sites based on the signals present
 # rule FOOTPRINTING_parse_sites:

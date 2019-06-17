@@ -17,4 +17,6 @@
 rule rawFP_mdst8_wt01:
     input:
         "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP1.preprocessing.complete",
-        expand("mdst8/wt01/operations/footprints/raw/MDST8-WT-01-REP1.{genename}.rawFPanalysis.bamcopy1.done", genename=config["geneNames"])
+        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP2.preprocessing.complete",
+        expand("mdst8/wt01/operations/footprints/raw/MDST8-WT-01-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+        expand("mdst8/wt01/operations/footprints/raw/MDST8-WT-01-REP2.{genename}.rawFPanalysis.done", genename=config["geneNames"])
