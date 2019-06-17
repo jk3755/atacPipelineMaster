@@ -795,6 +795,16 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
+
+rule AGGREGATOR_raw_fp_analysis:
+    input:
+        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group1.done',
+        '{path}operations/footprints/groups/raw/{sample}.rawFPanalysis.group2.done'
+    output:
+        "{path}operations/footprints/{sample}.rawFPanalysis.all.done"
+    shell:
+        "touch {output}"
+
 # Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
 rule FOOTPRINTING_copy_bam_bai:
     # The TF analysis script runs in 20 simultaneous processes
@@ -873,34 +883,33 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
-# # Remove the extra bam and bai files when raw processing is complete
-# rule FOOTPRINTING_remove_bamcopy:
-#     input:
-#         "{path}operations/footprints/groups/raw/{sample}.rawTF.allgroups.done"
-#     output:
-#         "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
-#     shell:
-#          """
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-#          touch {output}
-#          """
+#### The final group should remove the extra .bam and .bai copied files to clear up space
+# Remove the extra bam and bai files when raw processing is complete
+rule rawFPanalysis_group41:
+    output:
+        "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
 
-# # Parse the sites based on the signals present
-# rule FOOTPRINTING_parse_sites:
-#     input:
-#         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
-#         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-#         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
-#     output:
-#         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
-#     resources:
-#         parseFootprint=1
-#     benchmark:
-#         '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-#     script:
-#         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
+# Parse the sites based on the signals present
+rule FOOTPRINTING_parse_sites:
+    input:
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+    output:
+        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    resources:
+        parseFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+        "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
 # # Process the sites and perform data analysis
 # rule FOOTPRINTING_process_sites:
