@@ -74,42 +74,50 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}preprocessing
-        mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/
-        mkdir -p -v {wildcards.path}preprocessing/6rawbam 
+        mkdir -p -v {wildcards.path}preprocessing/2fastq
+        mkdir -p -v {wildcards.path}preprocessing/3goodfastq
+        mkdir -p -v {wildcards.path}preprocessing/4mycoalign
+        mkdir -p -v {wildcards.path}preprocessing/5hg38align
+        #
+        mkdir -p -v {wildcards.path}preprocessing/6rawbamm
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
-        mkdir -p -v {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
-        mkdir -p -v {wildcards.path}preprocessing/10unique {wildcards.path}preprocessing/10unique/copy {wildcards.path}preprocessing/11bigwig
-        ##
+        #
+        mkdir -p -v {wildcards.path}preprocessing/7rgsort
+        mkdir -p -v {wildcards.path}preprocessing/8merged
+        mkdir -p -v {wildcards.path}preprocessing/9dedup
+        #
+        mkdir -p -v {wildcards.path}preprocessing/10unique
+        mkdir -p -v {wildcards.path}preprocessing/10unique/copy
+        #
+        mkdir -p -v {wildcards.path}preprocessing/11bigwig
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}preprocessing/saturation
+        mkdir -p -v {wildcards.path}preprocessing/saturation/complexity
+        mkdir -p -v {wildcards.path}preprocessing/saturation/peaks 
+        mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
+        #
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled/raw {wildcards.path}preprocessing/saturation/downsampled/cs {wildcards.path}preprocessing/saturation/downsampled/md
+        #
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints/raw {wildcards.path}preprocessing/saturation/footprints/parsed {wildcards.path}preprocessing/saturation/footprints/processed
-        mkdir -p -v {wildcards.path}preprocessing/saturation/complexity
-        mkdir -p -v {wildcards.path}preprocessing/saturation/peaks {wildcards.path}preprocessing/saturation/downsampled
-        ## 
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}footprints
+        #
         mkdir -p -v {wildcards.path}footprints/data 
         mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
+        #
         mkdir -p -v {wildcards.path}footprints/graphs
         mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
-        ##
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
-        ##
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}metrics/saturation
-        ##
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}correlation
-        ##
+        ####################################################################################################################################################################
         touch {output}
         """
 
