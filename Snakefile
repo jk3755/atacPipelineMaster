@@ -52,7 +52,8 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
         ##
         mkdir -p -v {wildcards.path}operations
-        mkdir -p -v {wildcards.path}operations/preprocessing {wildcards.path}operations/footprints {wildcards.path}operations/saturation
+        mkdir -p -v {wildcards.path}operations/preprocessing {wildcards.path}operations/footprints
+        mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
         mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
         mkdir -p -v {wildcards.path}operations/footprints/groups
         mkdir -p -v {wildcards.path}operations/footprints/groups/raw {wildcards.path}operations/footprints/groups/parsed {wildcards.path}operations/footprints/groups/processed
@@ -543,8 +544,8 @@ rule STEP21_saturation_analysis:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
         "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done",
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
-        #"{path}operations/preprocessing/saturation/clean2.{sample}.{repnum}.done"
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt",
+        "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     shell:
@@ -725,25 +726,30 @@ rule SATURATION_analyze_peak_saturation_localnorm:
 ########################################################################################################################################
 rule AGGREGATOR_saturation_footprints_genes:
     input:
-        "{path}operations/saturation/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
+        "{path}operations/saturation/footprints/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
     output:
-        "{path}operations/saturation/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
+        "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
     shell:
-        "touch {output}"
+        """
+        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
+        touch {output}
+        """
 
 rule AGGREGATOR_saturation_footprints:
     input:
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
-        "{path}preprocessing/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done"       
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done"       
     output:
-        "{path}operations/saturation/{sample}-REP{repnum}.{gene}.footprint.downsampled.done"
+        "{path}operations/saturation/footprints/{sample}-REP{repnum}.{gene}.footprint.downsampled.done"
     shell:
         "touch {output}"
 
@@ -754,23 +760,9 @@ rule SATURATION_analyze_raw_footprint_downsampled:
         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
     output:
-        "{path}saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
+        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
     script:
         "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
-
-# Clean up intermediate data to this point
-rule SATURATION_clean_intermediate_data2:
-    input:
-        "{path}operations/saturation/{sample}-REP{repnum}.allgenes.footprint.downsampled.done",
-    output:
-        "{path}operations/preprocessing/saturation/clean2.{sample}.{repnum}.done"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
-        touch {output}
-        """
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
