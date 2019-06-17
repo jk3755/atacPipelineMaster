@@ -3,13 +3,13 @@
 
 ##
 cat("Loading libraries", "\n")
-library(ChIPseeker)
-library(genomation)
-library(GenomicRanges)
-library(clusterProfiler)
-library(org.Hs.eg.db)
-library(ReactomePA)
-library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+suppressMessages(library(ChIPseeker))
+suppressMessages(library(genomation))
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(clusterProfiler))
+suppressMessages(library(org.Hs.eg.db))
+suppressMessages(library(ReactomePA))
+suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
 
 ## 
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
@@ -30,7 +30,7 @@ narrowPeaks <- keepStandardChromosomes(narrowPeaks, pruning.mode="coarse")
 
 #### Coverage plots make plot of genome wide peak coverage
 covplotPath <- gsub("annotations.done", "peak.genomecov.svg", outputPath)
-covplotPath <- gsub("operations", "metrics", covplotPath)
+covplotPath <- gsub("operations/preprocessing", "metrics", covplotPath)
 cat("Output path for peak genomve coverage plot:", covplotPath, "\n")
 
 ##

@@ -476,7 +476,6 @@ rule STEP17a_percent_peak_genome_coverage_globalnorm:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
 # Calculate percent genome coverage from peaks with local normalization
-
 rule STEP17b_percent_peak_genome_coverage_localnorm:
     # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
     # parameters:
