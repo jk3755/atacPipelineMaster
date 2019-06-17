@@ -1,10 +1,19 @@
 ########################################################################################################################################
+#### NOTES #############################################################################################################################
+########################################################################################################################################
+# Spool the pipeline with the following parameters:
+# snakemake -j 20 [rule] --resources hg38align=1 --config group=$i
+
+
+
+
+########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
 include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
-#include: "snakeResources/modules/spoolFootprinting.snakefile"
-#include: "snakeResources/modules/rawFootprintGroups.snakefile"
+include: "snakeResources/modules/spoolFootprinting.snakefile"
+include: "snakeResources/modules/rawFPgroups.snakefile"
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
@@ -768,148 +777,148 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
 
-# # Copy the .bam and .bai files so that different footprinting processes dont access the same file
-# rule FOOTPRINTING_copy_bam_bai:
-#     # The TF analysis script runs in 20 simultaneous processes
-#     # Each process will need to access the bam file individually
-#     # To significantly speed this analysis up, temporarily make 20 copies of the bam file
-#     # And assign each individual process a unique file to access
-#     input:
-#         a="{path}preprocessing/10unique/{sample}-REP{repnum}.bam",
-#         b="{path}preprocessing/10unique/{sample}-REP{repnum}.bai"
-#     output:
-#         a="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
-#         b="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai"
-#     benchmark:
-#         '{path}benchmark/preprocessing/{sample}-REP{repnum}.footprinting.copybambai.txt'
-#     shell:
-#         """
-#         cp {input.a} {output.a}
-#         cp {input.b} {output.b}
-#         """
+# Copy the .bam and .bai files so that different footprinting processes dont access the same file, which causes a bottleneck
+rule FOOTPRINTING_copy_bam_bai:
+    # The TF analysis script runs in 20 simultaneous processes
+    # Each process will need to access the bam file individually
+    # To significantly speed this analysis up, temporarily make 20 copies of the bam file
+    # And assign each individual process a unique file to access
+    input:
+        a="{path}preprocessing/10unique/{sample}-REP{repnum}.bam",
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.bai"
+    output:
+        a="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
+        b="{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai"
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.footprinting.copybambai.txt'
+    shell:
+        """
+        cp {input.a} {output.a}
+        cp {input.b} {output.b}
+        """
 
-# # An aggregator for the 20 file copies from rule above
-# rule AGGREGATOR_copy_bam_bai:
-#     input:
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bai",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bai"
-#     output:
-#         "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
-#     shell:
-#         "touch {output}"
+# An aggregator for the 20 file copies from rule above
+rule AGGREGATOR_copy_bam_bai:
+    input:
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.1.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.2.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.3.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.4.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.5.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.6.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.7.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.8.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.9.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.10.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.11.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.12.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.13.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.14.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.15.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.16.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.17.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.18.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.19.bai",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.20.bai"
+    output:
+        "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
+    shell:
+        "touch {output}"
 
-# # Generate the raw data used for downstream footprint analysis
-# rule FOOTPRINTING_raw_analysis:
-#     input:
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
-#         "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai",
-#         "snakeResources/sites/data/{gene}.bindingSites.Rdata",
-#         "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
-#     output:
-#         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
-#     resources:
-#         analyzeRawFP=1
-#     benchmark:
-#         '{path}footprints/benchmark/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
-#     script:
-#         "scripts/panTF/snakeAnalyzeRawFootprint.R"
+# Generate the raw data used for downstream footprint analysis
+rule FOOTPRINTING_raw_analysis:
+    input:
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bam",
+        "{path}preprocessing/10unique/copy/{sample}-REP{repnum}.{bamcopy}.bai",
+        "snakeResources/sites/data/{gene}.bindingSites.Rdata",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.bamcopy.done"
+    output:
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done"
+    resources:
+        analyzeRawFP=1
+    benchmark:
+        '{path}footprints/benchmark/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.txt'
+    script:
+        "scripts/panTF/snakeAnalyzeRawFootprint.R"
 
-# # Remove the extra bam and bai files when raw processing is complete
-# rule FOOTPRINTING_remove_bamcopy:
-#     input:
-#         "{path}operations/footprints/groups/raw/{sample}.rawTF.allgroups.done"
-#     output:
-#         "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
-#     shell:
-#          """
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
-#          rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
-#          touch {output}
-#          """
+# Remove the extra bam and bai files when raw processing is complete
+rule FOOTPRINTING_remove_bamcopy:
+    input:
+        "{path}operations/footprints/groups/raw/{sample}.rawTF.allgroups.done"
+    output:
+        "{path}operations/footprints/groups/raw/{sample}.rawTF.analysis.done"
+    shell:
+         """
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bam
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bai
+         rm -f {wildcards.path}preprocessing/11repmerged/copy/*.bamcopy.done
+         touch {output}
+         """
 
-# # Parse the sites based on the signals present
-# rule FOOTPRINTING_parse_sites:
-#     input:
-#         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
-#         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-#         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
-#     output:
-#         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
-#     resources:
-#         parseFootprint=1
-#     benchmark:
-#         '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-#     script:
-#         "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
+# Parse the sites based on the signals present
+rule FOOTPRINTING_parse_sites:
+    input:
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.bamcopy{bamcopy}.done",
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+    output:
+        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    resources:
+        parseFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/parse/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+        "scripts/panTF/snakeParseAndGenerateFootprintStats.R"
 
-# # Process the sites and perform data analysis
-# rule FOOTPRINTING_process_sites:
-#     input:
-#         "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
-#     output:
-#         "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
-#     resources:
-#         processFootprint=1
-#     benchmark:
-#         '{path}footprints/benchmark/processed/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
-#     script:
-#         "scripts/panTF/snakeProcessFootprint.R"
+# Process the sites and perform data analysis
+rule FOOTPRINTING_process_sites:
+    input:
+        "{path}footprints/operations/parse/{sample}-REP{repnum}.{gene}.parseFP.bamcopy{bamcopy}.done"
+    output:
+        "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
+    resources:
+        processFootprint=1
+    benchmark:
+        '{path}footprints/benchmark/processed/{sample}-REP{repnum}.{gene}.bamcopy{bamcopy}.parseFP.txt'
+    script:
+        "scripts/panTF/snakeProcessFootprint.R"
 
-# # Generate the footprinting figures from the data
-# rule FOOTPRINTING_generate_figures:
-#     input:
-#         "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
-#     output:
-#         "{path}footprints/operations/graphs/{sample}-REP{repnum}.{gene}.graphFP.bamcopy{bamcopy}.done"
-#     resources:
-#         graphFootprint=1
-#     script:
-#         "scripts/panTF/snakeGenerateFootprintGraphs.R"
+# Generate the footprinting figures from the data
+rule FOOTPRINTING_generate_figures:
+    input:
+        "{path}footprints/operations/processed/{sample}-REP{repnum}.{gene}.processFP.bamcopy{bamcopy}.done"
+    output:
+        "{path}footprints/operations/graphs/{sample}-REP{repnum}.{gene}.graphFP.bamcopy{bamcopy}.done"
+    resources:
+        graphFootprint=1
+    script:
+        "scripts/panTF/snakeGenerateFootprintGraphs.R"
 
-# # Aggregate the footprinting data into a single R object
-# rule FOOTPRINTING_aggregate_data:
-#     input:
-#         "{path}footprints/data/processed/"
-#     output:
-#         "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
-#     script:
-#         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
+# Aggregate the footprinting data into a single R object
+rule FOOTPRINTING_aggregate_data:
+    input:
+        "{path}footprints/data/processed/"
+    output:
+        "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
+    script:
+        "scripts/panTF/snakeAggregateProcessedFootprintData.R"
