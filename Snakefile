@@ -54,19 +54,35 @@ rule PREP_builddirstructure:
         "{path}operations/preprocessing/dirtree.built"
     shell:
         """
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}benchmark
-        mkdir -p -v {wildcards.path}benchmark/preprocessing {wildcards.path}benchmark/footprints {wildcards.path}benchmark/correlation
+        mkdir -p -v {wildcards.path}benchmark/preprocessing
+        mkdir -p -v {wildcards.path}benchmark/correlation
+        #
+        mkdir -p -v {wildcards.path}benchmark/footprints
         mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
-        ##
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}operations
-        mkdir -p -v {wildcards.path}operations/preprocessing {wildcards.path}operations/footprints
-        mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
+        mkdir -p -v {wildcards.path}operations/preprocessing
+        #
+        mkdir -p -v {wildcards.path}operations/footprints
         mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
         mkdir -p -v {wildcards.path}operations/footprints/groups
         mkdir -p -v {wildcards.path}operations/footprints/groups/raw {wildcards.path}operations/footprints/groups/parsed {wildcards.path}operations/footprints/groups/processed
-        ##
+        #
+        mkdir -p -v {wildcards.path}operations/saturation
+        mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}preprocessing
         mkdir -p -v {wildcards.path}preprocessing/2fastq {wildcards.path}preprocessing/3goodfastq {wildcards.path}preprocessing/4mycoalign {wildcards.path}preprocessing/5hg38align
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
+        mkdir -p -v {wildcards.path}preprocessing/
         mkdir -p -v {wildcards.path}preprocessing/6rawbam 
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         mkdir -p -v {wildcards.path}preprocessing/7rgsort {wildcards.path}preprocessing/8merged {wildcards.path}preprocessing/9dedup
