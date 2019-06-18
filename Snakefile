@@ -812,13 +812,6 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
-#####
-rule test_large:
-	input:
-		#"mdst8/wt01/operations/footprints/temp/MDST8-WT-01-REP1.HOXB6.rawFPanalysis.large.done"
-		"mdst8/wt01/operations/footprints/temp/MDST8-WT-01-REP1.TFDP1.rawFPanalysis.large.done"
-		
-
 rule AGGREGATOR_raw_analysis_large:
 	input:
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk1.done",
@@ -840,7 +833,7 @@ rule AGGREGATOR_raw_analysis_large:
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk17.done",
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk18.done",
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk19.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk20.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk20.done"
 	output:
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.done"
 	shell:
