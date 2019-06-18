@@ -10,10 +10,11 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
 sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
+currentChunk <- snakemake@wildcards[["chunknum"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, "-REP", sampleRep, ".", geneName, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/raw/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".rawFootprintData.Rdata")
 cat("Output path for raw footprint data:", footprintDataPath, "\n")
 
 ##

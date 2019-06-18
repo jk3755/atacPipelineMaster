@@ -68,8 +68,8 @@ rule PREP_builddirstructure:
         #
         mkdir -p -v {wildcards.path}operations/footprints
         mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
-        mkdir -p -v {wildcards.path}operations/footprints/groups
-        mkdir -p -v {wildcards.path}operations/footprints/groups/raw {wildcards.path}operations/footprints/groups/parsed {wildcards.path}operations/footprints/groups/processed
+        #
+        mkdir -p -v {wildcards.path}operations/footprints/temp
         #
         mkdir -p -v {wildcards.path}operations/saturation
         mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
@@ -815,33 +815,33 @@ rule FOOTPRINTING_raw_analysis:
 #####
 rule test_large:
 	input:
-		"mdst8/wt01/footprints/data/raw/temp/MDST8-WT-01-REP1.HOXB6.rawFPanalysis.temp.large.chunks.done"
+		"mdst8/wt01/operations/footprints/temp/MDST8-WT-01-REP1.HOXB6.rawFPanalysis.large.chunks.done"
 
 #
 rule AGGREGATOR_raw_analysis_large:
 	input:
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk1.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk2.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk3.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk4.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk5.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk6.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk7.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk8.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk9.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk10.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk11.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk12.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk13.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk14.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk15.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk16.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk17.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk18.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk19.Rdata",
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk20.Rdata"
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk1.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk2.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk3.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk4.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk5.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk6.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk7.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk8.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk9.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk10.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk11.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk12.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk13.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk14.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk15.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk16.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk17.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk18.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk19.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk20.done",
 	output:
-		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunks.done"
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunks.done"
 	shell:
 		"touch {output}"
 
@@ -852,7 +852,7 @@ rule FOOTPRINTING_raw_analysis_large_chunk:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
     output:
-        "{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk{chunknum}.Rdata"
+        "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk{chunknum}.done"
     resources:
         rawFPanalysisLarge=1
     script:
