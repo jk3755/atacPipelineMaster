@@ -1,32 +1,28 @@
 #### Disable scientific notation in variables
 options(scipen = 999)
 
-
-#### Set snakemake variables
-cat("Setting snakemake variables...", "\n")
+## Set snakemake variables
+cat("Setting snakemake variables", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 sitesPath <- snakemake@input[[3]]
 outPath <- snakemake@output[[1]]
-sampleName <- snakemake@wildcards[["mergedsample"]]
+sampleName <- snakemake@wildcards[["sample"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
+currentChunk <- snakemake@wildcards[["chunknum"]]
 dirPath <- snakemake@wildcards[["path"]]
-currentBin <- snakemake@wildcards[["bin"]]
 
+## Set the output path for Rdata file and perform a filecheck
+footprintDataPath <- paste0(dirPath, "footprints/data/raw/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".chunk", currentChunk, ".rawFootprintData.Rdata")
+cat("Output path for raw footprint data:", footprintDataPath, "\n")
 
-#### Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, ".", geneName, ".rawFootprintData.Rdata")
-
-
-####
+##
 if (file.exists(footprintDataPath) == TRUE){
   cat("File already exists, skipping", "\n")
 } else {
   
-  ####
-  cat("Processing raw footprint data for sample", sampleName, "for gene", geneName, "on chromosome", currentChr, "\n")
-  
-  #### Load libraries
+  ## Load libraries
   cat("Loading libraries", "\n")
   suppressMessages(library(GenomicRanges))
   suppressMessages(library(stats4))
@@ -36,77 +32,73 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(GenomicAlignments))
   suppressMessages(library(genomation))
   
-  
-  ####
+  ## Load the binding sites data
   cat("Loading binding sites", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
   bamFile <- BamFile(bamPath)
   
-  
-  #### Initiate an R object to hold all generated data
+  ## Initiate an R object to hold all generated data
   footprintData <- list()
   for (a in 1:numMotif){
     com <- paste0("footprintData$motif", a, " <- list()")
     eval(parse(text = com))
   } # end for (a in 1:numMotif)
   
+  ##
   cat("Analyzing footprints for", geneName, "\n")
   cat("Found", numMotif, "unique motifs", "\n")
   
-  
-  #### If no motifs are found, skip
+  ## If no motifs are found, skip
   if (numMotif ==0){
     cat("No motifs found. Skipping", "\n")
   } else {
     
-    #### Index counter for motif naming
+    ## Index counter for motif naming
     idxMotif <- 1
     
-    #### Begin analysis
+    ## Begin analysis
     for (b in 1:numMotif){
       
-      #### Binding Sites
+      ## Binding Sites
       cat("Analyzing motif", b, "\n")
       PWM <- bindingSites[[b]][["PWM"]]
       motifWidth <- length(bindingSites[[b]][["PWM"]][1,])
       allSites <- bindingSites[[b]][["sites"]]
-      
-      #### Subset the binding sites based on the current chromosome
-      ## Subset to standard chromosomes only
       allSites <- keepStandardChromosomes(allSites, pruning.mode="coarse")
       allSites <- trim(allSites)
-      ## Need to regenerate the names() field from seqlevs
-      ## Convert seqlevs Rle to matrix
-      #rangeNames <- as.matrix(allSites@seqnames)
-      #allSites <- setNames(allSites, rangeNames)
       numSites <- length(allSites)
-      
-      #### Define the bins
-      binSize <- numSites / 20
-      binSize <- floor(binSize)
-      
-      #### Doesn't make sense to subset by chromosome, subset into 20 equal sized bins
-      currentBin <- as.numeric(currentBin)
-      
-      #### Subset the sites for only the currently selected bin
-      if (currentBin == 1){
-        allSites <- allSites[1:binSize]
-      } else if (currentBin >= 2 && currentBin <= 19){
-        allSites <- allSites[((currentBin - 1) * binSize):(binSize * currentBin)]
-      } else if (currentBin == 20){
-        allSites <- allSites[(19 * binSize):numSites]
-      }
-      
-      #### Reset the number of sites
-      numSites <- length(allSites)
-      
       cat("Found", numSites, "motif binding sites", "\n")
       
       ## If no binding sites are found, skip this motif
       if (numSites == 0){
         cat("No motif binding sites found, skipping", "\n")
       } else {
+        
+        ##
+        cat("Setting sites for analysis for current chunk", "\n")
+        currentChunk <- as.numeric(currentChunk)
+        
+        ##
+        f <- unique(cut(1:numSites,breaks=20))
+        labs <- levels(f)[f]
+        lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
+        upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
+        
+        ##
+        if (currentChunk == 1){
+          cat("Current chunk is 1", "\n")
+          allSites <- allSites[1:upper[1]]
+        } else if (currentChunk > 1 && currentChunk < 20){
+          cat("Current chunk is between 2-19", "\n")
+          allSites <- allSites[upper[(currentChunk - 1)]:upper[currentChunk]]
+        } else if (currentChunk == 20){
+          cat("Current chunk is 20", "\n")
+          allSites <- allSites[upper[19]:numSites]
+        }
+        
+        ##
+        numSites <- length(allSites)
         
         ##
         cat("Processing analysis window for each site", "\n")

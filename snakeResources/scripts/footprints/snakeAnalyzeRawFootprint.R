@@ -10,11 +10,10 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
 sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
-currentChunk <- snakemake@wildcards[["chunknum"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/raw/", sampleName, "-REP", sampleRep, ".", geneName, ".rawFootprintData.Rdata")
 cat("Output path for raw footprint data:", footprintDataPath, "\n")
 
 ##
@@ -32,7 +31,7 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(GenomicAlignments))
   suppressMessages(library(genomation))
   
-  ## Load the binding sites data
+  ##
   cat("Loading binding sites", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
@@ -45,7 +44,6 @@ if (file.exists(footprintDataPath) == TRUE){
     eval(parse(text = com))
   } # end for (a in 1:numMotif)
   
-  ##
   cat("Analyzing footprints for", geneName, "\n")
   cat("Found", numMotif, "unique motifs", "\n")
   
