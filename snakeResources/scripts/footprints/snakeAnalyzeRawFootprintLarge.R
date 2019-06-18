@@ -14,7 +14,7 @@ currentChunk <- snakemake@wildcards[["chunknum"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/raw/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".chunk", currentChunk, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".chunk", currentChunk, ".rawFootprintData.Rdata")
 cat("Output path for raw footprint data:", footprintDataPath, "\n")
 
 ##
