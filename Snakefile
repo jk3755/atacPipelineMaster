@@ -815,9 +815,10 @@ rule FOOTPRINTING_raw_analysis:
 #####
 rule test_large:
 	input:
-		"mdst8/wt01/operations/footprints/temp/MDST8-WT-01-REP1.HOXB6.rawFPanalysis.large.chunks.done"
+		#"mdst8/wt01/operations/footprints/temp/MDST8-WT-01-REP1.HOXB6.rawFPanalysis.large.done"
+		"mdst8/wt01/operations/footprints/temp/MDST8-WT-01-REP1.TFDP1.rawFPanalysis.large.done"
+		
 
-#
 rule AGGREGATOR_raw_analysis_large:
 	input:
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk1.done",
@@ -841,11 +842,10 @@ rule AGGREGATOR_raw_analysis_large:
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk19.done",
 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk20.done",
 	output:
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunks.done"
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.done"
 	shell:
 		"touch {output}"
 
-# Generate the raw data used for downstream footprint analysis, using special script for very large files
 rule FOOTPRINTING_raw_analysis_large_chunk:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",

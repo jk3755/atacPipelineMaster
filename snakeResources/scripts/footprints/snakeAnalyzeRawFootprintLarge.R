@@ -80,21 +80,38 @@ if (file.exists(footprintDataPath) == TRUE){
         currentChunk <- as.numeric(currentChunk)
         
         ##
-        f <- unique(cut(1:numSites,breaks=20))
-        labs <- levels(f)[f]
-        lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
-        upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
-        
-        ##
-        if (currentChunk == 1){
+        if (numSites < 100000){
+          
+          ## This is an error handling step
+          cat("Less than 100000 sites identified", "\n")
+          
+        } else if (currentChunk == 1){
+          
+          f <- unique(cut(1:numSites,breaks=20))
+          labs <- levels(f)[f]
+          lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
+          upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
           cat("Current chunk is 1", "\n")
           allSites <- allSites[1:upper[1]]
+          
         } else if (currentChunk > 1 && currentChunk < 20){
+          
+          f <- unique(cut(1:numSites,breaks=20))
+          labs <- levels(f)[f]
+          lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
+          upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
           cat("Current chunk is between 2-19", "\n")
           allSites <- allSites[upper[(currentChunk - 1)]:upper[currentChunk]]
+          
         } else if (currentChunk == 20){
+          
+          f <- unique(cut(1:numSites,breaks=20))
+          labs <- levels(f)[f]
+          lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
+          upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
           cat("Current chunk is 20", "\n")
           allSites <- allSites[upper[19]:numSites]
+          
         }
         
         ##
