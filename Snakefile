@@ -812,9 +812,10 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
+#####
 rule test_large:
 	input:
-
+		"mdst8/wt01/footprints/data/raw/temp/MDST8-WT-01-REP1.HOXB6.rawFPanalysis.temp.large.chunks.done"
 
 #
 rule AGGREGATOR_raw_analysis_large:
@@ -839,6 +840,10 @@ rule AGGREGATOR_raw_analysis_large:
 		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk18.Rdata",
 		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk19.Rdata",
 		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk20.Rdata"
+	output:
+		"{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunks.done"
+	shell:
+		"touch {output}"
 
 # Generate the raw data used for downstream footprint analysis, using special script for very large files
 rule FOOTPRINTING_raw_analysis_large_chunk:
@@ -847,7 +852,7 @@ rule FOOTPRINTING_raw_analysis_large_chunk:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
     output:
-        "{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk1.Rdata",
+        "{path}footprints/data/raw/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.temp.large.chunk{chunknum}.Rdata"
     resources:
         rawFPanalysisLarge=1
     script:

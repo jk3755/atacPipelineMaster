@@ -31,7 +31,7 @@ if (file.exists(footprintDataPath) == TRUE){
   suppressMessages(library(GenomicAlignments))
   suppressMessages(library(genomation))
   
-  ##
+  ## Load the binding sites data
   cat("Loading binding sites", "\n")
   load(sitesPath)
   numMotif <- length(bindingSites)
@@ -44,6 +44,7 @@ if (file.exists(footprintDataPath) == TRUE){
     eval(parse(text = com))
   } # end for (a in 1:numMotif)
   
+  ##
   cat("Analyzing footprints for", geneName, "\n")
   cat("Found", numMotif, "unique motifs", "\n")
   
