@@ -36,7 +36,6 @@ geneNames:
   - HXA7
   - ZN589
   - PAX6
-  - Pax6
   - HXC6
   - HXC8
   - KCNIP1
@@ -323,8 +322,6 @@ geneNames:
   - RFX5
   - RFX1
   - BHA15
-  - SOX4
-  - Sox4
   - NR2F6
   - ZN652
   - E4F1
@@ -812,201 +809,197 @@ geneNamesLarge:
   - DLX4
   - NR2E3
   - FAM127B
-  - LINC00471
-  - MEOX2
-  - TFAP2A
-  - TCF12
-  - ZBTB18
-  - PDE6H
-  - CBX3
-  - ZBED1
-  - FOXD1
-  - PRNP
-  - SOX3
-  - TFEB
-  - ARNT2
-  - AHR
-  - RAB2A
-  - FOXO3
-  - CRX
-  - ZMYND8
-  - SSX2
-  - KDM5A
-  - VSX1
-  - LUZP2
-  - HXD4
-  - RFXANK
-  - PGAM2
-  - FOSL1
-  - ETV4
-  - HOXD4
-  - LMX1B
-  - TSC22D4
-  - HOXD9
-  - HXD9
-  - NR1I3
-  - DIABLO
-  - ESRRA
-  - MSX1
-  - GRHL1
-  - MAGEF1
-  - HOXB5
-  - ZNF124
-  - PDCD11
-  - TEAD1
-  - MYB
-  - CFL2
-  - CD59
-  - GATA4
-  - AP1
-  - PDS5A
-  - NELFB
-  - FOXN3
-  - TCF3
-  - EZR
-  - ZNF71
-  - FOXO6
-  - FOXK1
-  - FOXD2
-  - OLIG1
-  - FOXI1
-  - NANOS1
-  - ACO1
-  - TFAP2C
-  - BOLL
-  - NFIA
-  - DTL
-  - POLI
-  - FOXP2
-  - KLF12
-  - INSM1
-  - NFIB
-  - GRHPR
-  - BRCA1
-  - RBMS1
-  - HIRIP3
-  - UNCX
-  - RAXL1
-  - SHOX2
-  - LHX9
-  - RAX2
-  - DBP
-  - ZNF250
-  - MRPL2
-  - ADNP
-  - ADARB1
-  - TAF4
-  - TMSB4XP8
-  - MEIS2
-  - NR1I2
-  - ZSWIM1
-  - CREB3L1
-  - MGA
-  - TAF1A
-  - USF2
-  - OTUD4
-  - WDR83
-  - KDM5D
-  - TULP1
-  - PQBP1
-  - RPP25
-  - FOXP3
-  - DLX3
-  - FOXG1
-  - TIMELESS
-  - TCEAL2
-  - MEX3C
-  - EEF1D
-  - NUCB1
-  - TSN
-  - MXD4
-  - ISX
-  - ARFGAP1
-  - TBX5
-  - DAB2
-  - ISL1
-  - TPI1
-  - ZBTB46
-  - PGR
-  - GCR
-  - PRGR
-  - MSX2
-  - HTATIP2
-  - ESR2
-  - MBTPS2
-  - FOXO4
-  - ZKSCAN8
-  - HNRNPC
-  - NKX25
-  - HHEX
-  - NUP107
-  - MAFG
-  - SUCLG1
-  - SOCS4
-  - HOXD3
-  - SHOX
-  - USF1
-  - ZNF76
-  - ZNF326
-  - SRBD1
-  - DGCR8
-  - SNAPC4
-  - MDM2
-  - TPPP
-  - NELFA
-  - FOXL1
-  - GTPBP6
-  - H1FX
-  - MAGEA8
-  - HP1BP3
-  - POU3F2
-  - EBF1
-  - GTF3C5
-  - NONO
-  - CDX2
-  - MYOD1
-  - PPP2R3B
-  - SNRNP70
-  - TOB2
-  - ZBTB12
-  - IRF6
-  - ETFB
-  - DLX2
-  - SPIB
-  - ZNF304
-  - VAMP3
-  - ZNF205
-  - POU5F1
-  - EHF
-  - RAX
-  - SRY
-  - MEIS1
-  - TIA1
-  - RXRA
-  - SMAD3
-  - ESRP2
-  - NRL
-  - RBM42
-  - ZNF3
-  - CPEB1
-  - CDX1
-  - NF2L1
-  - TGIF2LX
-  - PKNOX2
-  - LEF1
-  - PPARA
-  - PPP1R10
-  - SLC18A1
-  - DIS3
-  - MAP4K2
-  - USP39
-  - GTF2B
-  - ZCCHC14
-  - FOXD3
-  - EXO5
-  - MSI2
-  - TSNAX
-  - ZNF696
+  # - LINC00471
+  # - MEOX2
+  # - TFAP2A
+  # - TCF12
+  # - ZBTB18
+  # - PDE6H
+  # - CBX3
+  # - ZBED1
+  # - FOXD1
+  # - PRNP
+  # - SOX3
+  # - TFEB
+  # - ARNT2
+  # - AHR
+  # - RAB2A
+  # - FOXO3
+  # - CRX
+  # - SSX2
+  # - KDM5A
+  # - VSX1
+  # - LUZP2
+  # - HXD4
+  # - RFXANK
+  # - PGAM2
+  # - FOSL1
+  # - ETV4
+  # - HOXD4
+  # - LMX1B
+  # - TSC22D4
+  # - HOXD9
+  # - HXD9
+  # - NR1I3
+  # - DIABLO
+  # - ESRRA
+  # - MSX1
+  # - GRHL1
+  # - MAGEF1
+  # - HOXB5
+  # - ZNF124
+  # - PDCD11
+  # - TEAD1
+  # - MYB
+  # - CFL2
+  # - CD59
+  # - GATA4
+  # - AP1
+  # - PDS5A
+  # - NELFB
+  # - FOXN3
+  # - TCF3
+  # - EZR
+  # - ZNF71
+  # - FOXO6
+  # - FOXK1
+  # - FOXD2
+  # - OLIG1
+  # - FOXI1
+  # - NANOS1
+  # - ACO1
+  # - TFAP2C
+  # - BOLL
+  # - NFIA
+  # - DTL
+  # - POLI
+  # - FOXP2
+  # - KLF12
+  # - INSM1
+  # - NFIB
+  # - GRHPR
+  # - BRCA1
+  # - RBMS1
+  # - HIRIP3
+  # - UNCX
+  # - RAXL1
+  # - SHOX2
+  # - LHX9
+  # - RAX2
+  # - DBP
+  # - ZNF250
+  # - MRPL2
+  # - ADARB1
+  # - TMSB4XP8
+  # - MEIS2
+  # - NR1I2
+  # - ZSWIM1
+  # - CREB3L1
+  # - MGA
+  # - TAF1A
+  # - USF2
+  # - OTUD4
+  # - WDR83
+  # - KDM5D
+  # - TULP1
+  # - PQBP1
+  # - RPP25
+  # - FOXP3
+  # - DLX3
+  # - FOXG1
+  # - TIMELESS
+  # - TCEAL2
+  # - MEX3C
+  # - EEF1D
+  # - NUCB1
+  # - TSN
+  # - MXD4
+  # - ISX
+  # - ARFGAP1
+  # - TBX5
+  # - DAB2
+  # - ISL1
+  # - TPI1
+  # - ZBTB46
+  # - PGR
+  # - GCR
+  # - PRGR
+  # - MSX2
+  # - HTATIP2
+  # - ESR2
+  # - MBTPS2
+  # - FOXO4
+  # - ZKSCAN8
+  # - HNRNPC
+  # - NKX25
+  # - HHEX
+  # - NUP107
+  # - MAFG
+  # - SUCLG1
+  # - SOCS4
+  # - HOXD3
+  # - SHOX
+  # - USF1
+  # - ZNF76
+  # - ZNF326
+  # - SRBD1
+  # - DGCR8
+  # - SNAPC4
+  # - MDM2
+  # - TPPP
+  # - NELFA
+  # - FOXL1
+  # - GTPBP6
+  # - H1FX
+  # - MAGEA8
+  # - HP1BP3
+  # - POU3F2
+  # - EBF1
+  # - GTF3C5
+  # - NONO
+  # - CDX2
+  # - MYOD1
+  # - PPP2R3B
+  # - SNRNP70
+  # - TOB2
+  # - ZBTB12
+  # - IRF6
+  # - ETFB
+  # - DLX2
+  # - SPIB
+  # - ZNF304
+  # - VAMP3
+  # - ZNF205
+  # - POU5F1
+  # - EHF
+  # - RAX
+  # - SRY
+  # - MEIS1
+  # - TIA1
+  # - RXRA
+  # - SMAD3
+  # - ESRP2
+  # - NRL
+  # - RBM42
+  # - ZNF3
+  # - CPEB1
+  # - CDX1
+  # - NF2L1
+  # - TGIF2LX
+  # - PKNOX2
+  # - LEF1
+  # - PPARA
+  # - PPP1R10
+  # - SLC18A1
+  # - DIS3
+  # - MAP4K2
+  # - USP39
+  # - GTF2B
+  # - ZCCHC14
+  # - FOXD3
+  # - EXO5
+  # - MSI2
+  # - TSNAX
   # - NFATC2
   # - TCF4
   # - TIMM44

@@ -47,9 +47,9 @@ rule preprocessing_h508_wt01:
 
 rule preprocessing_h508_wt02:
     input:
-        "h508/wt02/operations/preprocessing/H508-WT-01-REP1A.preprocessing.complete",
-        "h508/wt02/operations/preprocessing/H508-WT-01-REP2A.preprocessing.complete",
-        "h508/wt02/operations/preprocessing/H508-WT-01-REP1F.preprocessing.complete"
+        "h508/wt02/operations/preprocessing/H508-WT-02-REP1A.preprocessing.complete",
+        "h508/wt02/operations/preprocessing/H508-WT-02-REP2A.preprocessing.complete",
+        "h508/wt02/operations/preprocessing/H508-WT-02-REP1F.preprocessing.complete"
 
 ########################################################################################################################################
 #### LS1034 ############################################################################################################################
