@@ -21,6 +21,7 @@ include: "snakeResources/modules/generateSites.snakefile"
 include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
+include: "snakeResources/modules/spoolFullAnalysis.snakefile"
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
@@ -850,44 +851,6 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
-rule AGGREGATOR_raw_analysis_large:
-	input:
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk1.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk2.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk3.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk4.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk5.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk6.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk7.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk8.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk9.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk10.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk11.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk12.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk13.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk14.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk15.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk16.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk17.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk18.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk19.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk20.done"
-	output:
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.done"
-	shell:
-		"touch {output}"
-
-rule FOOTPRINTING_raw_analysis_large_chunk:
-    input:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
-    output:
-        "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk{chunknum}.done"
-    resources:
-        rawFPanalysisLarge=1
-    script:
-        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintLarge.R"
 
 # # Parse the sites based on the signals present
 # rule FOOTPRINTING_parse_sites:
@@ -936,3 +899,46 @@ rule FOOTPRINTING_raw_analysis_large_chunk:
 #         "{path}footprints/operations/aggregated/{sample}-REP{repnum}.aggregated.done"
 #     script:
 #         "scripts/panTF/snakeAggregateProcessedFootprintData.R"
+
+########################################################################################################################
+#### SECTORED FOOTPRINTING  ############################################################################################
+########################################################################################################################
+
+rule AGGREGATOR_raw_analysis_large:
+	input:
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk1.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk2.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk3.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk4.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk5.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk6.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk7.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk8.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk9.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk10.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk11.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk12.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk13.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk14.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk15.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk16.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk17.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk18.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk19.done",
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk20.done"
+	output:
+		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.done"
+	shell:
+		"touch {output}"
+
+rule FOOTPRINTING_raw_analysis_large_chunk:
+    input:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
+    output:
+        "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.chunk{chunknum}.done"
+    resources:
+        rawFPanalysisLarge=1
+    script:
+        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintLarge.R"
