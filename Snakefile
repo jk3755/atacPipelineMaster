@@ -592,14 +592,28 @@ rule STEP21_saturation_analysis:
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt",
         "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
     output:
-        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
     shell:
     	"touch {output}"
 
 ########################################################################################################################################
 #### DOWNSAMPLE RULES ##################################################################################################################
 ########################################################################################################################################
-rule AGGREGATOR_saturation:
+
+rule SATURATION_clean_intermediate_data_final:
+    input:
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
+    output:
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
+    shell:
+        """
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bai
+        rm -f {wildcards.path}preprocessing/saturation/peaks/*REP{wildcards.repnum}*
+        touch {output}
+        """
+
+rule AGGREGATOR_saturation_downsample:
     input:
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.8.md.bai",
