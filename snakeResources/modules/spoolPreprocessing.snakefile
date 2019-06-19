@@ -41,4 +41,13 @@ rule preprocessing_mdst8_wt01:
         "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP1.preprocessing.complete",
         "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP2.preprocessing.complete"
 
+########################################################################################################################################
+#### Hs675.T ###########################################################################################################################
+########################################################################################################################################
+rule preprocessing_hs675t_wt01:
+    input:
+        "hs675t/wt01/operations/preprocessing/Hs675T-WT-01-REP1.preprocessing.complete",
+        "hs675t/wt01/operations/preprocessing/Hs675T-WT-01-REP2.preprocessing.complete",
+        "hs675t/wt01/operations/preprocessing/Hs675T-WT-01-REP3.preprocessing.complete"
+
 
