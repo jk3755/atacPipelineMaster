@@ -2,14 +2,15 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 # Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisLarge=1 purgeduplicates=10 mem_mb=95000 --restart-time=5
+# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisLarge=1 purgeduplicates=10 mem_mb=95000 --restart-times=5
 #
 # Parameters:
-# --hg38align:
-# --rawFPanalysisLarge:
-# --purgeDuplicates:
-# --mem_mb: specifies the global memory limit the snakemake run can use
-# --restart-times: sets the number of times snakemake will attempt to restart a failed job
+# j: specifies the number of threads the run will use
+# hg38align:
+# rawFPanalysisLarge:
+# purgeDuplicates:
+# mem_mb: specifies the global memory limit the snakemake run can use
+# restart-times: sets the number of times snakemake will attempt to restart a failed job
 
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
