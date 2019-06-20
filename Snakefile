@@ -981,7 +981,7 @@ rule FOOTPRINTING_raw_analysis_sectored:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
 
 # Merge the sectored raw footprint analysis .Rdata files
-rule FOOTPRINTING_raw_analysis_sectored:
+rule FOOTPRINTING_merge_sectored_raw_footprints:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
