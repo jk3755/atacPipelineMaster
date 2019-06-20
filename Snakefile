@@ -736,7 +736,7 @@ rule SATURATION_analyze_complexity_downsampled:
         """
 
 # Cleanup the uneeded intermediate files
-rule SATURATION_clean_intermediate_data1:
+rule SATURATION_clean_intermediate_data:
     input:
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
     output:
