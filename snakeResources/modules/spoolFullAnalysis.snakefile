@@ -12,6 +12,6 @@
 ########################################################################################################################################
 rule full_analysis_h508_wt02:
     input:
-        "h508/wt02/operations/operations/modules/H508-WT-02-REP1A.full_analysis.finished",
-        "h508/wt02/operations/operations/modules/H508-WT-02-REP2A.full_analysis.finished",
-        "h508/wt02/operations/operations/modules/H508-WT-02-REP1F.full_analysis.finished"
+        "h508/wt02/operations/modules/H508-WT-02-REP1A.full_analysis.finished",
+        "h508/wt02/operations/modules/H508-WT-02-REP2A.full_analysis.finished",
+        "h508/wt02/operations/modules/H508-WT-02-REP1F.full_analysis.finished"

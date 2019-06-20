@@ -26,9 +26,11 @@ include: "snakeResources/modules/spoolFullAnalysis.snakefile"
 ########################################################################################################################################
 #### FULL ANALYSIS AGGREGATOR ##########################################################################################################
 ########################################################################################################################################
+# This rule determines what is run in the full analysis spooling option
 rule AGGREGATOR_full_analysis:
     input:
-
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
     output:
         "{path}operations/modules/{sample}-REP{repnum}.full_analysis.finished"
     shell:
@@ -847,6 +849,16 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
+
+# This rule initiates the raw footprint analysis for all genes found in the config file
+rule AGGREGATOR_footprinting_raw_analysis:
+    input:
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
+    output:
+        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
+    shell:
+        "touch {output}"
 
 # Generate the raw data used for downstream footprint analysis
 rule FOOTPRINTING_raw_analysis:
