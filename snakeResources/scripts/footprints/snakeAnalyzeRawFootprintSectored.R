@@ -10,7 +10,7 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
 sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
-currentChunk <- snakemake@wildcards[["chunknum"]]
+currentChunk <- snakemake@wildcards[["sector"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck

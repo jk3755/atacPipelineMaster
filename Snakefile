@@ -967,7 +967,7 @@ rule AGGREGATOR_raw_analysis_sectored:
 	shell:
 		"touch {output}"
 
-#
+# Perform the raw fp analysis by sector. Output temporary sectored .Rdata files
 rule FOOTPRINTING_raw_analysis_sectored:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
@@ -978,4 +978,17 @@ rule FOOTPRINTING_raw_analysis_sectored:
     resources:
         rawFPanalysisLarge=1
     script:
-        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintLarge.R"
+        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
+
+# Merge the sectored raw footprint analysis .Rdata files
+rule FOOTPRINTING_raw_analysis_sectored:
+    input:
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
+    output:
+        "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPanalysis.large.sector{sector}.done"
+    resources:
+        rawFPanalysisLarge=1
+    script:
+        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
