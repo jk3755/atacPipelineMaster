@@ -24,6 +24,17 @@ include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
 
 ########################################################################################################################################
+#### FULL ANALYSIS AGGREGATOR ##########################################################################################################
+########################################################################################################################################
+rule AGGREGATOR_full_analysis:
+    input:
+
+    output:
+        "{path}operations/modules/{sample}-REP{repnum}.full_analysis.finished"
+    shell:
+        "touch {output}"
+
+########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
 ########################################################################################################################################
 # Run this rule to generate all needed data for scanning the genome for matches to PWMs
@@ -37,7 +48,7 @@ rule run_PWMscan:
 ########################################################################################################################################
 rule AGGREGATOR_preprocessing:
     input:
-    	#"snakeResources/sites/operations/PWMscan.allgroups.done",
+        #"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
@@ -73,6 +84,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}operations
+        mkdir -p -v {wildcards.path}operations/modules
         mkdir -p -v {wildcards.path}operations/preprocessing
         #
         mkdir -p -v {wildcards.path}operations/footprints
