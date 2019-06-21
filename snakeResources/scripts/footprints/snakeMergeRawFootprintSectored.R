@@ -1,5 +1,6 @@
 
 ##
+cat("Loading libraries", "\n")
 suppressMessages(library(GenomicRanges))
 
 ##
@@ -15,12 +16,31 @@ sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
 dirPath <- snakemake@wildcards[["path"]]
 
+## Scan for all available input files
+sectorPath <- paste0(dirPath, "/footprints/data/temp")
+cat("Scanning for sector footprint files at path:", sectorPath, "\n")
+sectorFiles <- Sys.glob(file.path(sectorPath, paste0(sampleName, "-REP", sampleRep, ".", geneName, "*rawFootprintData.Rdata")))
+cat("Found sector footprint files:", sectorFiles, "\n")
 
+## Load the files and store in a list
+numFiles <- length(sectorFiles)
+cat("Loading", numFiles, "sectored files", "\n")
 
-Sys.glob(file.path(file_dir, "*.dbf")) ## file_dir = file containing directory
-
-
+## 
+footprintDataList <- list()
 ##
+for (a in 1:numFiles){
+  ##
+  load(sectorFiles[a])
+  ##
+  footprintDataList[[a]] <- footprintData
+} # end for (a in 1:numFiles)
+
+## Determine the number of motifs
+numMotifs <- length(footprintDataList[[1]])
+cat("Found", numMotifs, "motifs", "\n")
+
+####
 cat("Determining number of motifs...", "\n")
 load(sitespath)
 num_motifs <- length(bindingSites)

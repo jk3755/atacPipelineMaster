@@ -10,11 +10,11 @@ outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
 sampleRep <- snakemake@wildcards[["repnum"]]
 geneName <- snakemake@wildcards[["gene"]]
-currentChunk <- snakemake@wildcards[["sector"]]
+currentSector <- snakemake@wildcards[["sector"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Set the output path for Rdata file and perform a filecheck
-footprintDataPath <- paste0(dirPath, "footprints/data/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".chunk", currentChunk, ".rawFootprintData.Rdata")
+footprintDataPath <- paste0(dirPath, "footprints/data/temp/", sampleName, "-REP", sampleRep, ".", geneName, ".sector", currentSector, ".rawFootprintData.Rdata")
 cat("Output path for raw footprint data:", footprintDataPath, "\n")
 
 ##
@@ -76,8 +76,8 @@ if (file.exists(footprintDataPath) == TRUE){
       } else {
         
         ##
-        cat("Setting sites for analysis for current chunk", "\n")
-        currentChunk <- as.numeric(currentChunk)
+        cat("Setting sites for analysis for current sector", "\n")
+        currentSector <- as.numeric(currentSector)
         
         ##
         if (numSites < 100000){
@@ -85,31 +85,31 @@ if (file.exists(footprintDataPath) == TRUE){
           ## This is an error handling step
           cat("Less than 100000 sites identified", "\n")
           
-        } else if (currentChunk == 1){
+        } else if (currentSector == 1){
           
           f <- unique(cut(1:numSites,breaks=20))
           labs <- levels(f)[f]
           lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
           upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
-          cat("Current chunk is 1", "\n")
+          cat("Current sector is 1", "\n")
           allSites <- allSites[1:upper[1]]
           
-        } else if (currentChunk > 1 && currentChunk < 20){
+        } else if (currentSector > 1 && currentSector < 20){
           
           f <- unique(cut(1:numSites,breaks=20))
           labs <- levels(f)[f]
           lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
           upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
-          cat("Current chunk is between 2-19", "\n")
-          allSites <- allSites[upper[(currentChunk - 1)]:upper[currentChunk]]
+          cat("Current sector is between 2-19", "\n")
+          allSites <- allSites[upper[(currentSector - 1)]:upper[currentSector]]
           
-        } else if (currentChunk == 20){
+        } else if (currentSector == 20){
           
           f <- unique(cut(1:numSites,breaks=20))
           labs <- levels(f)[f]
           lower <- as.numeric( sub("\\((.+),.*", "\\1", labs))
           upper <- as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs))
-          cat("Current chunk is 20", "\n")
+          cat("Current sector is 20", "\n")
           allSites <- allSites[upper[19]:numSites]
           
         }
