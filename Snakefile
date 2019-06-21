@@ -94,7 +94,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
         #
         mkdir -p -v {wildcards.path}operations/footprints/temp
-        mkdir -p -v {wildcards.path}operations/footprints/temp/merged
+        mkdir -p -v {wildcards.path}operations/footprints/merged
         #
         mkdir -p -v {wildcards.path}operations/saturation
         mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
