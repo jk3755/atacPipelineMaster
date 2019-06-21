@@ -40,11 +40,65 @@ for (a in 1:numFiles){
 numMotifs <- length(footprintDataList[[1]])
 cat("Found", numMotifs, "motifs", "\n")
 
-####
-cat("Determining number of motifs...", "\n")
-load(sitespath)
-num_motifs <- length(bindingSites)
-cat("Found ", num_motifs, " motifs", "\n")
+#### Merge the sectored data
+cat("Merging sectored data", "\n")
+
+##
+footPrintData <- list()
+
+for (b in 1:numMotifs){
+  
+  ##
+  tempList <- list()
+  
+  ## PWM
+  com <- paste0("tempList$PWM <- footprintDataList[[1]][['motif", b, "']][['PWM']]")
+  eval(parse(text = com))
+  
+  ## Motif Width
+  com <- paste0("tempList$motifWidth <- footprintDataList[[1]][['motif", b, "']][['motifWidth']]")
+  eval(parse(text = com))
+  
+  ## allSites
+  com <- paste0("mergedSites <- c(footprintDataList[[1]][['motif", b, "']][['allSites']], footprintDataList[[2]][['motif", b, "']][['allSites']],
+                footprintDataList[[3]][['motif", b, "']][['allSites']], footprintDataList[[4]][['motif", b, "']][['allSites']],
+                footprintDataList[[5]][['motif", b, "']][['allSites']], footprintDataList[[6]][['motif", b, "']][['allSites']],
+                footprintDataList[[7]][['motif", b, "']][['allSites']], footprintDataList[[8]][['motif", b, "']][['allSites']],
+                footprintDataList[[9]][['motif", b, "']][['allSites']], footprintDataList[[10]][['motif", b, "']][['allSites']],
+                footprintDataList[[11]][['motif", b, "']][['allSites']], footprintDataList[[12]][['motif", b, "']][['allSites']],
+                footprintDataList[[13]][['motif", b, "']][['allSites']], footprintDataList[[14]][['motif", b, "']][['allSites']],
+                footprintDataList[[15]][['motif", b, "']][['allSites']], footprintDataList[[16]][['motif", b, "']][['allSites']],
+                footprintDataList[[17]][['motif", b, "']][['allSites']], footprintDataList[[18]][['motif", b, "']][['allSites']],
+                footprintDataList[[19]][['motif", b, "']][['allSites']], footprintDataList[[20]][['motif", b, "']][['allSites']])")
+  eval(parse(text = com))
+  ##
+  com <- paste0("tempList$allSites <- mergedSites")
+  eval(parse(text = com))
+  
+  ####
+  com <- paste0("footprintData$motif", b, " <- tempList")
+  eval(parse(text = com))
+  
+} # end for (b in 1:numMotifs)
+
+
+###############
+x <- c(footprintDataList[[1]][["motif1"]][["allSites"]], footprintDataList[[2]][["motif1"]][["allSites"]], footprintDataList[[3]][["motif1"]][["allSites"]],
+       footprintDataList[[4]][["motif1"]][["allSites"]], footprintDataList[[5]][["motif1"]][["allSites"]], footprintDataList[[6]][["motif1"]][["allSites"]],
+       footprintDataList[[7]][["motif1"]][["allSites"]], footprintDataList[[8]][["motif1"]][["allSites"]], footprintDataList[[9]][["motif1"]][["allSites"]],
+       footprintDataList[[10]][["motif1"]][["allSites"]], footprintDataList[[11]][["motif1"]][["allSites"]], footprintDataList[[12]][["motif1"]][["allSites"]],
+       footprintDataList[[13]][["motif1"]][["allSites"]], footprintDataList[[14]][["motif1"]][["allSites"]], footprintDataList[[15]][["motif1"]][["allSites"]],
+       footprintDataList[[16]][["motif1"]][["allSites"]], footprintDataList[[17]][["motif1"]][["allSites"]], footprintDataList[[18]][["motif1"]][["allSites"]],
+       footprintDataList[[19]][["motif1"]][["allSites"]], footprintDataList[[20]][["motif1"]][["allSites"]])
+
+
+g1 <- footprintDataList[[1]][["motif1"]][["allSites"]]
+g2 <- footprintDataList[[2]][["motif1"]][["allSites"]]
+
+g3 <- c(g1, g2)
+
+
+
 
 for (x in 1:num_motifs){
   
