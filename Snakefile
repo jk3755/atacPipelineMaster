@@ -2,7 +2,7 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 # Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisLarge=1 purgeduplicates=10 mem_mb=95000 --restart-times=5
+# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisSectored=1 purgeduplicates=10 mem_mb=95000 --restart-times=5
 #
 # Parameters:
 # j: specifies the number of threads the run will use
@@ -935,7 +935,7 @@ rule AGGREGATOR_sectored_footprinting_raw_analysis:
     input:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete",
-        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPsectored.merged", genename=config["geneNamesSectored"])
+        expand("{{path}}operations/footprints/merged/{{sample}}-REP{{repnum}}.{genename}.rawFPsectored.merged", genename=config["geneNamesSectored"])
     output:
         "{path}operations/footprints/{sample}-REP{repnum}.sectored_footprinting_analysis_raw.complete"
     shell:
@@ -950,7 +950,7 @@ rule FOOTPRINTING_raw_analysis_sectored:
     output:
         "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector{sector}.done"
     resources:
-        rawFPanalysisLarge=1
+        rawFPanalysisSectored=1
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
 
@@ -991,7 +991,5 @@ rule FOOTPRINTING_merge_sectored_raw_footprints:
         "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPsectored.done"
     output:
         "{path}operations/footprints/merged/{sample}-REP{repnum}.{gene}.rawFPsectored.merged"
-    resources:
-        rawFPanalysisLarge=1
     script:
-        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
+        "snakeResources/scripts/footprints/snakeMergeRawFootprintSectored.R"

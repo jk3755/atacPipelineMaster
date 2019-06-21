@@ -1,36 +1,24 @@
-suppressMessages(library(GenomicRanges))
+
 ##
-cat("Setting snakemake vars...", "\n")
-sitespath <- snakemake@input[[1]]
-chr1_input <- snakemake@input[[2]]
-chr2_input <- snakemake@input[[3]]
-chr3_input <- snakemake@input[[4]]
-chr4_input <- snakemake@input[[5]]
-chr5_input <- snakemake@input[[6]]
-chr6_input <- snakemake@input[[7]]
-chr7_input <- snakemake@input[[8]]
-chr8_input <- snakemake@input[[9]]
-chr9_input <- snakemake@input[[10]]
-chr10_input <- snakemake@input[[11]]
-chr11_input <- snakemake@input[[12]]
-chr12_input <- snakemake@input[[13]]
-chr13_input <- snakemake@input[[14]]
-chr14_input <- snakemake@input[[15]]
-chr15_input <- snakemake@input[[16]]
-chr16_input <- snakemake@input[[17]]
-chr17_input <- snakemake@input[[18]]
-chr18_input <- snakemake@input[[19]]
-chr19_input <- snakemake@input[[20]]
-chr20_input <- snakemake@input[[21]]
-chr21_input <- snakemake@input[[22]]
-chr22_input <- snakemake@input[[23]]
-chrX_input <- snakemake@input[[24]]
-chrY_input <- snakemake@input[[25]]
+suppressMessages(library(GenomicRanges))
+
+##
+cat("Setting snakemake vars", "\n")
+bamPath <- snakemake@input[[1]]
+baiPath <- snakemake@input[[2]]
+sitesPath <- snakemake@input[[3]]
 #
-output <- snakemake@output[[1]]
-sample <- snakemake@wildcards[["mergedsample"]]
-gene <- snakemake@wildcards[["gene"]]
-dirpath <- snakemake@wildcards[["path"]]
+outPath <- snakemake@output[[1]]
+#
+sampleName <- snakemake@wildcards[["sample"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
+geneName <- snakemake@wildcards[["gene"]]
+dirPath <- snakemake@wildcards[["path"]]
+
+
+
+Sys.glob(file.path(file_dir, "*.dbf")) ## file_dir = file containing directory
+
 
 ##
 cat("Determining number of motifs...", "\n")
