@@ -182,7 +182,7 @@ save(footprintData, file = mergedDataPath)
 
 
 cat("Finished merging!", "\n")
-file.create(output)
+file.create(outPath)
 
 
 
