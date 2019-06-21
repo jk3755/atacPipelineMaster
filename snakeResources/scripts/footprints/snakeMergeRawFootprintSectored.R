@@ -174,12 +174,12 @@ if (file.exists(mergedDataPath) == TRUE){
     eval(parse(text = com))
     
   } # end for (b in 1:numMotifs)
+  
+  #### Output the merged footprintData object
+  cat("Finished merging, saving data", "\n")
+  save(footprintData, file = mergedDataPath)
+  
 } # end if (file.exists(mergedDataPath) == TRUE)
-
-#### Output the merged footprintData object
-cat("Finished merging, saving data", "\n")
-save(footprintData, file = mergedDataPath)
-
 
 cat("Finished merging!", "\n")
 file.create(outPath)
