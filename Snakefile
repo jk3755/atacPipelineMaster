@@ -934,8 +934,8 @@ rule FOOTPRINTING_raw_analysis:
 rule AGGREGATOR_sectored_footprinting_raw_analysis:
     input:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
-        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete",
-        expand("{{path}}operations/footprints/merged/{{sample}}-REP{{repnum}}.{genename}.rawFPsectored.merged", genename=config["geneNamesSectored"])
+        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
+        #expand("{{path}}operations/footprints/merged/{{sample}}-REP{{repnum}}.{genename}.rawFPsectored.merged", genename=config["geneNamesSectored"])
     output:
         "{path}operations/footprints/{sample}-REP{repnum}.sectored_footprinting_analysis_raw.complete"
     shell:

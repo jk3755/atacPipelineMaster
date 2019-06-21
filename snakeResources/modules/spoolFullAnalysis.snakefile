@@ -1,6 +1,16 @@
 ########################################################################################################################################
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
+# Spool the pipeline with the following parameters:
+# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisLarge=1 purgeduplicates=10 mem_mb=95000 --restart-times=3
+#
+# Parameters:
+# j: specifies the number of threads the run will use
+# hg38align:
+# rawFPanalysisLarge:
+# purgeDuplicates:
+# mem_mb: specifies the global memory limit the snakemake run can use
+# restart-times: sets the number of times snakemake will attempt to restart a failed job
 
 ########################################################################################################################################
 #### TEST DATA #########################################################################################################################
@@ -66,6 +76,15 @@ rule full_analysis_ls1034_wt01:
 
 rule full_analysis_ls1034_wt02:
     input:
+        "ls1034/wt02/operations/modules/LS1034-WT-02-REP1.full_analysis.finished",
+        "ls1034/wt02/operations/modules/LS1034-WT-02-REP2.full_analysis.finished",
+        "ls1034/wt02/operations/modules/LS1034-WT-02-REP3.full_analysis.finished"
+
+rule full_analysis_ls1034:
+    input:
+        "ls1034/wt01/operations/modules/LS1034-WT-01-REP1.full_analysis.finished",
+        "ls1034/wt01/operations/modules/LS1034-WT-01-REP2.full_analysis.finished",
+        "ls1034/wt01/operations/modules/LS1034-WT-01-REP3.full_analysis.finished",
         "ls1034/wt02/operations/modules/LS1034-WT-02-REP1.full_analysis.finished",
         "ls1034/wt02/operations/modules/LS1034-WT-02-REP2.full_analysis.finished",
         "ls1034/wt02/operations/modules/LS1034-WT-02-REP3.full_analysis.finished"
