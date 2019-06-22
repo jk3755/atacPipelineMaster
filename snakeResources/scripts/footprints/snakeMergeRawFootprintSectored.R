@@ -61,6 +61,42 @@ if (file.exists(mergedDataPath) == TRUE){
     ####
     tempList <- list()
     
+    ## If the number of sites * 20 is < 100000, all sectors are the same, so can just directly transfer data
+    numSitesTest <- (length(mergedSites@ranges) * 20)
+    
+    ##
+    if (numSitesTest < 100000){
+      
+      ## PWM
+      com <- paste0("tempList$PWM <- footprintDataList[[1]][['motif", b, "']][['PWM']]")
+      eval(parse(text = com))
+      ## Motif Width
+      com <- paste0("tempList$motifWidth <- footprintDataList[[1]][['motif", b, "']][['motifWidth']]")
+      eval(parse(text = com))
+      ## allSites
+      com <- paste0("tempList$allSites <- c(footprintDataList[[1]][['motif", b, "']][['allSites']])")
+      eval(parse(text = com))
+      ## numSites
+      com <- paste0("tempList$numSites <- length(tempList$allSites@ranges)")
+      eval(parse(text = com))
+      ## extSites
+      com <- paste0("tempList$extSites <- c(footprintDataList[[1]][['motif", b, "']][['extSites']])")
+      eval(parse(text = com))
+      ## insMatrix
+      com <- paste0("tempList$insMatrix <- rbind(footprintDataList[[1]][['motif", b, "']][['insMatrix']])")
+      eval(parse(text = com))
+      ## libSize
+      com <- paste0("tempList$libSize <- c(footprintDataList[[1]][['motif", b, "']][['libSize']])")
+      eval(parse(text = com))
+      ## Coverage Size
+      com <- paste0("tempList$coverageSize <- c(footprintDataList[[1]][['motif", b, "']][['coverageSize']])")
+      eval(parse(text = com))
+      ## libFactor
+      com <- paste0("tempList$libFactor <- c(footprintDataList[[1]][['motif", b, "']][['libFactor']])")
+      eval(parse(text = com))
+
+    } else {
+    
     #### PWM
     com <- paste0("tempList$PWM <- footprintDataList[[1]][['motif", b, "']][['PWM']]")
     eval(parse(text = com))
@@ -168,6 +204,8 @@ if (file.exists(mergedDataPath) == TRUE){
     ##
     com <- paste0("tempList$libFactor <- tempLibFactor")
     eval(parse(text = com))
+    
+    } # end if (numSitesTest < 100000)
     
     #### Transfer merged data to footprintData object
     com <- paste0("footprintData$motif", b, " <- tempList")
