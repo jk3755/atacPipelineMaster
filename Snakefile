@@ -933,7 +933,6 @@ rule FOOTPRINTING_raw_analysis:
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
-
 # # Parse the sites based on the signals present
 # rule FOOTPRINTING_parse_sites:
 #     input:

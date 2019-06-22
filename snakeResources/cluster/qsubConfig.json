@@ -7,7 +7,7 @@
     "__default__" :
     {
         "nCPUs"     : "1",
-        "memory"    : 8192,
+        "memory"    : 10000,
         "resources" : "\"rusage[mem=8192,scratch=8192]\"",
         "name"      : "JOBNAME.{rule}.{wildcards}",
         "output"    : "logs/cluster/{rule}.{wildcards}.out",
@@ -17,132 +17,127 @@
 // 
     "STEP3_mycoalign" :
     {
-	"nCPUs"     : "20"
+	"nCPUs"     : "20",
+    "memory"    : 5000
     },
 
 //
     "STEP4_hg38align" :
     {
-	
-	"nCPUs"     : "4"
+	"nCPUs"     : "20",
+    "memory"    : 10000
     },
 
 //
     "STEP6_blacklistfilter_bamconversion" :
     {
-        "memory"    : 32768,
-        "nCPUs"     : "4"
+        "nCPUs"     : "20"
     },
 
 //
     "STEP7_chrM_contamination" :
     {
-        "memory"    : 16384,
-        "nCPUs"     : "4"
+        "nCPUs"     : "20"
     },
 
 //
     "STEP8_addrgandcsbam" :
     {
-        "memory"    : 16384,
-        "nCPUs"     : "2"
+        "nCPUs"     : "1",
+        "memory"    : 50000
     },
 
 //
     "STEP9_cleansam" :
     {
-        "memory"    : 16384,
-        "nCPUs"     : "4"
+        "nCPUs"     : "1",
+        "memory"    : 50000
     },
 
 //
-    "openswath" :
+    "STEP10_mergelanes" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 50000
     }
 }
 
 //
-    "openswath" :
+    "STEP11_purgeduplicates" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 50000
     }
 }
 
 //
-    "openswath" :
+    "STEP13_build_index" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 50000
     }
 }
 
 //
-    "openswath" :
+    "STEP14_makebigwig_bamcov" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "20",
+        "memory"    : 25000
     }
 }
 
 //
-    "openswath" :
+    "STEP18_fragment_size_distribution" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 20000
     }
 }
 
 //
-    "openswath" :
+    "STEP19_annotate_peaks_global" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 40000
     }
 }
 
 //
-    "openswath" :
+    "STEP19_annotate_peaks_local" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 40000
     }
 }
 
 //
-    "openswath" :
+    "SATURATION_purge_duplicates_downsampled" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 50000
     }
 }
 
 //
-    "openswath" :
+    "FOOTPRINTING_raw_analysis" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 25000
     }
 }
 
 //
-    "openswath" :
+    "FOOTPRINTING_raw_analysis_sectored" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 200000
     }
 }
 
 //
-    "openswath" :
+    "FOOTPRINTING_merge_sectored_raw_footprints" :
     {
-        "nCPUs"     : "8"
+        "nCPUs"     : "1",
+        "memory"    : 400000
     }
 }
-
-//
-    "openswath" :
-    {
-        "nCPUs"     : "8"
-    }
-}
-
-//
-    "openswath" :
-    {
-        "nCPUs"     : "8"
-    }
-}
-
