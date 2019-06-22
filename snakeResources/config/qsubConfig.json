@@ -1,0 +1,52 @@
+{
+    "__default__" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : 8192,
+        "resources" : "\"rusage[mem=8192,scratch=8192]\"",
+        "name"      : "JOBNAME.{rule}.{wildcards}",
+        "output"    : "logs/cluster/{rule}.{wildcards}.out",
+        "error"     : "logs/cluster/{rule}.{wildcards}.err"
+    },
+
+    "diau" :
+    {
+	"nCPUs"     : "4"
+    },
+
+    "msfragger_index" :
+    {
+	"memory"    : 16384,
+	"nCPUs"     : "4"
+    },
+
+    "msfragger_search" :
+    {
+        "memory"    : 32768,
+        "nCPUs"     : "4"
+    },
+
+    "pyprophet_learn" :
+    {
+        "memory"    : 16384,
+        "nCPUs"     : "4"
+    },
+
+    "easypqp" :
+    {
+        "memory"    : 16384,
+        "nCPUs"     : "2"
+    },
+
+    "global_combined_decoy_pqp" :
+    {
+        "memory"    : 16384,
+        "nCPUs"     : "4"
+    },
+
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
