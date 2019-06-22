@@ -240,6 +240,12 @@ rule STEP5_coordsort_sam:
     
 # Remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
 rule STEP6_blacklistfilter_bamconversion:
+    # -b output in bam format
+    # -h include header in output file
+    # -o specify output file path
+    # -L only output alignments that overlap with the provided BED file
+    # -U write the alignments NOT selected by other parameters to the specified file
+    # -@ specify number of threads
     input:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
     output:
@@ -247,6 +253,8 @@ rule STEP6_blacklistfilter_bamconversion:
         b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.bamconvert.benchmark.txt'
+    threads:
+        20
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
     
