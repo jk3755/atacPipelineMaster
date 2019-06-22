@@ -1,17 +1,22 @@
 ########################################################################################################################################
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
-# Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisSectored=1 purgeduplicates=10 mem_mb=95000 --restart-times=5
+## Spool the pipeline with the following parameters:
+# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisSectored=1 purgeduplicates=10 mem_mb=95000 --restart-times=3
 #
-# Parameters:
+## Parameters:
 # j: specifies the number of threads the run will use
-# hg38align:
-# rawFPanalysisLarge:
-# purgeDuplicates:
-# mem_mb: specifies the global memory limit the snakemake run can use
 # restart-times: sets the number of times snakemake will attempt to restart a failed job
-
+# --rerun-incomplete: can be used to regenerate incomple files
+# --unlock: unlocks the snakemake working directory, such as after a power loss or kill signal
+#
+## Resource definitions
+# mem_mb: specifies the total memory limit of the pipeline. This relies on mem_mb being user defined in individual rules
+# bowtie2align: jobs that use bowtie2 for aligning reads
+# purgeDuplicates: rules that use picard to remove duplicate reads
+# rawFPanalysis: rules that analyze raw footprinting data
+# mergeRawFPSectors: rule that merges to sectored data for the larger footprint analysis
+#
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
@@ -82,9 +87,11 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}benchmark
         mkdir -p -v {wildcards.path}benchmark/preprocessing
         mkdir -p -v {wildcards.path}benchmark/correlation
+        mkdir -p -v {wildcards.path}benchmark/saturation
         #
         mkdir -p -v {wildcards.path}benchmark/footprints
-        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed {wildcards.path}benchmark/footprints/processed
+        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
+        mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}operations
         mkdir -p -v {wildcards.path}operations/modules
@@ -197,6 +204,9 @@ rule STEP3_mycoalign:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
     threads:
         20
+    resources:
+        bowtie2align=1,
+        mem_mb=5000
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
@@ -221,7 +231,8 @@ rule STEP4_hg38align:
     threads:
         20
     resources:
-        hg38align=1
+        bowtie2align=1,
+        mem_mb=10000
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
@@ -251,10 +262,10 @@ rule STEP6_blacklistfilter_bamconversion:
     output:
         a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}_L{lane}.hg38blacklist.bam",
         b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.bamconvert.benchmark.txt'
     threads:
         20
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.bamconvert.benchmark.txt'
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
     
@@ -273,6 +284,8 @@ rule STEP7_chrM_contamination:
     output:
         a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}_L{lane}.mitochondrial.bam",
         b="{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
+    threads:
+        20
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.chrMfilter.benchmark.txt'
     shell:
@@ -299,6 +312,8 @@ rule STEP8_addrgandcsbam:
         "{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
+    resources:
+        mem_mb=50000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
     shell:
@@ -323,6 +338,8 @@ rule STEP9_cleansam:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.clean.bam"
+    resources:
+        mem_mb=50000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
     shell:
@@ -346,6 +363,8 @@ rule STEP10_mergelanes:
         d="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L4.clean.bam"
     output:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
+    resources:
+        mem_mb=50000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.mergelanes.benchmark.txt'
     shell:
@@ -389,7 +408,7 @@ rule STEP10b_clean_intermediate_data:
 
 # Purge PCR duplicate reads
 rule STEP11_purgeduplicates:
-	# -Xmx10g specifies a 10 gb memory limit per process
+	# -Xmx50g specifies a 50 gb memory limit per process
     # I specifies the input file
     # O specifies the output file
     # M specifies the duplication metrics output file
@@ -403,9 +422,10 @@ rule STEP11_purgeduplicates:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
     resources:
-        purgeduplicates=1
+        purgeDuplicates=1,
+        mem_mb=50000
     shell:
-        "java -Xmx10g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        "java -Xmx50g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
         I={input.b} \
         O={output} \
         M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
@@ -455,6 +475,8 @@ rule STEP13_build_index:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+    resources:
+        mem_mb=50000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
@@ -477,6 +499,10 @@ rule STEP14_makebigwig_bamcov:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw"
+    threads:
+        20
+    resources:
+        mem_mb=25000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.makebigwig.benchmark.txt'
     shell:
@@ -574,6 +600,8 @@ rule STEP18_fragment_size_distribution:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+    resources:
+        mem_mb=20000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
     script:
@@ -585,6 +613,8 @@ rule STEP19_annotate_peaks_global:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done"
+    resources:
+        mem_mb=40000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
@@ -596,6 +626,8 @@ rule STEP19_annotate_peaks_local:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done"
+    resources:
+        mem_mb=40000
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
@@ -681,6 +713,8 @@ rule SATURATION_downsample_bam:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
         "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
+    benchmark:
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.downsample.bam.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar DownsampleSam \
         I={input} \
@@ -693,6 +727,8 @@ rule SATURATION_sort_downsampled:
         "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
     output:
         "{path}preprocessing/saturation/downsampled/cs/{sample}-REP{repnum}.{prob}.cs.bam"
+    benchmark:
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.sort.downsampled.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar SortSam \
         I={input} \
@@ -707,9 +743,12 @@ rule SATURATION_purge_duplicates_downsampled:
         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
         b="{path}metrics/saturation/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
     resources:
-        purgeduplicates=1
+        purgeDuplicates=1
+        mem_mb=50000
+    benchmark:
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.purgeduplicates.downsampled.benchmark.txt'
     shell:
-        "java -Xmx10g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        "java -Xmx50g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
@@ -722,6 +761,8 @@ rule SATURATION_index_downsampled:
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam"
     output:
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
+    benchmark:
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.index.downsampled.benchmark.txt'
     shell:
         "java -jar snakeResources/programs/picard/picard.jar BuildBamIndex \
         I={input} \
@@ -857,6 +898,8 @@ rule SATURATION_analyze_raw_footprint_downsampled:
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
     output:
         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
+    benchmark:
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.rawfootprint.downsampled.benchmark.txt'
     script:
         "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
 
@@ -882,10 +925,11 @@ rule FOOTPRINTING_raw_analysis:
         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
+    resources:
+        rawFPanalysis=1,
+        mem_mb=25000
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
-    resources:
-        rawFPanalysis=1
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprint.R"
 
@@ -962,7 +1006,10 @@ rule FOOTPRINTING_raw_analysis_sectored:
     output:
         "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector{sector}.done"
     resources:
-        rawFPanalysisSectored=1
+        rawFPanalysis=1,
+        mem_mb=200000
+    benchmark:
+        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.sector{sector}.benchmark.txt'
     script:
         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
 
@@ -1003,5 +1050,10 @@ rule FOOTPRINTING_merge_sectored_raw_footprints:
         "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPsectored.done"
     output:
         "{path}operations/footprints/merged/{sample}-REP{repnum}.{gene}.rawFPsectored.merged"
+    resources:
+        mergeRawFPSectors=1,
+        mem_mb=400000
+    benchmark:
+        '{path}benchmark/footprints/merge/{sample}-REP{repnum}.{gene}.mergeRawFP.sector{sector}.benchmark.txt'
     script:
         "snakeResources/scripts/footprints/snakeMergeRawFootprintSectored.R"
