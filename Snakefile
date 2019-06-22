@@ -195,6 +195,8 @@ rule STEP3_mycoalign:
         "{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
+    threads:
+        20
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
@@ -216,6 +218,8 @@ rule STEP4_hg38align:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
+    threads:
+        20
     resources:
         hg38align=1
     shell:
