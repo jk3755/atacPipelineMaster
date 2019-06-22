@@ -1,9 +1,8 @@
 // ########################################################################################################################################
 // #### CLUSTER CONFIGURATION NOTES #######################################################################################################
 // ########################################################################################################################################
-//
-//
 
+// The default settings for job settings when not specified otherwise
 {
     "__default__" :
     {
@@ -15,41 +14,132 @@
         "error"     : "logs/cluster/{rule}.{wildcards}.err"
     },
 
-    "diau" :
+// 
+    "STEP3_mycoalign" :
     {
+	"nCPUs"     : "20"
+    },
+
+//
+    "STEP4_hg38align" :
+    {
+	
 	"nCPUs"     : "4"
     },
 
-    "msfragger_index" :
-    {
-	"memory"    : 16384,
-	"nCPUs"     : "4"
-    },
-
-    "msfragger_search" :
+//
+    "STEP6_blacklistfilter_bamconversion" :
     {
         "memory"    : 32768,
         "nCPUs"     : "4"
     },
 
-    "pyprophet_learn" :
+//
+    "STEP7_chrM_contamination" :
     {
         "memory"    : 16384,
         "nCPUs"     : "4"
     },
 
-    "easypqp" :
+//
+    "STEP8_addrgandcsbam" :
     {
         "memory"    : 16384,
         "nCPUs"     : "2"
     },
 
-    "global_combined_decoy_pqp" :
+//
+    "STEP9_cleansam" :
     {
         "memory"    : 16384,
         "nCPUs"     : "4"
     },
 
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
+    "openswath" :
+    {
+        "nCPUs"     : "8"
+    }
+}
+
+//
     "openswath" :
     {
         "nCPUs"     : "8"
