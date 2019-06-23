@@ -2,9 +2,10 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 ## Spool the pipeline with the following parameters:
-# snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisSectored=1 purgeduplicates=10 mem_mb=95000 --restart-times=3
+# snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 20 [rule] --resources mem_mb=95000 hg38align=1 bowtie2align=1 purgeDuplicates=2 rawFPanalysis=20 mergeRawFPSectors=10 --restart-times=3
 #
 ## Parameters:
+# --snakefile: specify the file where the snakemake workflow is contained
 # j: specifies the number of threads the run will use
 # restart-times: sets the number of times snakemake will attempt to restart a failed job
 # --rerun-incomplete: can be used to regenerate incomple files
