@@ -5,10 +5,9 @@
 ########################################################################################################################################
 #### TEST ##############################################################################################################################
 ########################################################################################################################################
-# rule run_raw_footprint_test:
-#     input:
-#         "test/operations/preprocessing/test-REP1.preprocessing.complete",
-#         expand("test/operations/footprints/groups/raw/test-REP1.rawFPanalysis.group{param}.done", param=config["group"])
+rule run_raw_footprint_test:
+    input:
+        expand("test/operations/footprints/groups/raw/test-REP1.rawFPanalysis.group{param}.done", param=config["group"])
 
 ########################################################################################################################################
 #### MDST8 #############################################################################################################################
@@ -52,13 +51,13 @@
 #         # expand("lncap/ex01/operations/footprints/temp/LNCaP-CR-07-REP1.{genename}.rawFPanalysis.large.done", genename=config["geneNamesLarge"]),
 #         # expand("lncap/ex01/operations/footprints/temp/LNCaP-CR-08-REP1.{genename}.rawFPanalysis.large.done", genename=config["geneNamesLarge"]),
 
-rule rawFP_lncap_ex01:
-    input:
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-WT-01-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-WT-02-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-01-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-02-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-04-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-05-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-07-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-08-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"])
+# rule rawFP_lncap_ex01:
+#     input:
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-WT-01-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-WT-02-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-01-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-02-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-04-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-05-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-07-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("lncap/ex01/operations/footprints/raw/LNCaP-CR-08-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"])
