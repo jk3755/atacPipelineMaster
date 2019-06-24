@@ -7,7 +7,9 @@
 ########################################################################################################################################
 rule run_raw_footprint_test:
     input:
-        expand("test/operations/footprints/groups/raw/test-REP1.rawFPanalysis.group{param}.done", param=config["group"])
+        expand("test/operations/footprints/raw/test-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+        expand("test/operations/footprints/raw/test-REP2.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+        expand("test/operations/footprints/raw/test-REP3.{genename}.rawFPanalysis.done", genename=config["geneNames"])
 
 ########################################################################################################################################
 #### MDST8 #############################################################################################################################

@@ -912,7 +912,7 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 # This rule initiates the raw footprint analysis for all genes found in the config file
 rule AGGREGATOR_footprinting_raw_analysis:
     input:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+        #"{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
     output:
         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
