@@ -1,8 +1,13 @@
-#!/bin/bash
+#!/bin/bash -x
 #$ -N TEST
 #$ -cwd
 #$ -pe smp 1
 #$ -l mem=8G,time=8::
-
+#$ -V
+echo "Running qsubSubmit.sh script"
+echo "module load conda"
 module load conda
-snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 100 rawFP_lncap_ex01 --latency-wait=30 --cluster-config snakeResources/cluster/qsubConfig.json --cluster "qsub -cwd -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time=8:0:0" --jobscript snakeResources/cluster/snakeJobScript.sh
+echo "source activate atac"
+source activate atac
+echo "snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 10 rawFP_lncap_ex01 --cluster-config snakeResources/cluster/qsubConfig.json --cluster 'qsub -cwd -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time=2:0:0' --jobscript snakeResources/cluster/snakeJobScript.sh"
+snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 10 rawFP_lncap_ex01 --cluster-config snakeResources/cluster/qsubConfig.json --cluster "qsub -cwd -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time=2:0:0" --jobscript snakeResources/cluster/snakeJobScript.sh
