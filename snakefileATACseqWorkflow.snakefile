@@ -745,7 +745,7 @@ rule SATURATION_purge_duplicates_downsampled:
         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
         b="{path}metrics/saturation/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
     resources:
-        purgeDuplicates=1
+        purgeDuplicates=1,
         mem_mb=50000
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.purgeduplicates.downsampled.benchmark.txt'
@@ -901,7 +901,7 @@ rule SATURATION_analyze_raw_footprint_downsampled:
     output:
         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
     benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.rawfootprint.downsampled.benchmark.txt'
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.{prob}.benchmark.txt'
     script:
         "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
 
@@ -987,74 +987,74 @@ rule FOOTPRINTING_raw_analysis:
 #### SECTORED FOOTPRINTING  ############################################################################################
 ########################################################################################################################
 
-# This rule initiates the raw footprint analysis for all genes found in the config file that require sectored analysis
-rule AGGREGATOR_sectored_footprinting_raw_analysis:
-    input:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
-        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
-        #expand("{{path}}operations/footprints/merged/{{sample}}-REP{{repnum}}.{genename}.rawFPsectored.merged", genename=config["geneNamesSectored"])
-    output:
-        "{path}operations/footprints/{sample}-REP{repnum}.sectored_footprinting_analysis_raw.complete"
-    shell:
-        "touch {output}"
+# # This rule initiates the raw footprint analysis for all genes found in the config file that require sectored analysis
+# rule AGGREGATOR_sectored_footprinting_raw_analysis:
+#     input:
+#         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+#         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
+#         #expand("{{path}}operations/footprints/merged/{{sample}}-REP{{repnum}}.{genename}.rawFPsectored.merged", genename=config["geneNamesSectored"])
+#     output:
+#         "{path}operations/footprints/{sample}-REP{repnum}.sectored_footprinting_analysis_raw.complete"
+#     shell:
+#         "touch {output}"
 
-# Perform the raw fp analysis by sector. Output temporary sectored .Rdata files
-rule FOOTPRINTING_raw_analysis_sectored:
-    input:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
-    output:
-        "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector{sector}.done"
-    resources:
-        rawFPanalysis=1,
-        mem_mb=200000
-    benchmark:
-        '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.sector{sector}.benchmark.txt'
-    script:
-        "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
+# # Perform the raw fp analysis by sector. Output temporary sectored .Rdata files
+# rule FOOTPRINTING_raw_analysis_sectored:
+#     input:
+#         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+#         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+#         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
+#     output:
+#         "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector{sector}.done"
+#     resources:
+#         rawFPanalysis=1,
+#         mem_mb=200000
+#     benchmark:
+#         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.sector{sector}.benchmark.txt'
+#     script:
+#         "snakeResources/scripts/footprints/snakeAnalyzeRawFootprintSectored.R"
 
-# This rule aggregates the spooling for all 20 sectors for the larger footprints for raw analysis
-rule AGGREGATOR_raw_analysis_sectored:
-	input:
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector1.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector2.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector3.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector4.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector5.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector6.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector7.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector8.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector9.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector10.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector11.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector12.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector13.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector14.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector15.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector16.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector17.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector18.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector19.done",
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector20.done"
-	output:
-		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPsectored.done"
-	shell:
-		"touch {output}"
+# # This rule aggregates the spooling for all 20 sectors for the larger footprints for raw analysis
+# rule AGGREGATOR_raw_analysis_sectored:
+# 	input:
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector1.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector2.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector3.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector4.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector5.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector6.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector7.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector8.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector9.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector10.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector11.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector12.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector13.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector14.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector15.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector16.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector17.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector18.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector19.done",
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFP.sector20.done"
+# 	output:
+# 		"{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPsectored.done"
+# 	shell:
+# 		"touch {output}"
 
-# Merge the sectored raw footprint analysis .Rdata files
-rule FOOTPRINTING_merge_sectored_raw_footprints:
-    input:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
-        "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPsectored.done"
-    output:
-        "{path}operations/footprints/merged/{sample}-REP{repnum}.{gene}.rawFPsectored.merged"
-    resources:
-        mergeRawFPSectors=1,
-        mem_mb=400000
-    benchmark:
-        '{path}benchmark/footprints/merge/{sample}-REP{repnum}.{gene}.mergeRawFP.sector{sector}.benchmark.txt'
-    script:
-        "snakeResources/scripts/footprints/snakeMergeRawFootprintSectored.R"
+# # Merge the sectored raw footprint analysis .Rdata files
+# rule FOOTPRINTING_merge_sectored_raw_footprints:
+#     input:
+#         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+#         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+#         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
+#         "{path}operations/footprints/temp/{sample}-REP{repnum}.{gene}.rawFPsectored.done"
+#     output:
+#         "{path}operations/footprints/merged/{sample}-REP{repnum}.{gene}.rawFPsectored.merged"
+#     resources:
+#         mergeRawFPSectors=1,
+#         mem_mb=400000
+#     benchmark:
+#         '{path}benchmark/footprints/merge/{sample}-REP{repnum}.{gene}.mergeRawFP.sector{sector}.benchmark.txt'
+#     script:
+#         "snakeResources/scripts/footprints/snakeMergeRawFootprintSectored.R"

@@ -1,8 +1,3 @@
-// ########################################################################################################################################
-// #### CLUSTER CONFIGURATION NOTES #######################################################################################################
-// ########################################################################################################################################
-
-// The default settings for job settings when not specified otherwise
 {
     "__default__" :
     {
@@ -14,130 +9,9 @@
         "error"     : "logs/cluster/{rule}.{wildcards}.err"
     },
 
-// 
-    "STEP3_mycoalign" :
-    {
-	"nCPUs"     : "20",
-    "memory"    : 5000
-    },
-
-//
-    "STEP4_hg38align" :
-    {
-	"nCPUs"     : "20",
-    "memory"    : 10000
-    },
-
-//
-    "STEP6_blacklistfilter_bamconversion" :
-    {
-        "nCPUs"     : "20"
-    },
-
-//
-    "STEP7_chrM_contamination" :
-    {
-        "nCPUs"     : "20"
-    },
-
-//
-    "STEP8_addrgandcsbam" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 50000
-    },
-
-//
-    "STEP9_cleansam" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 50000
-    },
-
-//
-    "STEP10_mergelanes" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 50000
-    }
-}
-
-//
-    "STEP11_purgeduplicates" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 50000
-    }
-}
-
-//
-    "STEP13_build_index" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 50000
-    }
-}
-
-//
-    "STEP14_makebigwig_bamcov" :
-    {
-        "nCPUs"     : "20",
-        "memory"    : 25000
-    }
-}
-
-//
-    "STEP18_fragment_size_distribution" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 20000
-    }
-}
-
-//
-    "STEP19_annotate_peaks_global" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 40000
-    }
-}
-
-//
-    "STEP19_annotate_peaks_local" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 40000
-    }
-}
-
-//
-    "SATURATION_purge_duplicates_downsampled" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 50000
-    }
-}
-
-//
     "FOOTPRINTING_raw_analysis" :
     {
         "nCPUs"     : "1",
         "memory"    : 200000
-    }
-}
-
-//
-    "FOOTPRINTING_raw_analysis_sectored" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 200000
-    }
-}
-
-//
-    "FOOTPRINTING_merge_sectored_raw_footprints" :
-    {
-        "nCPUs"     : "1",
-        "memory"    : 400000
     }
 }
