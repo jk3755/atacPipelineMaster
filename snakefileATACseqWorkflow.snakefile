@@ -930,6 +930,8 @@ rule FOOTPRINTING_raw_analysis:
     resources:
         rawFPanalysis=1,
         mem_mb=200000
+    # conda:
+    #     "snakeResources/envs/atac.yaml"
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
