@@ -929,7 +929,7 @@ rule FOOTPRINTING_raw_analysis:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
     resources:
         rawFPanalysis=1,
-        mem_mb=25000
+        mem_mb=200000
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
