@@ -11,6 +11,6 @@
     "FOOTPRINTING_raw_analysis" :
     {
         "nCPUs"     : "1",
-        "memory"    : 200000
+        "memory"    : 100000
     }
 }
