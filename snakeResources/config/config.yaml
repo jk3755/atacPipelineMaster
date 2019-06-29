@@ -1,9 +1,9 @@
 geneNames:
-  - MUSC
-  - SPZ1
-  - ONEC2
-  - MLXPL
-  - ZSC16
+  # - MUSC
+  # - SPZ1
+  # - ONEC2
+  # - MLXPL
+  # - ZSC16
   # - ZN350
   # - BRAC
   # - ZNF435
@@ -599,7 +599,7 @@ geneNames:
   # - ERR3
   # - STF1
   # - FOXP1
-  # - ERR2
+  - ERR2
   # - EMX1
   # - JUND
   # - SOX6

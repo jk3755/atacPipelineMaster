@@ -54,6 +54,38 @@ rule run_PWMscan:
         "snakeResources/sites/operations/PWMscan.allgroups.done"
 
 ########################################################################################################################################
+#### BUILD DIRECTORY STRUCTURES ########################################################################################################
+########################################################################################################################################
+rule FOOTPRINTING_builddirstructure:
+    # params: -p ignore error if existing, make parent dirs, -v verbose
+    output:
+        "{path}preprocessing/footprint_dirtree.built"
+    shell:
+        """
+        ####################################################################################################################################################################
+        mkdir -p -v {wildcards.path}benchmark
+        mkdir -p -v {wildcards.path}benchmark/footprints
+        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
+        mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
+        ####################################################################################################################################################################
+        mkdir -p -v {wildcards.path}operations
+        mkdir -p -v {wildcards.path}operations/footprints
+        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
+        mkdir -p -v {wildcards.path}operations/footprints/temp
+        mkdir -p -v {wildcards.path}operations/footprints/merged
+        ####################################################################################################################################################################
+        mkdir -p -v {wildcards.path}footprints
+        mkdir -p -v {wildcards.path}footprints/data 
+        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
+        mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
+        mkdir -p -v {wildcards.path}footprints/data/temp
+        mkdir -p -v {wildcards.path}footprints/graphs
+        mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
+        ####################################################################################################################################################################
+        touch {output}
+        """
+
+########################################################################################################################################
 #### PREPROCESSING AGGREGATOR ##########################################################################################################
 ########################################################################################################################################
 rule AGGREGATOR_preprocessing:
@@ -924,14 +956,10 @@ rule FOOTPRINTING_raw_analysis:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
+        "{path}preprocessing/footprint_dirtree.built"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
-    resources:
-        rawFPanalysis=1,
-        mem_mb=10000
-    # conda:
-    #     "snakeResources/envs/atac.yaml"
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
