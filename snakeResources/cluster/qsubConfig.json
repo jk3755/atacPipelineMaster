@@ -4,13 +4,13 @@
         "nCPUs"     : "1",
         "memory"    : 10000,
         "name"      : "JOBNAME.{rule}.{wildcards}",
-        "output"    : "{rule}.{wildcards}.out",
-        "error"     : "{rule}.{wildcards}.err"
+        "output"    : "{wildcards.path}report.{rule}.{wildcards}.out",
+        "error"     : "{wildcards.path}report.{rule}.{wildcards}.err"
     },
 
     "FOOTPRINTING_raw_analysis" :
     {
         "nCPUs"     : "1",
-        "memory"    : 100000
+        "memory"    : 20000
     }
 }
