@@ -3,9 +3,7 @@
     {
         "nCPUs"     : "1",
         "memory"    : 10000,
-        "name"      : "JOBNAME.{rule}.{wildcards}",
-        "output"    : "{wildcards.path}report.{rule}.{wildcards}.out",
-        "error"     : "{wildcards.path}report.{rule}.{wildcards}.err"
+        "name"      : "JOBNAME.{rule}.{wildcards}"
     },
 
     "FOOTPRINTING_raw_analysis" :

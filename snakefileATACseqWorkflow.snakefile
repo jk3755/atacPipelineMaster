@@ -29,6 +29,7 @@ include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
+include: "snakeResources/modules/diffPeaks.snakefile"
 
 ########################################################################################################################################
 #### FULL ANALYSIS AGGREGATOR ##########################################################################################################
@@ -937,6 +938,38 @@ rule SATURATION_analyze_raw_footprint_downsampled:
     script:
         "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
 
+########################################################################################################################################
+#### PEAK CALLING ######################################################################################################################
+########################################################################################################################################
+
+# Call peaks differentially across two samples
+rule PEAKS_differential_peak_calling_2samples:
+    # notes:
+    # because we are going to use the TCGA data downstream likely as a reference point,
+    # we will need to call the peaks in the exact same way as they did in this paper:
+    # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+    # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+    # params:
+    # -t input bam file (treatment)
+    # -n base name for output files
+    # --outdir output directory
+    # --shift find all tags in the bam, and shift them by 75 bp
+    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+    # --nomodel do not use the macs2 function to determine shifting model
+    # --call-summits call the peak summits, detect subpeaks within a peaks
+    # --nolambda do not use local bias correction, use background nolambda
+    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+    # -p set the p-value cutoff for peak calling
+    input:
+        a="{path1}preprocessing/10unique/{sample1}.u.bam",
+        b="{path1}preprocessing/10unique/{sample1}.u.bai"
+        c="{path2}preprocessing/10unique/{sample2}.u.bam",
+        d="{path2}preprocessing/10unique/{sample2}.u.bai"
+    output:
+        "diffpeaks/{sample1}.{sample2}_globalnorm_peaks.narrowPeak"
+    shell:
+        "macs2 callpeak -t {input.a} -c {input.c} -n {wildcards.sample1}.{wildcards.sample2}_globalnorm --outdir diffpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+ 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
