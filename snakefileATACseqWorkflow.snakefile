@@ -29,7 +29,8 @@ include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
-#include: "snakeResources/modules/diffPeaks.snakefile"
+include: "snakeResources/modules/snakeBuildDirStructure.snakefile"
+include: "snakeResources/modules/diffPeaks.snakefile"
 
 ########################################################################################################################################
 #### FULL ANALYSIS AGGREGATOR ##########################################################################################################
@@ -116,6 +117,11 @@ rule AGGREGATOR_preprocessing:
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
+
+rule MANUAL_builddirstructure:
+    input:
+        "{path}operations/preprocessing/dirtree.built"
+
 # Build the directory structure
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
@@ -210,7 +216,7 @@ rule STEP1_gunzip:
 rule STEP2_fastp_fastqfiltering:
     # -i, -I specify paired end input
     # -o, -O specifies paired end output
-    # -w specifies the number of threads to use
+    # -w specifies the number of threads to use (16 max)
     input:
         a="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R1.fastq",
         b="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R2.fastq"
@@ -222,7 +228,7 @@ rule STEP2_fastp_fastqfiltering:
     resources:
         fastp=1
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 20"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
