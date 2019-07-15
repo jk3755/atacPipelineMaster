@@ -2,7 +2,7 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 ## Spool the pipeline with the following parameters:
-# snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 20 [rule] --resources mem_mb=95000 hg38align=1 bowtie2align=1 purgeDuplicates=2 rawFPanalysis=20 mergeRawFPSectors=10 --restart-times=3
+# snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 20 [rule] --resources mem_mb=95000 fastp=1 bowtie2align=1 purgeDuplicates=2 rawFPanalysis=20 mergeRawFPSectors=10 --restart-times=3
 #
 ## Parameters:
 # --snakefile: specify the file where the snakemake workflow is contained
@@ -29,7 +29,7 @@ include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
-include: "snakeResources/modules/diffPeaks.snakefile"
+#include: "snakeResources/modules/diffPeaks.snakefile"
 
 ########################################################################################################################################
 #### FULL ANALYSIS AGGREGATOR ##########################################################################################################
@@ -53,6 +53,11 @@ rule AGGREGATOR_full_analysis:
 rule run_PWMscan:
     input:
         "snakeResources/sites/operations/PWMscan.allgroups.done"
+
+## Run a user defined set of sites
+rule run_PWMscan_custom:
+    input:
+        'snakeResources/sites/operations/PWMscan.custom.done'
 
 ########################################################################################################################################
 #### BUILD DIRECTORY STRUCTURES ########################################################################################################
@@ -101,8 +106,8 @@ rule AGGREGATOR_preprocessing:
         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+        #"{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
     shell:
@@ -201,15 +206,11 @@ rule STEP1_gunzip:
     shell:
         "gunzip -k -c {input.a} > {output.c}"
 
-# Fastq QC Filtering
-rule STEP2_afterqc_fastqfiltering:
-    # -1 specifies read 1 fastq file
-    # -2 specifies read 2 fastq file
-    # -g specifies the output directory for the good fastq files
-    # -b specifies the output directory for the bad fastq files
-    # -f -1 autodetects number of bases to trim at front
-    # -t -1 autodetects number of bases to trim at tail
-    # -s is the shortest trimmed read length allowed past QC filter
+# fastp fastq QC Filtering
+rule STEP2_fastp_fastqfiltering:
+    # -i, -I specify paired end input
+    # -o, -O specifies paired end output
+    # -w specifies the number of threads to use
     input:
         a="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R1.fastq",
         b="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R2.fastq"
@@ -218,8 +219,10 @@ rule STEP2_afterqc_fastqfiltering:
         d="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.fastqfilter.benchmark.txt'
+    resources:
+        fastp=1
     shell:
-        "after.py -1 {input.a} -2 {input.b} -g {wildcards.path}preprocessing/3goodfastq -b {wildcards.path}preprocessing/3goodfastq -f -1 -t -1 -s 15"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 20"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -962,7 +965,7 @@ rule PEAKS_differential_peak_calling_2samples:
     # -p set the p-value cutoff for peak calling
     input:
         a="{path1}preprocessing/10unique/{sample1}.u.bam",
-        b="{path1}preprocessing/10unique/{sample1}.u.bai"
+        b="{path1}preprocessing/10unique/{sample1}.u.bai",
         c="{path2}preprocessing/10unique/{sample2}.u.bam",
         d="{path2}preprocessing/10unique/{sample2}.u.bai"
     output:

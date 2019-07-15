@@ -41,8 +41,17 @@ rule SITES_scanPWM:
     script:
         '../sites/scripts/snakeScanPWM.R'
 
+#### CUSTOM SPECIFIED SITE(S) ####
+rule SITES_custom:
+    input:
+        'snakeResources/sites/operations/genes/AR.PWMscan.done'
+    output:
+        'snakeResources/sites/operations/PWMscan.custom.done'
+    shell:
+        "touch {output}"
+
 ####
-rule SITES__group_aggregator:
+rule SITES_group_aggregator:
     input:
         'snakeResources/sites/operations/groups/PWMscan.group1.done',
         'snakeResources/sites/operations/groups/PWMscan.group2.done',

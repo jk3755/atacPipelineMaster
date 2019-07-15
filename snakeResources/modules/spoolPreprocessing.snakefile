@@ -88,3 +88,15 @@ rule preprocessing_lncap_ex01:
         "lncap/ex01/operations/preprocessing/LNCaP-CR-05-REP1.preprocessing.complete",
         "lncap/ex01/operations/preprocessing/LNCaP-CR-07-REP1.preprocessing.complete",
         "lncap/ex01/operations/preprocessing/LNCaP-CR-08-REP1.preprocessing.complete"
+
+########################################################################################################################################
+#### PANC1 #############################################################################################################################
+########################################################################################################################################
+rule preprocessing_capani_wt01:
+    input:
+        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN1-REP1.preprocessing.complete",
+        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN1-REP2.preprocessing.complete",
+        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN1-REP3.preprocessing.complete",
+        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN2-REP1.preprocessing.complete",
+        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN2-REP2.preprocessing.complete",
+        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN2-REP3.preprocessing.complete"
