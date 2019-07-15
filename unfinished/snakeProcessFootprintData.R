@@ -1,3 +1,8 @@
+## The processing script should do the following things:
+# Parse the footprint sites into peaks / non-peaks
+# Use Null model to determine binding or not binding at every individual site genome-wide
+# 
+
 ## Disable scientific notation in variables
 options(scipen = 999)
 ## suppress warnings globally here, as they will disrupt the tryCatch block

@@ -48,7 +48,7 @@ if (file.exists(footprintDataPath) == TRUE){
   cat("Found", numMotif, "unique motifs", "\n")
   
   ## If no motifs are found, skip
-  if (numMotif ==0){
+  if (numMotif == 0){
     cat("No motifs found. Skipping", "\n")
   } else {
     
