@@ -201,7 +201,7 @@ if (file.exists(dataOutPath) == TRUE){
         CPMNSiteBasicStats[b,10] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,7] # Motif / wide flank
       } # end for (b in 1:numSites)
       
-      #### Generate the insertion site probability vector for raw data
+      #### Generate the insertion site probability vector for CPM data
       CPMNInsProb <- c()
       ##
       for (c in 1:(500 + motifWidth)){
@@ -256,12 +256,16 @@ if (file.exists(dataOutPath) == TRUE){
       
       ## Perform bonferroni correction
       cat("Performing bonferroni correction", "\n")
-      idxBFpass <- which(pvalue < (0.05/numSites))
+      idxBFpass <- which(pvalue < (0.05 / numSites))
       BFpvaluePass <- pvalue[idxBFpass]
       BFpassNumSites <- length(idxBFpass)
       
       ## Perform benjamini-hochberg correction
+      cat("Performing benjamini-hochberg correction", "\n")
       BHpvalue <- p.adjust(pvalue, method = "BH")
+      idxBHpass <- which(BHpvalue < 0.05)
+      BHpvaluePass <- pvalue[idxBFpass]
+      BHpassNumSites <- length(idxBFpass)
       
       ## Data transfer to storage object and save
       parseData <- list()

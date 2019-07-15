@@ -80,14 +80,14 @@ rule preprocessing_snu61_wt01:
 ########################################################################################################################################
 rule preprocessing_lncap_ex01:
     input:
-        "lncap/ex01/operations/preprocessing/LNCaP-WT-01-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-WT-02-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-CR-01-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-CR-02-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-CR-04-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-CR-05-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-CR-07-REP1.preprocessing.complete",
-        "lncap/ex01/operations/preprocessing/LNCaP-CR-08-REP1.preprocessing.complete"
+        "pros/lncap/wt01/operations/preprocessing/LNCaP-WT-01-REP1.preprocessing.complete",
+        "pros/lncap/wt02/operations/preprocessing/LNCaP-WT-02-REP1.preprocessing.complete",
+        "pros/lncap/cr01/operations/preprocessing/LNCaP-CR-01-REP1.preprocessing.complete",
+        "pros/lncap/cr02/operations/preprocessing/LNCaP-CR-02-REP1.preprocessing.complete",
+        "pros/lncap/cr04/operations/preprocessing/LNCaP-CR-04-REP1.preprocessing.complete",
+        "pros/lncap/cr05/operations/preprocessing/LNCaP-CR-05-REP1.preprocessing.complete",
+        "pros/lncap/cr07/operations/preprocessing/LNCaP-CR-07-REP1.preprocessing.complete",
+        "pros/lncap/cr08/operations/preprocessing/LNCaP-CR-08-REP1.preprocessing.complete"
 
 ########################################################################################################################################
 #### PANC1 #############################################################################################################################

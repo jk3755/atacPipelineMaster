@@ -97,6 +97,7 @@ rule FOOTPRINTING_builddirstructure:
 ########################################################################################################################################
 rule AGGREGATOR_preprocessing:
     input:
+    	"{path}operations/preprocessing/dirtree.built",
         #"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
@@ -117,10 +118,6 @@ rule AGGREGATOR_preprocessing:
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
-
-rule MANUAL_builddirstructure:
-    input:
-        "{path}operations/preprocessing/dirtree.built"
 
 # Build the directory structure
 rule PREP_builddirstructure:
