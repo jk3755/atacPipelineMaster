@@ -1,8 +1,7 @@
 if(!require(GenomicRanges)){
   cat("Installing GenomicRanges", "\n")
   source("https://bioconductor.org/biocLite.R")
-  biocLite("GenomicRanges")
-}
+  biocLite("GenomicRanges")}
 
 if(!require(stats4)){
   cat("Installing stats4", "\n")

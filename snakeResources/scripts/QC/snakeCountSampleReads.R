@@ -8,7 +8,9 @@ dirPath <- snakemake@wildcards[["path"]]
 
 ##
 cat("Counting total reads in library for sample:", sampleName, "\n")
-suppressMessages(library(Rsamtools))
+if(!require(Rsamtools)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("Rsamtools")}
 
 ##
 bamFile <- BamFile(bamPath)

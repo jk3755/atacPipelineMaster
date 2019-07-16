@@ -185,6 +185,7 @@ rule STEP2_fastp_filtering:
     # -o, -O specifies paired end output
     # -w specifies the number of threads to use (16 max)
     # -h specifies output for the html QC report
+    # -j specifies the json output QC report
     input:
         a="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R1.fastq",
         b="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R2.fastq"
@@ -198,7 +199,7 @@ rule STEP2_fastp_filtering:
     conda:
     	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -674,23 +675,10 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
 #     script:
 #         "snakeResources/scripts/QC/snakeFragSizeDist.R"
 
-# At this point R and the packages need to be installed
-rule INSTALL_R_packages:
-    output:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.installR.done"
-    conda:
-        "snakeResources/envs/R.yaml"
-    threads:
-        1
-    benchmark:
-        '{path}benchmark/preprocessing/install/{sample}-REP{repnum}.installR.benchmark.txt'
-    script:
-        "snakeResources/config/snakeInstallLibrariesATAC.R"
-
 # Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
-        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done"
     conda:
@@ -707,7 +695,7 @@ rule STEP19_annotate_peaks_global:
 # Annotate the peaks with local normalization
 rule STEP19_annotate_peaks_local:
     input:
-        "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
+        "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done"
     conda:
@@ -725,7 +713,7 @@ rule STEP19_annotate_peaks_local:
 rule STEP20_sample_total_reads:
     input:
         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
     output:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
     conda:

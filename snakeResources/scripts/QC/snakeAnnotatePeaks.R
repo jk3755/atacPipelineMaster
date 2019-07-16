@@ -3,13 +3,27 @@
 
 ##
 cat("Loading libraries", "\n")
-suppressMessages(library(ChIPseeker))
-suppressMessages(library(genomation))
-suppressMessages(library(GenomicRanges))
-suppressMessages(library(clusterProfiler))
-suppressMessages(library(org.Hs.eg.db))
-suppressMessages(library(ReactomePA))
-suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
+if(!require(ChIPseeker)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("ChIPseeker")}
+if(!require(genomation)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("genomation")}
+if(!require(GenomicRanges)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")}
+if(!require(clusterProfiler)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("clusterProfiler")}
+if(!require(org.Hs.eg.db)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("org.Hs.eg.db")}
+if(!require(ReactomePA)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("ReactomePA")}
+if(!require(TxDb.Hsapiens.UCSC.hg38.knownGene)){
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene")}
 
 ## 
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
