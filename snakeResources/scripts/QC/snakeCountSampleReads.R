@@ -7,10 +7,10 @@ sampleName <- snakemake@wildcards[["mergedsample"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ##
-cat("Counting total reads in library for sample:", sampleName, "\n")
-if(!require(Rsamtools)){
-  source("https://bioconductor.org/biocLite.R")
-  biocLite("Rsamtools")}
+# cat("Counting total reads in library for sample:", sampleName, "\n")
+# if(!require(Rsamtools)){
+#   source("https://bioconductor.org/biocLite.R")
+#   biocLite("Rsamtools")}
 
 ##
 bamFile <- BamFile(bamPath)
