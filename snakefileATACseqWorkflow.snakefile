@@ -64,11 +64,9 @@ rule AGGREGATOR_preprocessing:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
         "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
-        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg",
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
-        #"{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
     shell:
@@ -91,7 +89,8 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}benchmark/preprocessing/removemitochondrial {wildcards.path}benchmark/preprocessing/addRG {wildcards.path}benchmark/preprocessing/cleansam
         mkdir -p -v {wildcards.path}benchmark/preprocessing/mergelanes {wildcards.path}benchmark/preprocessing/purgeduplicates {wildcards.path}benchmark/preprocessing/mapqfilter
         mkdir -p -v {wildcards.path}benchmark/preprocessing/buildindex {wildcards.path}benchmark/preprocessing/bigwig {wildcards.path}benchmark/preprocessing/peaks
-        mkdir -p -v {wildcards.path}benchmark/preprocessing/peakcov
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/peakcov {wildcards.path}benchmark/preprocessing/install {wildcards.path}benchmark/preprocessing/annotatepeaks
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/totalreads
         #
         mkdir -p -v {wildcards.path}benchmark/correlation
         mkdir -p -v {wildcards.path}benchmark/saturation
@@ -176,7 +175,7 @@ rule STEP1_gunzip:
     threads:
         1
     benchmark:
-        '{path}benchmark/preprocessing/gunzip/{sample}-REP{repnum}.{lane}.gunzip.benchmark.txt'
+        '{path}benchmark/preprocessing/gunzip/{sample}-REP{repnum}_L{lane}_R{read}.gunzip.benchmark.txt'
     shell:
         "gunzip -k -c {input.a} > {output.c}"
 
@@ -679,17 +678,34 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
 #         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
 #     script:
 #         "snakeResources/scripts/QC/snakeFragSizeDist.R"
-    
+
+# At this point R and the packages need to be installed
+rule INSTALL_R_packages:
+    output:
+        "{path}operations/preprocessing/{sample}-REP{repnum}.installR.done"
+    conda:
+        "snakeResources/envs/R.yaml"
+    threads:
+        1
+    benchmark:
+        '{path}benchmark/preprocessing/install/{sample}-REP{repnum}.installR.benchmark.txt'
+    script:
+        "snakeResources/config/snakeInstallLibrariesATAC.R"
+
 # Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done"
+    conda:
+        "snakeResources/envs/R.yaml"
+    threads:
+        1
     resources:
         mem_mb=40000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
+        '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
 
@@ -699,10 +715,14 @@ rule STEP19_annotate_peaks_local:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done"
+    conda:
+        "snakeResources/envs/R.yaml"
+    threads:
+        1
     resources:
         mem_mb=40000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
+        '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
 
@@ -713,10 +733,18 @@ rule STEP20_sample_total_reads:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+    conda:
+        "snakeResources/envs/R.yaml"
+    threads:
+        1
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.totalreads.benchmark.txt'
+        '{path}benchmark/preprocessing/totalreads/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
         "snakeResources/scripts/QC/snakeCountSampleReads.R"
+
+########################################################################################################################################
+#### SATURATION ANALYSIS ###############################################################################################################
+########################################################################################################################################
 
 # Analyze saturation of library in terms of library complexity, called peaks, and selected TF footprints
 rule STEP21_saturation_analysis:
@@ -730,10 +758,6 @@ rule STEP21_saturation_analysis:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
     shell:
     	"touch {output}"
-
-########################################################################################################################################
-#### DOWNSAMPLE RULES ##################################################################################################################
-########################################################################################################################################
 
 # When all saturation analysis is done, remove the intermediate data, as it is quite large
 rule SATURATION_clean_data_final:

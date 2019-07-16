@@ -1,26 +1,122 @@
-#### Install libraries, if necessary ####
+if(!require(GenomicRanges)){
+  cat("Installing GenomicRanges", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
 
-## Bioconductor
-source("https://bioconductor.org/biocLite.R")
-biocLite("GenomicRanges", suppressUpdates = TRUE)
-biocLite("stats4", suppressUpdates = TRUE)
-biocLite("BiocGenerics", suppressUpdates = TRUE)
-biocLite("parallel", suppressUpdates = TRUE)
-biocLite("Rsamtools", suppressUpdates = TRUE)
-biocLite("GenomicAlignments", suppressUpdates = TRUE)
-biocLite("genomation", suppressUpdates = TRUE)
-biocLite("seqLogo", suppressUpdates = TRUE)
-biocLite("ChIPpeakAnno", suppressUpdates = TRUE)
-biocLite("ChIPseeker", suppressUpdates = TRUE)
-biocLite("clusterProfiler", suppressUpdates = TRUE)
-biocLite("BSgenome.Hsapiens.UCSC.hg38", suppressUpdates = TRUE)
-biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene", suppressUpdates = TRUE)
-biocLite("org.Hs.eg.db", suppressUpdates = TRUE)
-biocLite("Biostrings", suppressUpdates = TRUE)
-biocLite("MotifDb", suppressUpdates = TRUE)
-biocLite("VariantAnnotation", suppressUpdates = TRUE)
-biocLite("ReactomePA", suppressUpdates = TRUE)
+if(!require(stats4)){
+  cat("Installing stats4", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
 
-## Base
-install.packages("ggplot2", repos='http://cran.us.r-project.org')
-install.packages("ggpubr", repos='http://cran.us.r-project.org')
+if(!require(BiocGenerics)){
+  cat("Installing BiocGenerics", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(parallel)){
+  cat("Installing parallel", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(Rsamtools)){
+  cat("Installing Rsamtools", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(GenomicAlignments)){
+  cat("Installing GenomicAlignments", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(genomation)){
+  cat("Installing genomation", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(seqLogo)){
+  cat("Installing seqLogo", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(ChIPpeakAnno)){
+  cat("Installing ChIPpeakAnno", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(ChIPseeker)){
+  cat("Installing ChIPseeker", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(clusterProfiler)){
+  cat("Installing clusterProfiler", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(BSgenome.Hsapiens.UCSC.hg38)){
+  cat("Installing BSgenome.Hsapiens.UCSC.hg38", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(TxDb.Hsapiens.UCSC.hg38.knownGene)){
+  cat("Installing TxDb.Hsapiens.UCSC.hg38.knownGene", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(org.Hs.eg.db)){
+  cat("Installing org.Hs.eg.db", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(Biostrings)){
+  cat("Installing Biostrings", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(MotifDb)){
+  cat("Installing MotifDb", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(VariantAnnotation)){
+  cat("Installing VariantAnnotation", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("GenomicRanges")
+}
+
+if(!require(ReactomePA)){
+  cat("Installing ReactomePA", "\n")
+  source("https://bioconductor.org/biocLite.R")
+  biocLite("stats4")
+}
+
+if(!require(ggplot2)){
+  cat("Installing ggplot2", "\n")
+  install.packages("ggplot2", repos='http://cran.us.r-project.org')
+}
+
+if(!require(ggpubr)){
+  cat("Installing ggpubr", "\n")
+  install.packages("ggpubr", repos='http://cran.us.r-project.org')
+}
+
+##
+cat("Finished installing packages, touching output file", "\n")
+outputPath <- snakemake@output[[1]]
+file.create(outputPath)
