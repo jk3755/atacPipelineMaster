@@ -198,7 +198,7 @@ rule STEP2_fastp_filtering:
     conda:
     	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcard.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -428,22 +428,15 @@ rule STEP10b_clean_intermediate_data:
         1
     shell:
         """
-        rm -f {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/6rawbam/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*
-        # Remove the directories
-        rmdir {wildcards.path}preprocessing/2fastq
-        rmdir {wildcards.path}preprocessing/3goodfastq
-        rmdir {wildcards.path}preprocessing/4mycoalign
-        rmdir {wildcards.path}preprocessing/5hg38align
-        rmdir {wildcards.path}preprocessing/6rawbam
-        rmdir {wildcards.path}preprocessing/7rgsort
+        rm -f {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*.fastq
+        rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*.fq
+        rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*.sam
+        rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*.sam
+        rm -f {wildcards.path}preprocessing/6rawbam/*REP{wildcards.repnum}*.goodbam
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam
         #
         touch {output}
         """
@@ -509,11 +502,9 @@ rule STEP12b_clean_intermediate_data:
         "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/8unique/*REP{wildcards.repnum}*
-        rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
         #
-        rmdir {wildcards.path}preprocessing/8unique
-        rmdir {wildcards.path}preprocessing/9dedup
         touch {output}
         """
 
@@ -591,6 +582,8 @@ rule STEP15_MACS2_peaks_global_normilization:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
     threads:
         1
     benchmark:
@@ -616,6 +609,8 @@ rule STEP16_MACS2_peaks_local_normalization:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
     threads:
         1
     benchmark:

@@ -28,8 +28,8 @@ com <- paste0("motifs <- motifData$", currentGene)
 eval(parse(text = com))
 
 ## Set parameters
-cat("Using default PWM matching score of 90%", "\n")
-score <- "90%"
+cat("Using default PWM matching score of 95%", "\n")
+score <- "95%"
 numMotifs <- length(motifs)
 genome <- Hsapiens
 bindingSites <- list()
