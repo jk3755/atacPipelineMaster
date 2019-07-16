@@ -7,11 +7,7 @@
 # -j 20 
 # [rule]
 # --resources mem_mb=50000
-# fastp=1
-# bowtie2align=1
-# purgeDuplicates=2
-# rawFPanalysis=20
-# mergeRawFPSectors=10
+# --use-conda
 # --restart-times=3
 #
 ## Parameters:
@@ -57,58 +53,11 @@ rule AGGREGATOR_full_analysis:
         "touch {output}"
 
 ########################################################################################################################################
-#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
-########################################################################################################################################
-# Run this rule to generate all needed data for scanning the genome for matches to PWMs
-# Will generate data for all annotated genes in motifDB, for all unique motifs
-rule run_PWMscan:
-    input:
-        "snakeResources/sites/operations/PWMscan.allgroups.done"
-
-## Run a user defined set of sites
-rule run_PWMscan_custom:
-    input:
-        'snakeResources/sites/operations/PWMscan.custom.done'
-
-########################################################################################################################################
-#### BUILD DIRECTORY STRUCTURES ########################################################################################################
-########################################################################################################################################
-rule FOOTPRINTING_builddirstructure:
-    # params: -p ignore error if existing, make parent dirs, -v verbose
-    output:
-        "{path}preprocessing/footprint_dirtree.built"
-    shell:
-        """
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}benchmark
-        mkdir -p -v {wildcards.path}benchmark/footprints
-        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
-        mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}operations
-        mkdir -p -v {wildcards.path}operations/footprints
-        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
-        mkdir -p -v {wildcards.path}operations/footprints/temp
-        mkdir -p -v {wildcards.path}operations/footprints/merged
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}footprints
-        mkdir -p -v {wildcards.path}footprints/data 
-        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
-        mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
-        mkdir -p -v {wildcards.path}footprints/data/temp
-        mkdir -p -v {wildcards.path}footprints/graphs
-        mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
-        ####################################################################################################################################################################
-        touch {output}
-        """
-
-########################################################################################################################################
-#### PREPROCESSING AGGREGATOR ##########################################################################################################
+#### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
 rule AGGREGATOR_preprocessing:
     input:
     	"{path}operations/preprocessing/dirtree.built",
-        #"snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
@@ -125,20 +74,25 @@ rule AGGREGATOR_preprocessing:
     shell:
         "touch {output}"
 
-########################################################################################################################################
-#### PREPROCESSING RULES ###############################################################################################################
-########################################################################################################################################
-
 # Build the directory structure
 rule PREP_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
     output:
         "{path}operations/preprocessing/dirtree.built"
+    threads:
+        1
     shell:
         """
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}benchmark
         mkdir -p -v {wildcards.path}benchmark/preprocessing
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/gunzip {wildcards.path}benchmark/preprocessing/fastp {wildcards.path}benchmark/preprocessing/mycoalign
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/hg38align {wildcards.path}benchmark/preprocessing/coordsortsam {wildcards.path}benchmark/preprocessing/bamconversion
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/removemitochondrial {wildcards.path}benchmark/preprocessing/addRG {wildcards.path}benchmark/preprocessing/cleansam
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/mergelanes {wildcards.path}benchmark/preprocessing/purgeduplicates {wildcards.path}benchmark/preprocessing/mapqfilter
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/buildindex {wildcards.path}benchmark/preprocessing/bigwig {wildcards.path}benchmark/preprocessing/peaks
+        mkdir -p -v {wildcards.path}benchmark/preprocessing/peakcov
+        #
         mkdir -p -v {wildcards.path}benchmark/correlation
         mkdir -p -v {wildcards.path}benchmark/saturation
         #
@@ -165,7 +119,7 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/4mycoalign
         mkdir -p -v {wildcards.path}preprocessing/5hg38align
         #
-        mkdir -p -v {wildcards.path}preprocessing/6rawbamm
+        mkdir -p -v {wildcards.path}preprocessing/6rawbam
         mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
         #
         mkdir -p -v {wildcards.path}preprocessing/7rgsort
@@ -201,6 +155,9 @@ rule PREP_builddirstructure:
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}metrics/saturation
+        mkdir -p -v {wildcards.path}metrics/fastq
+        mkdir -p -v {wildcards.path}metrics/myco
+        mkdir -p -v {wildcards.path}metrics/hg38
         ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}correlation
         ####################################################################################################################################################################
@@ -216,14 +173,19 @@ rule STEP1_gunzip:
         b="{path}operations/preprocessing/dirtree.built"
     output:
         c="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R{read}.fastq"
+    threads:
+        1
+    benchmark:
+        '{path}benchmark/preprocessing/gunzip/{sample}-REP{repnum}.{lane}.gunzip.benchmark.txt'
     shell:
         "gunzip -k -c {input.a} > {output.c}"
 
 # fastp fastq QC Filtering
-rule STEP2_fastp_fastqfiltering:
+rule STEP2_fastp_filtering:
     # -i, -I specify paired end input
     # -o, -O specifies paired end output
     # -w specifies the number of threads to use (16 max)
+    # -h specifies output for the html QC report
     input:
         a="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R1.fastq",
         b="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R2.fastq"
@@ -231,11 +193,13 @@ rule STEP2_fastp_fastqfiltering:
         c="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
         d="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.fastqfilter.benchmark.txt'
-    resources:
-        fastp=1
+        '{path}benchmark/preprocessing/fastp/{sample}-REP{repnum}.{lane}.fastp.benchmark.txt'
+    threads:
+        16
+    conda:
+    	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcard.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -252,14 +216,15 @@ rule STEP3_mycoalign:
     output:
         "{path}preprocessing/4mycoalign/{sample}-REP{repnum}_L{lane}.myco.sam"
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
+        '{path}benchmark/preprocessing/mycoalign/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
     threads:
         20
+    conda:
+        "snakeResources/envs/bowtie2.yaml"
     resources:
-        bowtie2align=1,
         mem_mb=5000
     shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
+        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
 # Align reads to human hg38 build
 rule STEP4_hg38align:
@@ -278,14 +243,15 @@ rule STEP4_hg38align:
     output:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
+        '{path}benchmark/preprocessing/hg38align/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
     threads:
         20
+    conda:
+        "snakeResources/envs/bowtie2.yaml"
     resources:
-        bowtie2align=1,
         mem_mb=10000
     shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
+        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
 # Coordinate sort the aligned reads. This is required for blacklist filtering
 rule STEP5_coordsort_sam:
@@ -295,8 +261,12 @@ rule STEP5_coordsort_sam:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     output:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
+    threads:
+        1
+    conda:
+        "snakeResources/envs/samtools.yaml"
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.coordsort.benchmark.txt'
+        '{path}benchmark/preprocessing/coordsortsam/{sample}-REP{repnum}.{lane}.coordsort.benchmark.txt'
     shell:
         "samtools sort {input} -o {output} -O sam"
     
@@ -313,12 +283,14 @@ rule STEP6_blacklistfilter_bamconversion:
     output:
         a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}_L{lane}.hg38blacklist.bam",
         b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
+    conda:
+        "snakeResources/envs/samtools.yaml"
     threads:
-        20
+        5
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.bamconvert.benchmark.txt'
+        '{path}benchmark/preprocessing/bamconversion/{sample}-REP{repnum}.{lane}.bamconvert.benchmark.txt'
     shell:
-        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 4 {input}"
     
 # Remove reads mapping to mitochondrial DNA
 rule STEP7_chrM_contamination:
@@ -335,12 +307,14 @@ rule STEP7_chrM_contamination:
     output:
         a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}_L{lane}.mitochondrial.bam",
         b="{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
+    conda:
+        "snakeResources/envs/samtools.yaml"
     threads:
-        20
+        5
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.chrMfilter.benchmark.txt'
+        '{path}benchmark/preprocessing/removemitochondrial/{sample}-REP{repnum}.{lane}.chrMfilter.benchmark.txt'
     shell:
-        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 20 {input}"
+        "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 4 {input}"
     
 # Add @RG tags to the reads and perform coordinate sorting
 rule STEP8_addrgandcsbam:
@@ -363,10 +337,14 @@ rule STEP8_addrgandcsbam:
         "{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
     resources:
         mem_mb=50000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
+        '{path}benchmark/preprocessing/addRG/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
     shell:
         "picard AddOrReplaceReadGroups \
         I={input} \
@@ -389,10 +367,14 @@ rule STEP9_cleansam:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.clean.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
     resources:
         mem_mb=50000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
+        '{path}benchmark/preprocessing/cleansam/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
     shell:
         "picard CleanSam \
         I={input} \
@@ -406,7 +388,7 @@ rule STEP10_mergelanes:
     # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
     # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
     # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-    # USE_THREADING allows multithreadded operation
+    # USE_THREADING allows multithreadded operation for the bam compression
     input:
         a="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L1.clean.bam",
         b="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L2.clean.bam",
@@ -414,10 +396,14 @@ rule STEP10_mergelanes:
         d="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L4.clean.bam"
     output:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
     resources:
         mem_mb=50000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.mergelanes.benchmark.txt'
+        '{path}benchmark/preprocessing/mergelanes/{sample}-REP{repnum}.mergelanes.benchmark.txt'
     shell:
         "picard MergeSamFiles \
         I={input.a} \
@@ -430,30 +416,36 @@ rule STEP10_mergelanes:
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
 
-# Clean up intermediate data to this point
-# Also copy the fastq filtering QC files to the metrics folder
+# After the lanes are merged, you can remove the intermediate data 
+# This will help keep disk space open
 rule STEP10b_clean_intermediate_data:
     # -rm removes files
     # -f forces the removal
-    # -a is recursive option for cp
-    # /. causes cp to copy all contents of folder including hidden items
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
         "{path}operations/preprocessing/clean10b.{sample}.{repnum}.done"
+    threads:
+        1
     shell:
         """
-        rm -f {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*.fastq
-        rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*.fq
-        rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*.sam
-        rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*.sam
-        rm -f {wildcards.path}preprocessing/6rawbam/*REP{wildcards.repnum}*.goodbam
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam
-        ##
-        cp -a {wildcards.path}preprocessing/QC/. {wildcards.path}metrics/
+        rm -f {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/6rawbam/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*
+        # Remove the directories
+        rmdir {wildcards.path}preprocessing/2fastq
+        rmdir {wildcards.path}preprocessing/3goodfastq
+        rmdir {wildcards.path}preprocessing/4mycoalign
+        rmdir {wildcards.path}preprocessing/5hg38align
+        rmdir {wildcards.path}preprocessing/6rawbam
+        rmdir {wildcards.path}preprocessing/7rgsort
+        #
         touch {output}
         """
 
@@ -470,10 +462,13 @@ rule STEP11_purgeduplicates:
         b="{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
+        '{path}benchmark/preprocessing/purgeduplicates/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
     resources:
-        purgeDuplicates=1,
         mem_mb=50000
     shell:
         "picard MarkDuplicates \
@@ -497,12 +492,17 @@ rule STEP12_mapqfilter:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
+    conda:
+        "snakeResources/envs/samtools.yaml"
+    threads:
+        5
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.mapqfilter.benchmark.txt'
+        '{path}benchmark/preprocessing/mapqfilter/{sample}-REP{repnum}.mapqfilter.benchmark.txt'
     shell:
         "samtools view -h -q 2 -b {input} > {output}"
     
-# Clean up intermediate data to this point
+# Remove intermediate data to this point 
+# This will help keep disk space open
 rule STEP12b_clean_intermediate_data:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
@@ -510,7 +510,11 @@ rule STEP12b_clean_intermediate_data:
         "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
     shell:
         """
-        rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/8unique/*REP{wildcards.repnum}*
+        rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*
+        #
+        rmdir {wildcards.path}preprocessing/8unique
+        rmdir {wildcards.path}preprocessing/9dedup
         touch {output}
         """
 
@@ -522,14 +526,18 @@ rule STEP13_build_index:
     # I specifies the input bam file
     # O specifies the output index file
     input:
-        "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done",
+        a="{path}operations/preprocessing/clean12b.{sample}.{repnum}.done",
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
     resources:
         mem_mb=50000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.buildindex.benchmark.txt'
+        '{path}benchmark/preprocessing/buildindex/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
         "picard BuildBamIndex \
         I={input.b} \
@@ -550,12 +558,14 @@ rule STEP14_makebigwig_bamcov:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw"
+    conda:
+        "snakeResources/envs/deeptools.yaml"
     threads:
         20
     resources:
         mem_mb=25000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.makebigwig.benchmark.txt'
+        '{path}benchmark/preprocessing/bigwig/{sample}-REP{repnum}.makebigwig.benchmark.txt'
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
     
@@ -582,8 +592,10 @@ rule STEP15_MACS2_peaks_global_normilization:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
+    threads:
+        1
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
+        '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_globalnorm --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
     
@@ -605,8 +617,10 @@ rule STEP16_MACS2_peaks_local_normalization:
         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
     output:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
+    threads:
+        1
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
+        '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
     
@@ -622,8 +636,12 @@ rule STEP17a_percent_peak_genome_coverage_globalnorm:
         b="genomes/hg38/hg38.extents.bed"
     output:
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt"
+    conda:
+        "snakeResources/envs/bedops.yaml"
+    threads:
+        1  	
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.genomecov.globalnorm.benchmark.txt'
+        '{path}benchmark/preprocessing/peakcov/{sample}-REP{repnum}.genomecov.globalnorm.benchmark.txt'
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
@@ -639,24 +657,28 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
         b="genomes/hg38/hg38.extents.bed"
     output:
         "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
+    conda:
+        "snakeResources/envs/bedops.yaml"
+    threads:
+        1  
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.genomecov.localnorm.benchmark.txt'
+        '{path}benchmark/preprocessing/peakcov/{sample}-REP{repnum}.genomecov.localnorm.benchmark.txt'
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
-# Generate the fragment size distribution graph
-rule STEP18_fragment_size_distribution:
-    input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
-    output:
-        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
-    resources:
-        mem_mb=20000
-    benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
-    script:
-        "snakeResources/scripts/QC/snakeFragSizeDist.R"
+# # Generate the fragment size distribution graph
+# rule STEP18_fragment_size_distribution:
+#     input:
+#         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
+#         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+#     output:
+#         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+#     resources:
+#         mem_mb=20000
+#     benchmark:
+#         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
+#     script:
+#         "snakeResources/scripts/QC/snakeFragSizeDist.R"
     
 # Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
@@ -985,10 +1007,52 @@ rule PEAKS_differential_peak_calling_2samples:
         "diffpeaks/{sample1}.{sample2}_globalnorm_peaks.narrowPeak"
     shell:
         "macs2 callpeak -t {input.a} -c {input.c} -n {wildcards.sample1}.{wildcards.sample2}_globalnorm --outdir diffpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
- 
+
+########################################################################################################################################
+#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
+########################################################################################################################################
+# Run this rule to generate all needed data for scanning the genome for matches to PWMs
+# Will generate data for all annotated genes in motifDB, for all unique motifs
+rule run_PWMscan:
+    input:
+        "snakeResources/sites/operations/PWMscan.allgroups.done"
+
+## Run a user defined set of sites
+rule run_PWMscan_custom:
+    input:
+        'snakeResources/sites/operations/PWMscan.custom.done'
+
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
+rule FOOTPRINTING_builddirstructure:
+    # params: -p ignore error if existing, make parent dirs, -v verbose
+    output:
+        "{path}preprocessing/footprint_dirtree.built"
+    shell:
+        """
+        ####################################################################################################################################################################
+        mkdir -p -v {wildcards.path}benchmark
+        mkdir -p -v {wildcards.path}benchmark/footprints
+        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
+        mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
+        ####################################################################################################################################################################
+        mkdir -p -v {wildcards.path}operations
+        mkdir -p -v {wildcards.path}operations/footprints
+        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
+        mkdir -p -v {wildcards.path}operations/footprints/temp
+        mkdir -p -v {wildcards.path}operations/footprints/merged
+        ####################################################################################################################################################################
+        mkdir -p -v {wildcards.path}footprints
+        mkdir -p -v {wildcards.path}footprints/data 
+        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
+        mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
+        mkdir -p -v {wildcards.path}footprints/data/temp
+        mkdir -p -v {wildcards.path}footprints/graphs
+        mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
+        ####################################################################################################################################################################
+        touch {output}
+        """
 
 # This rule initiates the raw footprint analysis for all genes found in the config file
 rule AGGREGATOR_footprinting_raw_analysis:
@@ -1006,7 +1070,8 @@ rule FOOTPRINTING_raw_analysis:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
-        "{path}preprocessing/footprint_dirtree.built"
+        "{path}preprocessing/footprint_dirtree.built",
+        #"snakeResources/sites/operations/PWMscan.allgroups.done"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
     benchmark:

@@ -11,7 +11,7 @@ options(warn = -1)
 
 #### Set snakemake variables
 footprintDataPath <- snakemake@input[[1]]
-sampleTotalReadsPath <- snakemake@input[[2]]
+#sampleTotalReadsPath <- snakemake@input[[2]]
 peaksPath <- snakemake@input[[3]]
 outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["mergedsample"]]
@@ -113,15 +113,15 @@ if (file.exists(dataOutPath) == TRUE){
   } else {
     
     #### Get the total number of reads in the sample
-    cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
-    load(sampleTotalReadsPath)
-    cat("Found", sampleTotalReads, "total reads in current sample", "\n")
+    #cat("Loading total sample reads from:", sampleTotalReadsPath, "\n")
+    #load(sampleTotalReadsPath)
+    #cat("Found", sampleTotalReads, "total reads in current sample", "\n")
     
-    #### Load the peaks data for current sample
-    cat("Loading sample accesibility peak data from:", peaksPath, "\n")
-    samplePeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
-    samplePeaks <- keepStandardChromosomes(samplePeaks, pruning.mode="coarse")
-    samplePeaks <- trim(samplePeaks)
+    # #### Load the peaks data for current sample
+    # cat("Loading sample accesibility peak data from:", peaksPath, "\n")
+    # samplePeaks <- readBed(peaksPath, track.line = FALSE, remove.unusual = FALSE, zero.based = TRUE)
+    # samplePeaks <- keepStandardChromosomes(samplePeaks, pruning.mode="coarse")
+    # samplePeaks <- trim(samplePeaks)
     
     #### Loop over all motifs, perform the processing operations
     cat("Parsing footprint data for gene", geneName, "with", numMotif, "unique motifs", "\n")
@@ -177,41 +177,41 @@ if (file.exists(dataOutPath) == TRUE){
       ## Even if the two samples have a different number of total reads
       
       ##
-      factorCPM <- sampleTotalReads / 1000000
-      CPMNinsMatrix <- insMatrix / factorCPM
+      #factorCPM <- sampleTotalReads / 1000000
+      #CPMNinsMatrix <- insMatrix / factorCPM
       
       ##
       #### Calculate basic statistics for each site with raw data
-      CPMNSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
-      colnames(CPMNSiteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
-                                       "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
-                                       "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
+      #CPMNSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 10)
+      #colnames(CPMNSiteBasicStats) <- c("Site index", "Total signal", "Total signal per bp", "Motif signal per bp",
+      #                                 "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
+      #                                 "Flank / Background", "Motif / Flank", "Motif / Wide Flank") 
       
       #### Populate the basic stats matrix
-      for (b in 1:numSites){
-        CPMNSiteBasicStats[b,1] <- b # Site index
-        CPMNSiteBasicStats[b,2] <- sum(CPMNinsMatrix[b,]) # Total signal
-        CPMNSiteBasicStats[b,3] <- CPMNSiteBasicStats[b,2] / (500 + motifWidth) # Total signal per bp
-        CPMNSiteBasicStats[b,4] <- sum(CPMNinsMatrix[b,(250:(250 + motifWidth))] / motifWidth) # Motif signal per bp
-        CPMNSiteBasicStats[b,5] <- (sum(CPMNinsMatrix[b,200:250]) + sum(CPMNinsMatrix[b,(250 + motifWidth):(300 + motifWidth)])) / 100 # Flank signal per bp
-        CPMNSiteBasicStats[b,6] <- (sum(CPMNinsMatrix[b,1:50]) + sum(CPMNinsMatrix[b,(500 + motifWidth-50):(500 + motifWidth)])) / 100 # Background signal per bp
-        CPMNSiteBasicStats[b,7] <- (sum(CPMNinsMatrix[b,1:250]) + sum(CPMNinsMatrix[b,(250 + motifWidth):(500 + motifWidth)])) / 500 # Wide flank signal per bp
-        CPMNSiteBasicStats[b,8] <- CPMNSiteBasicStats[b,5] / CPMNSiteBasicStats[b,6] # Flank / background
-        CPMNSiteBasicStats[b,9] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,5] # Motif / flank
-        CPMNSiteBasicStats[b,10] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,7] # Motif / wide flank
-      } # end for (b in 1:numSites)
+      #for (b in 1:numSites){
+      #  CPMNSiteBasicStats[b,1] <- b # Site index
+      #  CPMNSiteBasicStats[b,2] <- sum(CPMNinsMatrix[b,]) # Total signal
+      #  CPMNSiteBasicStats[b,3] <- CPMNSiteBasicStats[b,2] / (500 + motifWidth) # Total signal per bp
+      #  CPMNSiteBasicStats[b,4] <- sum(CPMNinsMatrix[b,(250:(250 + motifWidth))] / motifWidth) # Motif signal per bp
+      #  CPMNSiteBasicStats[b,5] <- (sum(CPMNinsMatrix[b,200:250]) + sum(CPMNinsMatrix[b,(250 + motifWidth):(300 + motifWidth)])) / 100 # Flank signal per bp
+      #  CPMNSiteBasicStats[b,6] <- (sum(CPMNinsMatrix[b,1:50]) + sum(CPMNinsMatrix[b,(500 + motifWidth-50):(500 + motifWidth)])) / 100 # Background signal per bp
+      #  CPMNSiteBasicStats[b,7] <- (sum(CPMNinsMatrix[b,1:250]) + sum(CPMNinsMatrix[b,(250 + motifWidth):(500 + motifWidth)])) / 500 # Wide flank signal per bp
+      #  CPMNSiteBasicStats[b,8] <- CPMNSiteBasicStats[b,5] / CPMNSiteBasicStats[b,6] # Flank / background
+      #  CPMNSiteBasicStats[b,9] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,5] # Motif / flank
+      #  CPMNSiteBasicStats[b,10] <- CPMNSiteBasicStats[b,4] / CPMNSiteBasicStats[b,7] # Motif / wide flank
+      #} # end for (b in 1:numSites)
       
       #### Generate the insertion site probability vector for CPM data
-      CPMNInsProb <- c()
+      #CPMNInsProb <- c()
       ##
-      for (c in 1:(500 + motifWidth)){
-        CPMNInsProb[c] <- sum(CPMNinsMatrix[,c])
-      } # end for (c in 1:(500 + motifWidth))
+      #for (c in 1:(500 + motifWidth)){
+      #  CPMNInsProb[c] <- sum(CPMNinsMatrix[,c])
+      #} # end for (c in 1:(500 + motifWidth))
       ##
-      CPMNTotalSignal<- sum(CPMNInsProb)
-      CPMNInsProb <- CPMNInsProb / CPMNTotalSignal
+      #CPMNTotalSignal<- sum(CPMNInsProb)
+      #CPMNInsProb <- CPMNInsProb / CPMNTotalSignal
       
-      #### Generate null models, use BF and BH correction to parse ####
+      #### Generate null models, use BF and BH correction to parse ################################################################
       ## Find the unique values for total signal and generate null models
       ## Generate null models based on raw signal, correct for CPM after
       uniqueTotalSignals <- unique(rawSiteBasicStats[,2])
@@ -220,7 +220,7 @@ if (file.exists(dataOutPath) == TRUE){
       ## Initiate a matrix to store the mean null signal in the null model and the input signal to null model
       nullModels <- matrix(data = NA, ncol = 2, nrow = length(uniqueTotalSignals))
       colnames(nullModels) <- c("Input signal", "Avg motif signal in null model")
-      CPMNnullModels <- nullModels / factorCPM
+      #CPMNnullModels <- nullModels / factorCPM
       
       ## Calculate the null models
       for (c in 1:length(uniqueTotalSignals)){
@@ -267,9 +267,6 @@ if (file.exists(dataOutPath) == TRUE){
       BHpvaluePass <- pvalue[idxBHpass]
       BHpassNumSites <- length(idxBHpass)
       
-      
-      
-      
       ## Data transfer to storage object and save
       parseData <- list()
       ##
@@ -282,7 +279,7 @@ if (file.exists(dataOutPath) == TRUE){
       parseData$libSize <- libSize
       parseData$coverageSize <- coverageSize
       parseData$libFactor <- libFactor
-      parseData$sampleTotalReads <- sampleTotalReads
+      #parseData$sampleTotalReads <- sampleTotalReads
       parseData$siteBasicStats <- siteBasicStats
       parseData$samplePeaks <- samplePeaks
       parseData$insStandardDeviation <- insStandardDeviation
@@ -304,6 +301,9 @@ if (file.exists(dataOutPath) == TRUE){
       parseData$BFpassNumSites <- BFpassNumSites
       ##
       parseData$BHpvalue <- BHpvalue
+      parseData$idxBHpass <- idxBHpass
+      parseData$BHpvaluePass <- BHpvaluePass
+      parseData$BHpassNumSites <- BHpassNumSites
       ##
       com <- paste0("footprintData$motif", a, "<- parseData")
       eval(parse(text = com))
@@ -320,6 +320,3 @@ if (file.exists(dataOutPath) == TRUE){
 ## Create the output file for snakemake
 file.create(outPath)
 cat("Finished parsing", "\n")
-
-
-
