@@ -368,7 +368,7 @@ rule STEP8_addrgandcsbam:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar AddOrReplaceReadGroups \
+        "picard AddOrReplaceReadGroups \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate \
@@ -394,7 +394,7 @@ rule STEP9_cleansam:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar CleanSam \
+        "picard CleanSam \
         I={input} \
         O={output}"
     
@@ -419,7 +419,7 @@ rule STEP10_mergelanes:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.mergelanes.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar MergeSamFiles \
+        "picard MergeSamFiles \
         I={input.a} \
         I={input.b} \
         I={input.c} \
@@ -476,7 +476,7 @@ rule STEP11_purgeduplicates:
         purgeDuplicates=1,
         mem_mb=50000
     shell:
-        "java -Xmx50g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        "picard MarkDuplicates \
         I={input.b} \
         O={output} \
         M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
@@ -531,7 +531,7 @@ rule STEP13_build_index:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar BuildBamIndex \
+        "picard BuildBamIndex \
         I={input.b} \
         O={output}"
     
@@ -767,7 +767,7 @@ rule SATURATION_downsample_bam:
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.downsample.bam.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar DownsampleSam \
+        "picard DownsampleSam \
         I={input} \
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
@@ -781,7 +781,7 @@ rule SATURATION_sort_downsampled:
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.sort.downsampled.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar SortSam \
+        "picard SortSam \
         I={input} \
         O={output} \
         SORT_ORDER=coordinate"
@@ -799,7 +799,7 @@ rule SATURATION_purge_duplicates_downsampled:
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.purgeduplicates.downsampled.benchmark.txt'
     shell:
-        "java -Xmx50g -jar snakeResources/programs/picard/picard.jar MarkDuplicates \
+        "picard MarkDuplicates \
         I={input} \
         O={output.a} \
         M={output.b} \
@@ -815,7 +815,7 @@ rule SATURATION_index_downsampled:
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.index.downsampled.benchmark.txt'
     shell:
-        "java -jar snakeResources/programs/picard/picard.jar BuildBamIndex \
+        "picard BuildBamIndex \
         I={input} \
         O={output}"
 

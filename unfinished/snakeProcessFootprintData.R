@@ -230,7 +230,7 @@ if (file.exists(dataOutPath) == TRUE){
       } # end for (c in 1:length(uniqueTotalSignals))
       
       ## Perform a one-tailed t-test to generate a p-value for each observed motif site
-      cat("Performing one-tailed t-tests on peak subset...", "\n")
+      cat("Performing one-tailed t-tests", "\n")
       ttest <- list() # list to store the results of the t-tests
       pvalue <- c() # vector to store the p-values
       tvalue <- c() # vector to store the t-value
@@ -264,8 +264,11 @@ if (file.exists(dataOutPath) == TRUE){
       cat("Performing benjamini-hochberg correction", "\n")
       BHpvalue <- p.adjust(pvalue, method = "BH")
       idxBHpass <- which(BHpvalue < 0.05)
-      BHpvaluePass <- pvalue[idxBFpass]
-      BHpassNumSites <- length(idxBFpass)
+      BHpvaluePass <- pvalue[idxBHpass]
+      BHpassNumSites <- length(idxBHpass)
+      
+      
+      
       
       ## Data transfer to storage object and save
       parseData <- list()
