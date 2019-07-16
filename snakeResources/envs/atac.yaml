@@ -1,4 +1,0 @@
-channels:
-  - r
-dependencies:
-  - r=3.5.1

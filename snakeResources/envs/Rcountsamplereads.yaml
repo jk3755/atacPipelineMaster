@@ -1,0 +1,5 @@
+channels:
+  - r
+  - bioconda
+dependencies:
+  - bioconductor-rsamtools

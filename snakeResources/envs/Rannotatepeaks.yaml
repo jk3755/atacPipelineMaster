@@ -1,0 +1,10 @@
+channels:
+  - r
+  - bioconda
+dependencies:
+  - r-ggplot2
+  - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
+  - bioconductor-chipseeker
+  - bioconductor-genomicranges
+  - bioconductor-clusterprofiler
+  - bioconductor-org.hs.eg.db  

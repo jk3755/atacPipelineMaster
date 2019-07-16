@@ -682,7 +682,7 @@ rule STEP19_annotate_peaks_global:
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done"
     conda:
-        "snakeResources/envs/R.yaml"
+        "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
         1
     resources:
@@ -699,7 +699,7 @@ rule STEP19_annotate_peaks_local:
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done"
     conda:
-        "snakeResources/envs/R.yaml"
+        "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
         1
     resources:
@@ -717,7 +717,7 @@ rule STEP20_sample_total_reads:
     output:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
     conda:
-        "snakeResources/envs/R.yaml"
+        "snakeResources/envs/Rcountsamplereads.yaml"
     threads:
         1
     benchmark:
