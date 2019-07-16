@@ -44,7 +44,12 @@ rule SITES_scanPWM:
 #### CUSTOM SPECIFIED SITE(S) ####
 rule SITES_custom:
     input:
-        'snakeResources/sites/operations/genes/AR.PWMscan.done'
+        'snakeResources/sites/operations/genes/AR.PWMscan.done',
+        'snakeResources/sites/operations/genes/SOX2.PWMscan.done',
+        'snakeResources/sites/operations/genes/FOXM1.PWMscan.done',
+        'snakeResources/sites/operations/genes/EZH2.PWMscan.done',
+        'snakeResources/sites/operations/genes/MYCN.PWMscan.done',
+        'snakeResources/sites/operations/genes/MYC.PWMscan.done'
     output:
         'snakeResources/sites/operations/PWMscan.custom.done'
     shell:

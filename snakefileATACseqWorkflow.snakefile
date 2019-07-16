@@ -2,7 +2,17 @@
 #### NOTES #############################################################################################################################
 ########################################################################################################################################
 ## Spool the pipeline with the following parameters:
-# snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 20 [rule] --resources mem_mb=95000 fastp=1 bowtie2align=1 purgeDuplicates=2 rawFPanalysis=20 mergeRawFPSectors=10 --restart-times=3
+# snakemake
+# --snakefile snakefileATACseqWorkflow.snakefile
+# -j 20 
+# [rule]
+# --resources mem_mb=50000
+# fastp=1
+# bowtie2align=1
+# purgeDuplicates=2
+# rawFPanalysis=20
+# mergeRawFPSectors=10
+# --restart-times=3
 #
 ## Parameters:
 # --snakefile: specify the file where the snakemake workflow is contained
