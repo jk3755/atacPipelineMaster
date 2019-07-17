@@ -1015,25 +1015,14 @@ rule PEAKS_differential_peak_calling_2samples:
     shell:
         "macs2 callpeak -t {input.a} -c {input.c} -n {wildcards.sample1}.{wildcards.sample2}_globalnorm --outdir diffpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-########################################################################################################################################
-#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
-########################################################################################################################################
-# Run this rule to generate all needed data for scanning the genome for matches to PWMs
-# Will generate data for all annotated genes in motifDB, for all unique motifs
-rule run_PWMscan:
-    input:
-        "snakeResources/sites/operations/PWMscan.allgroups.done"
-
-## Run a user defined set of sites
-rule run_PWMscan_custom:
-    input:
-        'snakeResources/sites/operations/PWMscan.custom.done'
-
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
 rule FOOTPRINTING_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
+    # this rule will call the process to generate the sites database if it doesnt exist
+    input:
+        "snakeResources/sites/operations/PWMscan.allgroups.done"
     output:
         "{path}preprocessing/footprint_dirtree.built"
     shell:
@@ -1064,7 +1053,7 @@ rule FOOTPRINTING_builddirstructure:
 # This rule initiates the raw footprint analysis for all genes found in the config file
 rule AGGREGATOR_footprinting_raw_analysis:
     input:
-        #"{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
     output:
         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"

@@ -1,6 +1,31 @@
 ########################################################################################################################################
-################################ GENERATE SITES DATABASE ###############################################################################
+#### CUSTOM ############################################################################################################################
 ########################################################################################################################################
+## Run a user defined set of sites
+rule run_PWMscan_custom:
+    input:
+        'snakeResources/sites/operations/PWMscan.custom.done'
+
+rule SITES_custom:
+    input:
+        'snakeResources/sites/operations/genes/AR.PWMscan.done',
+        'snakeResources/sites/operations/genes/SOX2.PWMscan.done',
+        'snakeResources/sites/operations/genes/FOXM1.PWMscan.done',
+        'snakeResources/sites/operations/genes/EZH2.PWMscan.done',
+        'snakeResources/sites/operations/genes/MYCN.PWMscan.done',
+        'snakeResources/sites/operations/genes/MYC.PWMscan.done'
+    output:
+        'snakeResources/sites/operations/PWMscan.custom.done'
+    shell:
+        "touch {output}"
+########################################################################################################################################
+#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
+########################################################################################################################################
+# Run this rule to generate all needed data for scanning the genome for matches to PWMs
+# Will generate data for all annotated genes in motifDB, for all unique motifs
+rule run_PWMscan:
+    input:
+        "snakeResources/sites/operations/PWMscan.allgroups.done"
 
 # Build the directory structure for the sites database
 rule SITES_build_dir_structure:
@@ -41,21 +66,6 @@ rule SITES_scanPWM:
     script:
         '../sites/scripts/snakeScanPWM.R'
 
-#### CUSTOM SPECIFIED SITE(S) ####
-rule SITES_custom:
-    input:
-        'snakeResources/sites/operations/genes/AR.PWMscan.done',
-        'snakeResources/sites/operations/genes/SOX2.PWMscan.done',
-        'snakeResources/sites/operations/genes/FOXM1.PWMscan.done',
-        'snakeResources/sites/operations/genes/EZH2.PWMscan.done',
-        'snakeResources/sites/operations/genes/MYCN.PWMscan.done',
-        'snakeResources/sites/operations/genes/MYC.PWMscan.done'
-    output:
-        'snakeResources/sites/operations/PWMscan.custom.done'
-    shell:
-        "touch {output}"
-
-####
 rule SITES_group_aggregator:
     input:
         'snakeResources/sites/operations/groups/PWMscan.group1.done',

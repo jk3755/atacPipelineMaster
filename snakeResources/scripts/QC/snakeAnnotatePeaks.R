@@ -17,13 +17,20 @@
 #   biocLite("clusterProfiler")}
 # if(!require(org.Hs.eg.db)){
 #   source("https://bioconductor.org/biocLite.R")
-#   biocLite("org.Hs.eg.db")}
+#   biocLite("")}
 # if(!require(ReactomePA)){
 #   source("https://bioconductor.org/biocLite.R")
 #   biocLite("ReactomePA")}
 # if(!require(TxDb.Hsapiens.UCSC.hg38.knownGene)){
 #   source("https://bioconductor.org/biocLite.R")
 #   biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene")}
+
+##
+suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
+suppressMessages(library(ChIPseeker))
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(org.Hs.eg.db))
+#library(clusterProfiler)
 
 ## 
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
@@ -39,7 +46,7 @@ sampleRep <- snakemake@wildcards[["repnum"]]
 cat("Input peak file path:", bedFile, "\n")
 narrowPeaks <- ChIPseeker::readPeakFile(bedFile)
 ## Subset to standard chromosomes
-narrowPeaks <- keepStandardChromosomes(narrowPeaks, pruning.mode="coarse")
+narrowPeaks <- keepStandardChromosomes(narrowPeaks)
 
 
 #### Coverage plots make plot of genome wide peak coverage
