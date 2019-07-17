@@ -34,7 +34,7 @@ rule SITES_build_dir_structure:
         "snakeResources/sites/operations/dirtree.built"
     shell:
         """
-        mkdir -p -v snakeResources/sites/operations snakeResources/sites/scripts snakeResources/sites/data snakeResources/sites/data/genes
+        mkdir -p -v snakeResources/sites/operations snakeResources/sites/scripts snakeResources/sites/data snakeResources/sites/data/genes snakeResources/sites/benchmark
         ##
         touch {output}
         """
@@ -60,9 +60,16 @@ rule SITES_generate_geneNames:
 # Use the PWM information to scan the genome for matches and store the data
 rule SITES_scanPWM:
     input:
-        "snakeResources/sites/data/motifData.Rdata"
+        "snakeResources/sites/data/motifData.Rdata",
+        "snakeResources/sites/operations/dirtree.built"
     output:
         "snakeResources/sites/operations/genes/{gene}.PWMscan.done"
+    conda:
+        "snakeResources/envs/RscanPWM.yaml"
+    threads:
+        1
+    benchmark:
+        'snakeResources/sites/benchmark/{gene}.PWMscan.benchmark.txt'
     script:
         '../sites/scripts/snakeScanPWM.R'
 

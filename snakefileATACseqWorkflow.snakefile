@@ -199,7 +199,7 @@ rule STEP2_fastp_filtering:
     conda:
     	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -f {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -342,7 +342,7 @@ rule STEP8_addrgandcsbam:
     threads:
         1
     resources:
-        mem_mb=50000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/addRG/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
     shell:
@@ -372,7 +372,7 @@ rule STEP9_cleansam:
     threads:
         1
     resources:
-        mem_mb=50000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/cleansam/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
     shell:
@@ -401,7 +401,7 @@ rule STEP10_mergelanes:
     threads:
         2
     resources:
-        mem_mb=50000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/mergelanes/{sample}-REP{repnum}.mergelanes.benchmark.txt'
     shell:
@@ -462,7 +462,7 @@ rule STEP11_purgeduplicates:
     benchmark:
         '{path}benchmark/preprocessing/purgeduplicates/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
     resources:
-        mem_mb=50000
+        mem_mb=25000
     shell:
         "picard MarkDuplicates \
         I={input.b} \
@@ -526,7 +526,7 @@ rule STEP13_build_index:
     threads:
         1
     resources:
-        mem_mb=50000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/buildindex/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
@@ -554,7 +554,7 @@ rule STEP14_makebigwig_bamcov:
     threads:
         20
     resources:
-        mem_mb=25000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/bigwig/{sample}-REP{repnum}.makebigwig.benchmark.txt'
     shell:
@@ -686,7 +686,7 @@ rule STEP19_annotate_peaks_global:
     threads:
         1
     resources:
-        mem_mb=40000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
@@ -703,7 +703,7 @@ rule STEP19_annotate_peaks_local:
     threads:
         1
     resources:
-        mem_mb=40000
+        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
@@ -1020,9 +1020,6 @@ rule PEAKS_differential_peak_calling_2samples:
 ########################################################################################################################
 rule FOOTPRINTING_builddirstructure:
     # params: -p ignore error if existing, make parent dirs, -v verbose
-    # this rule will call the process to generate the sites database if it doesnt exist
-    input:
-        "snakeResources/sites/operations/PWMscan.allgroups.done"
     output:
         "{path}preprocessing/footprint_dirtree.built"
     shell:
@@ -1051,8 +1048,11 @@ rule FOOTPRINTING_builddirstructure:
         """
 
 # This rule initiates the raw footprint analysis for all genes found in the config file
+# this rule will call the process to generate the sites database if it doesnt exists
 rule AGGREGATOR_footprinting_raw_analysis:
     input:
+        "{path}preprocessing/footprint_dirtree.built",
+        "snakeResources/sites/operations/PWMscan.allgroups.done",
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
     output:
