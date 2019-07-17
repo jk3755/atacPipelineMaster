@@ -249,7 +249,7 @@ rule STEP4_hg38align:
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
-        mem_mb=10000
+        mem_mb=50000
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
@@ -586,7 +586,7 @@ rule STEP15_MACS2_peaks_global_normilization:
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        1
+        20
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
     shell:
@@ -613,7 +613,7 @@ rule STEP16_MACS2_peaks_local_normalization:
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        1
+        20
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
     shell:

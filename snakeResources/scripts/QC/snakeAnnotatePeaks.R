@@ -2,35 +2,10 @@
 # https://www.bioconductor.org/packages/devel/bioc/vignettes/ChIPseeker/inst/doc/ChIPseeker.html
 
 ##
-# cat("Loading libraries", "\n")
-# if(!require(ChIPseeker)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("ChIPseeker")}
-# if(!require(genomation)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("genomation")}
-# if(!require(GenomicRanges)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("GenomicRanges")}
-# if(!require(clusterProfiler)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("clusterProfiler")}
-# if(!require(org.Hs.eg.db)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("")}
-# if(!require(ReactomePA)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("ReactomePA")}
-# if(!require(TxDb.Hsapiens.UCSC.hg38.knownGene)){
-#   source("https://bioconductor.org/biocLite.R")
-#   biocLite("TxDb.Hsapiens.UCSC.hg38.knownGene")}
-
-##
 suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
 suppressMessages(library(ChIPseeker))
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(org.Hs.eg.db))
-#library(clusterProfiler)
 
 ## 
 txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
