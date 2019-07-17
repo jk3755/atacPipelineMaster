@@ -24,12 +24,12 @@ if (file.exists(footprintDataPath) == TRUE){
   ## Load libraries
   cat("Loading libraries", "\n")
   suppressMessages(library(GenomicRanges))
-  suppressMessages(library(stats4))
-  suppressMessages(library(BiocGenerics))
-  suppressMessages(library(parallel))
+  #suppressMessages(library(stats4))
+  #suppressMessages(library(BiocGenerics))
+  #suppressMessages(library(parallel))
   suppressMessages(library(Rsamtools))
   suppressMessages(library(GenomicAlignments))
-  suppressMessages(library(genomation))
+  #suppressMessages(library(genomation))
   
   ##
   cat("Loading binding sites", "\n")

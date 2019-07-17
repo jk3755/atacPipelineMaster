@@ -39,6 +39,31 @@ include: "snakeResources/modules/snakeBuildDirStructure.snakefile"
 include: "snakeResources/modules/diffPeaks.snakefile"
 
 ########################################################################################################################################
+#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
+########################################################################################################################################
+# Run this rule to generate all needed data for scanning the genome for matches to PWMs
+# Will generate data for all annotated genes in motifDB, for all unique motifs
+rule run_PWMscan:
+    input:
+        expand("snakeResources/sites/data/genes/{genename}.bindingSites.Rdata", genename=config["geneNames"])
+
+# # Use the PWM information to scan the genome for matches and store the data
+# rule SITES_scanPWM:
+#     input:
+#         "snakeResources/sites/data/motifData.Rdata",
+#         "snakeResources/sites/operations/dirtree.built"
+#     output:
+#         "snakeResources/sites/operations/genes/{gene}.PWMscan.done"
+#     conda:
+#         "../envs/RscanPWM.yaml"
+#     threads:
+#         1
+#     benchmark:
+#         'snakeResources/sites/benchmark/{gene}.PWMscan.benchmark.txt'
+#     script:
+#         '../sites/scripts/snakeScanPWM.R'
+
+########################################################################################################################################
 #### FULL ANALYSIS AGGREGATOR ##########################################################################################################
 ########################################################################################################################################
 # This rule determines what is run in the full analysis spooling option
@@ -986,7 +1011,6 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################################
 #### PEAK CALLING ######################################################################################################################
 ########################################################################################################################################
-
 # Call peaks differentially across two samples
 rule PEAKS_differential_peak_calling_2samples:
     # notes:
@@ -1051,25 +1075,37 @@ rule FOOTPRINTING_builddirstructure:
 # this rule will call the process to generate the sites database if it doesnt exists
 rule AGGREGATOR_footprinting_raw_analysis:
     input:
-        "{path}preprocessing/footprint_dirtree.built",
-        "snakeResources/sites/operations/PWMscan.allgroups.done",
-        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+        "{path}operations/footprints/{sample}-REP{repnum}.footprint.prep.complete",
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
     output:
         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
     shell:
         "touch {output}"
 
+rule FOOTPRINTING_generate_binding_sites:
+    input:
+        "snakeResources/sites/data/motifData.Rdata"
+    output:
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
+    conda:
+        "snakeResources/envs/RscanPWM.yaml"
+    threads:
+        1
+    script:
+        'snakeResources/sites/scripts/snakeScanPWM.R'
+
 # Generate the raw data used for downstream footprint analysis
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
-        "{path}preprocessing/footprint_dirtree.built",
-        #"snakeResources/sites/operations/PWMscan.allgroups.done"
+        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
+    conda:
+        "snakeResources/envs/Rrawfootprint.yaml"
+    threads:
+        1
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:

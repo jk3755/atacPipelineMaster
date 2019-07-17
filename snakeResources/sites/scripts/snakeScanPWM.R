@@ -1,56 +1,55 @@
 
-#### Library installs
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("BSgenome.Hsapiens.UCSC.hg38", suppressUpdates = TRUE)
-#biocLite("Biostrings", suppressUpdates = TRUE)
-#biocLite("MotifDb", suppressUpdates = TRUE)
-
 #### Library loading
-cat("Loading libraries...", "\n")
+cat("Loading libraries for PWM scan", "\n")
 suppressMessages(library(BSgenome.Hsapiens.UCSC.hg38))
 suppressMessages(library(Biostrings))
-suppressMessages(library(MotifDb))
 
 ##
-cat("Setting snakemake vars...", "\n")
+cat("Setting snakemake variables for PWM scan", "\n")
 motifDataPath <- snakemake@input[[1]]
 outPath <- snakemake@output[[1]]
-rdataPath <- gsub("operations", "data", outPath)
-rdataPath <- gsub("PWMscan.done", "bindingSites.Rdata", rdataPath)
 currentGene <- snakemake@wildcards[["gene"]]
 
 ##
-cat("Loading motifData object...", "\n")
+cat("Loading motifData object", "\n")
 load(motifDataPath)
 
 ##
+cat("Creating binding sites object for gene", currentGene, "\n")
 com <- paste0("motifs <- motifData$", currentGene)
 eval(parse(text = com))
 
 ## Set parameters
-cat("Using default PWM matching score of 95%", "\n")
+cat("Setting parameters", "\n")
 score <- "95%"
 numMotifs <- length(motifs)
 genome <- Hsapiens
 bindingSites <- list()
-cat("Found", numMotifs, " unique motifs for gene", currentGene, "scanning for sites with", score, "PWM match", "\n")
+
+##
+cat("Found", numMotifs, "unique motifs for gene", currentGene, "scanning for sites with", score, "PWM match", "\n")
 
 ## Scan the genome for matches to each unique motif
 for (a in 1:numMotifs){
+  
   cat("Scanning motif", a, "for gene", currentGene, "\n")
+  
+  cat("Creating temp sites object", "\n")
   tempSites <- list()
+  
+  cat("Loading PWM", "\n")
   PWM <- motifs[[a]]
-  sites <- matchPWM(PWM, genome, min.score=score)
+  
+  cat("Scanning for sites", "\n")
+  sites <- matchPWM(PWM, genome, min.score = score)
+  
+  cat("Transferring data", "\n")
   tempSites$PWM <- PWM
   tempSites$sites <- sites
   bindingSites[[a]] <- tempSites
+  
 } # end for (a in 1:numMotifs)
 
 ## Save the data
-cat("Saving data...", "\n")
-save(bindingSites, file = rdataPath)
-file.create(outPath)
-
-rm(list=ls())
-gc()
-cat("Finished scanning!", "\n")
+cat("Saving binding sites data at path:", outPath, "\n")
+save(bindingSites, file = outPath)

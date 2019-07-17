@@ -75,11 +75,26 @@ rule manual_process_raw_footprints:
 ########################################################################################################################################
 #### TEST ##############################################################################################################################
 ########################################################################################################################################
+# rule run_raw_footprint_test:
+#     input:
+#         expand("test/operations/footprints/raw/test-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("test/operations/footprints/raw/test-REP2.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
+#         expand("test/operations/footprints/raw/test-REP3.{genename}.rawFPanalysis.done", genename=config["geneNames"])
+
+rule PREP_footprinting:
+    input:
+        "{path}preprocessing/footprint_dirtree.built",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
+    output:
+        "{path}operations/footprints/{sample}-REP{repnum}.footprint.prep.complete"
+    shell:
+        "touch {output}"
+
 rule run_raw_footprint_test:
     input:
-        expand("test/operations/footprints/raw/test-REP1.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("test/operations/footprints/raw/test-REP2.{genename}.rawFPanalysis.done", genename=config["geneNames"]),
-        expand("test/operations/footprints/raw/test-REP3.{genename}.rawFPanalysis.done", genename=config["geneNames"])
+        "data/test/operations/footprints/test-REP1.footprinting_raw_analysis.complete",
+        "data/test/operations/footprints/test-REP2.footprinting_raw_analysis.complete",
+        "data/test/operations/footprints/test-REP3.footprinting_raw_analysis.complete"
 
 ########################################################################################################################################
 #### LNCAP #############################################################################################################################

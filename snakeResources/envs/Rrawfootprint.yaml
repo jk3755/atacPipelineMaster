@@ -1,0 +1,7 @@
+channels:
+  - r
+  - bioconda
+dependencies:
+  - bioconductor-genomicranges
+  - bioconductor-genomicalignments
+  - bioconductor-rsamtools
