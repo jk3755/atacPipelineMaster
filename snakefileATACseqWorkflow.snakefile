@@ -199,7 +199,7 @@ rule STEP2_fastp_filtering:
     conda:
     	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -f {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -j {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
