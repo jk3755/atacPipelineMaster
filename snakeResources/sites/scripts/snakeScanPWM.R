@@ -41,7 +41,7 @@ for (a in 1:numMotifs){
   PWM <- motifs[[a]]
   
   cat("Scanning for sites", "\n")
-  sites <- matchPWM(PWM, genome, min.score = score)
+  sites <- Biostrings::matchPWM(PWM, genome, min.score = score)
   
   cat("Transferring data", "\n")
   tempSites$PWM <- PWM
