@@ -90,13 +90,39 @@ rule preprocessing_lncap_ex01:
         "pros/lncap/cr08/operations/preprocessing/LNCaP-CR-08-REP1.preprocessing.complete"
 
 ########################################################################################################################################
-#### PANC1 #############################################################################################################################
+#### PANC #############################################################################################################################
 ########################################################################################################################################
-rule preprocessing_capani_wt01:
+rule preprocessing_panc_all:
     input:
-        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN1-REP1.preprocessing.complete",
-        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN1-REP2.preprocessing.complete",
-        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN1-REP3.preprocessing.complete",
-        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN2-REP1.preprocessing.complete",
-        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN2-REP2.preprocessing.complete",
-        "panc/capani/operations/preprocessing/CAPANI-WT-01-RUN2-REP3.preprocessing.complete"
+        "panc/CAPANI_run1/operations/preprocessing/CAPANI-WT-01-RUN1-REP1.preprocessing.complete",
+        "panc/CAPANI_run1/operations/preprocessing/CAPANI-WT-01-RUN1-REP2.preprocessing.complete",
+        "panc/CAPANI_run1/operations/preprocessing/CAPANI-WT-01-RUN1-REP3.preprocessing.complete",
+        "panc/CAPANI_run2/operations/preprocessing/CAPANI-WT-01-RUN2-REP1.preprocessing.complete",
+        "panc/CAPANI_run2/operations/preprocessing/CAPANI-WT-01-RUN2-REP2.preprocessing.complete",
+        "panc/CAPANI_run2/operations/preprocessing/CAPANI-WT-01-RUN2-REP3.preprocessing.complete",
+        "panc/KP4/run1/operations/preprocessing/KP4-WT-01-RUN1-REP1.preprocessing.complete",
+        "panc/KP4/run1/operations/preprocessing/KP4-WT-01-RUN1-REP2.preprocessing.complete",
+        "panc/KP4/run1/operations/preprocessing/KP4-WT-01-RUN1-REP3.preprocessing.complete",
+        "panc/KP4/run2/operations/preprocessing/KP4-WT-01-RUN2-REP1.preprocessing.complete",
+        "panc/KP4/run2/operations/preprocessing/KP4-WT-01-RUN2-REP2.preprocessing.complete",
+        "panc/KP4/run2/operations/preprocessing/KP4-WT-01-RUN2-REP3.preprocessing.complete",
+        "panc/PANC1/run1/operations/preprocessing/PANC1-WT-01-RUN1-REP1.preprocessing.complete",
+        "panc/PANC1/run1/operations/preprocessing/PANC1-WT-01-RUN1-REP2.preprocessing.complete",
+        "panc/PANC1/run1/operations/preprocessing/PANC1-WT-01-RUN1-REP3.preprocessing.complete",
+        "panc/PANC1/run2/operations/preprocessing/PANC1-WT-01-RUN2-REP1.preprocessing.complete",
+        "panc/PANC1/run2/operations/preprocessing/PANC1-WT-01-RUN2-REP2.preprocessing.complete",
+        "panc/PANC1/run2/operations/preprocessing/PANC1-WT-01-RUN2-REP3.preprocessing.complete",
+        "panc/PANC0403/run1/operations/preprocessing/PANC0403-WT-01-RUN1-REP1.preprocessing.complete",
+        "panc/PANC0403/run1/operations/preprocessing/PANC0403-WT-01-RUN1-REP2.preprocessing.complete",
+        "panc/PANC0403/run1/operations/preprocessing/PANC0403-WT-01-RUN1-REP3.preprocessing.complete",
+        "panc/PANC0403/run2/operations/preprocessing/PANC0403-WT-01-RUN2-REP1.preprocessing.complete",
+        "panc/PANC0403/run2/operations/preprocessing/PANC0403-WT-01-RUN2-REP2.preprocessing.complete",
+        "panc/PANC0403/run2/operations/preprocessing/PANC0403-WT-01-RUN2-REP3.preprocessing.complete",
+        "panc/PATU8SS89/run1/operations/preprocessing/PATU8SS89-WT-01-RUN1-REP1.preprocessing.complete",
+        "panc/PATU8SS89/run1/operations/preprocessing/PATU8SS89-WT-01-RUN1-REP2.preprocessing.complete",
+        "panc/PATU8SS89/run1/operations/preprocessing/PATU8SS89-WT-01-RUN1-REP3.preprocessing.complete",
+        "panc/PATU8SS89/run2/operations/preprocessing/PATU8SS89-WT-01-RUN2-REP1.preprocessing.complete",
+        "panc/PATU8SS89/run2/operations/preprocessing/PATU8SS89-WT-01-RUN2-REP2.preprocessing.complete",
+        "panc/PATU8SS89/run2/operations/preprocessing/PATU8SS89-WT-01-RUN2-REP3.preprocessing.complete"
+
+        

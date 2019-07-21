@@ -19,10 +19,6 @@
 #
 ## Resource definitions
 # mem_mb: specifies the total memory limit of the pipeline. This relies on mem_mb being user defined in individual rules
-# bowtie2align: jobs that use bowtie2 for aligning reads
-# purgeDuplicates: rules that use picard to remove duplicate reads
-# rawFPanalysis: rules that analyze raw footprinting data
-# mergeRawFPSectors: rule that merges to sectored data for the larger footprint analysis
 #
 #
 ########################################################################################################################################
@@ -36,7 +32,7 @@ include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
 include: "snakeResources/modules/snakeBuildDirStructure.snakefile"
-include: "snakeResources/modules/diffPeaks.snakefile"
+#include: "snakeResources/modules/diffPeaks.snakefile"
 
 ########################################################################################################################################
 #### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
@@ -83,8 +79,8 @@ rule AGGREGATOR_full_analysis:
 rule AGGREGATOR_preprocessing:
     input:
     	"{path}operations/preprocessing/dirtree.built",
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
-        "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw",
+        "{path}bam/{sample}-REP{repnum}.bai",
+        "{path}bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
@@ -106,8 +102,16 @@ rule PREP_builddirstructure:
         1
     shell:
         """
-        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}benchmark
+        mkdir -p -v {wildcards.path}metrics
+        mkdir -p -v {wildcards.path}operations
+        mkdir -p -v {wildcards.path}preprocessing
+        mkdir -p -v {wildcards.path}footprints
+        mkdir -p -v {wildcards.path}peaks
+        mkdir -p -v {wildcards.path}correlation
+        mkdir -p -v {wildcards.path}bam
+        mkdir -p -v {wildcards.path}bigwig
+        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}benchmark/preprocessing
         mkdir -p -v {wildcards.path}benchmark/preprocessing/gunzip {wildcards.path}benchmark/preprocessing/fastp {wildcards.path}benchmark/preprocessing/mycoalign
         mkdir -p -v {wildcards.path}benchmark/preprocessing/hg38align {wildcards.path}benchmark/preprocessing/coordsortsam {wildcards.path}benchmark/preprocessing/bamconversion
@@ -116,36 +120,27 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}benchmark/preprocessing/buildindex {wildcards.path}benchmark/preprocessing/bigwig {wildcards.path}benchmark/preprocessing/peaks
         mkdir -p -v {wildcards.path}benchmark/preprocessing/peakcov {wildcards.path}benchmark/preprocessing/install {wildcards.path}benchmark/preprocessing/annotatepeaks
         mkdir -p -v {wildcards.path}benchmark/preprocessing/totalreads
-        #
         mkdir -p -v {wildcards.path}benchmark/correlation
         mkdir -p -v {wildcards.path}benchmark/saturation
-        #
         mkdir -p -v {wildcards.path}benchmark/footprints
         mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
         mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
         ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}operations
         mkdir -p -v {wildcards.path}operations/modules
         mkdir -p -v {wildcards.path}operations/preprocessing
-        #
         mkdir -p -v {wildcards.path}operations/footprints
         mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
-        #
         mkdir -p -v {wildcards.path}operations/footprints/temp
         mkdir -p -v {wildcards.path}operations/footprints/merged
-        #
         mkdir -p -v {wildcards.path}operations/saturation
         mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
         ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}preprocessing
         mkdir -p -v {wildcards.path}preprocessing/2fastq
         mkdir -p -v {wildcards.path}preprocessing/3goodfastq
         mkdir -p -v {wildcards.path}preprocessing/4mycoalign
         mkdir -p -v {wildcards.path}preprocessing/5hg38align
-        #
-        mkdir -p -v {wildcards.path}preprocessing/6rawbam
-        mkdir -p -v {wildcards.path}preprocessing/6rawbam/mitochondrial {wildcards.path}preprocessing/6rawbam/blacklist {wildcards.path}preprocessing/6rawbam/nonblacklist
-        #
+        mkdir -p -v {wildcards.path}preprocessing/6raw
+        mkdir -p -v {wildcards.path}preprocessing/6raw/mitochondrial {wildcards.path}preprocessing/6raw/blacklist {wildcards.path}preprocessing/6raw/nonblacklist
         mkdir -p -v {wildcards.path}preprocessing/7rgsort
         mkdir -p -v {wildcards.path}preprocessing/8merged
         mkdir -p -v {wildcards.path}preprocessing/9dedup
@@ -156,34 +151,24 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/saturation/complexity
         mkdir -p -v {wildcards.path}preprocessing/saturation/peaks 
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
-        #
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled/raw {wildcards.path}preprocessing/saturation/downsampled/cs {wildcards.path}preprocessing/saturation/downsampled/md
-        #
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints/raw {wildcards.path}preprocessing/saturation/footprints/parsed {wildcards.path}preprocessing/saturation/footprints/processed
         ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}footprints
-        #
         mkdir -p -v {wildcards.path}footprints/data 
         mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
         mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
-        #
         mkdir -p -v {wildcards.path}footprints/data/temp
-        #
         mkdir -p -v {wildcards.path}footprints/graphs
         mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
         ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
         ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}metrics
         mkdir -p -v {wildcards.path}metrics/saturation
         mkdir -p -v {wildcards.path}metrics/fastq
         mkdir -p -v {wildcards.path}metrics/myco
         mkdir -p -v {wildcards.path}metrics/hg38
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}correlation
         ####################################################################################################################################################################
         touch {output}
         """
@@ -306,8 +291,8 @@ rule STEP6_blacklistfilter_bamconversion:
     input:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
     output:
-        a="{path}preprocessing/6rawbam/blacklist/{sample}-REP{repnum}_L{lane}.hg38blacklist.bam",
-        b="{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
+        a="{path}preprocessing/6raw/blacklist/{sample}-REP{repnum}_L{lane}.hg38blacklist.bam",
+        b="{path}preprocessing/6raw/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
     conda:
         "snakeResources/envs/samtools.yaml"
     threads:
@@ -328,10 +313,10 @@ rule STEP7_chrM_contamination:
     # -U output filepath for reads matching blacklist region
     # -@ number of threads to use
     input:
-        "{path}preprocessing/6rawbam/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
+        "{path}preprocessing/6raw/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
     output:
-        a="{path}preprocessing/6rawbam/mitochondrial/{sample}-REP{repnum}_L{lane}.mitochondrial.bam",
-        b="{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
+        a="{path}preprocessing/6raw/mitochondrial/{sample}-REP{repnum}_L{lane}.mitochondrial.bam",
+        b="{path}preprocessing/6raw/{sample}-REP{repnum}_L{lane}.goodbam"
     conda:
         "snakeResources/envs/samtools.yaml"
     threads:
@@ -359,7 +344,7 @@ rule STEP8_addrgandcsbam:
     # I specifies the input file
     # O specifies the output file
     input:
-        "{path}preprocessing/6rawbam/{sample}-REP{repnum}_L{lane}.goodbam"
+        "{path}preprocessing/6raw/{sample}-REP{repnum}_L{lane}.goodbam"
     output:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     conda:
@@ -458,10 +443,10 @@ rule STEP10b_clean_intermediate_data:
         rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*.fq
         rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*.sam
         rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*.sam
-        rm -f {wildcards.path}preprocessing/6rawbam/*REP{wildcards.repnum}*.goodbam
-        rm -f {wildcards.path}preprocessing/6rawbam/blacklist/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/mitochondrial/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/6rawbam/nonblacklist/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6raw/*REP{wildcards.repnum}*.goodbam
+        rm -f {wildcards.path}preprocessing/6raw/blacklist/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6raw/mitochondrial/*REP{wildcards.repnum}*.bam
+        rm -f {wildcards.path}preprocessing/6raw/nonblacklist/*REP{wildcards.repnum}*.bam
         rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam
         #
         touch {output}
@@ -521,16 +506,17 @@ rule STEP12_mapqfilter:
     
 # Remove intermediate data to this point 
 # This will help keep disk space open
+# This step will also copy the bam file out to the parent bam folder
 rule STEP12b_clean_intermediate_data:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
     output:
-        "{path}operations/preprocessing/clean12b.{sample}.{repnum}.done"
+        "{path}bam/{sample}-REP{repnum}.bam"
     shell:
         """
         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
         rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
-        #
+        mv {wildcards.path}preprocessing/10unique/*REP{wildcards.repnum}*.bam {wildcards.path}bam/{sample}-REP{repnum}.bam
         touch {output}
         """
 
@@ -542,10 +528,9 @@ rule STEP13_build_index:
     # I specifies the input bam file
     # O specifies the output index file
     input:
-        a="{path}operations/preprocessing/clean12b.{sample}.{repnum}.done",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
+        "{path}bam/{sample}-REP{repnum}.bam"
     output:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+        "{path}bam/{sample}-REP{repnum}.bai"
     conda:
         "snakeResources/envs/picard.yaml"
     threads:
@@ -556,7 +541,7 @@ rule STEP13_build_index:
         '{path}benchmark/preprocessing/buildindex/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
         "picard BuildBamIndex \
-        I={input.b} \
+        I={input} \
         O={output}"
     
 # Make a bigwig file from the bam file
@@ -570,10 +555,10 @@ rule STEP14_makebigwig_bamcov:
     # -v verbose mode
     # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
     input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+        a="{path}bam/{sample}-REP{repnum}.bam",
+        b="{path}bam/{sample}-REP{repnum}.bai"
     output:
-        "{path}preprocessing/11bigwig/{sample}-REP{repnum}.bw"
+        "{path}bigwig/{sample}-REP{repnum}.bw"
     conda:
         "snakeResources/envs/deeptools.yaml"
     threads:
@@ -604,14 +589,14 @@ rule STEP15_MACS2_peaks_global_normilization:
     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
     # -p set the p-value cutoff for peak calling
     input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+        a="{path}bam/{sample}-REP{repnum}.bam",
+        b="{path}bam/{sample}-REP{repnum}.bai"
     output:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        20
+        4
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
     shell:
@@ -631,14 +616,14 @@ rule STEP16_MACS2_peaks_local_normalization:
     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
     # -p set the p-value cutoff for peak calling
     input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+        a="{path}bam/{sample}-REP{repnum}.bam",
+        b="{path}bam/{sample}-REP{repnum}.bai"
     output:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        20
+        4
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
     shell:
@@ -737,8 +722,8 @@ rule STEP19_annotate_peaks_local:
 # Count the total number of reads in the sample
 rule STEP20_sample_total_reads:
     input:
-        a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai",
+        a="{path}bam/{sample}-REP{repnum}.bam",
+        b="{path}bam/{sample}-REP{repnum}.bai"
     output:
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
     conda:
@@ -1030,14 +1015,16 @@ rule PEAKS_differential_peak_calling_2samples:
     # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
     # -p set the p-value cutoff for peak calling
     input:
-        a="{path1}preprocessing/10unique/{sample1}.u.bam",
-        b="{path1}preprocessing/10unique/{sample1}.u.bai",
-        c="{path2}preprocessing/10unique/{sample2}.u.bam",
-        d="{path2}preprocessing/10unique/{sample2}.u.bai"
+        a="{parentpath}{path1}bam/{sample1}.bam",
+        b="{parentpath}{path2}bam/{sample2}.bam"
     output:
-        "diffpeaks/{sample1}.{sample2}_globalnorm_peaks.narrowPeak"
+        "{parentpath}diffpeaks/ctrl-{sample1}.treat-{sample2}_globalnorm_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
+    threads:
+        4
     shell:
-        "macs2 callpeak -t {input.a} -c {input.c} -n {wildcards.sample1}.{wildcards.sample2}_globalnorm --outdir diffpeaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -c {input.b} -n ctrl-{wildcards.sample1}.treat-{wildcards.sample2}_globalnorm --outdir {wildcards.parentpath}diffpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
