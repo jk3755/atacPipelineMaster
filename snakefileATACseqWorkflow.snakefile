@@ -228,11 +228,11 @@ rule STEP3_mycoalign:
     benchmark:
         '{path}benchmark/preprocessing/mycoalign/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
     threads:
-        20
+        19
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
-        mem_mb=5000
+        mem_mb=10000
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
@@ -255,11 +255,11 @@ rule STEP4_hg38align:
     benchmark:
         '{path}benchmark/preprocessing/hg38align/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
     threads:
-        20
+        19
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
-        mem_mb=50000
+        mem_mb=40000
     shell:
         "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
@@ -498,7 +498,7 @@ rule STEP12_mapqfilter:
     conda:
         "snakeResources/envs/samtools.yaml"
     threads:
-        5
+        1
     benchmark:
         '{path}benchmark/preprocessing/mapqfilter/{sample}-REP{repnum}.mapqfilter.benchmark.txt'
     shell:
@@ -516,7 +516,7 @@ rule STEP12b_clean_intermediate_data:
         """
         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
         rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
-        mv {wildcards.path}preprocessing/10unique/*REP{wildcards.repnum}*.bam {wildcards.path}bam/{sample}-REP{repnum}.bam
+        mv {wildcards.path}preprocessing/10unique/*REP{wildcards.repnum}*.bam {wildcards.path}bam/{wildcards.sample}-REP{wildcards.repnum}.bam
         touch {output}
         """
 
@@ -562,13 +562,13 @@ rule STEP14_makebigwig_bamcov:
     conda:
         "snakeResources/envs/deeptools.yaml"
     threads:
-        20
+        10
     resources:
         mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/bigwig/{sample}-REP{repnum}.makebigwig.benchmark.txt'
     shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 20 -v"
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 10 -v"
     
 # Call peaks using global normalization
 rule STEP15_MACS2_peaks_global_normilization:
