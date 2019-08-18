@@ -205,11 +205,11 @@ rule STEP2_fastp_filtering:
     benchmark:
         '{path}benchmark/preprocessing/fastp/{sample}-REP{repnum}.{lane}.fastp.benchmark.txt'
     threads:
-        16
+        2
     conda:
     	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 16 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -j {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 2 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -j {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
     
 # Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -228,13 +228,13 @@ rule STEP3_mycoalign:
     benchmark:
         '{path}benchmark/preprocessing/mycoalign/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
     threads:
-        19
+        10
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
         mem_mb=10000
     shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
+        "bowtie2 -q -p 10 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
 # Align reads to human hg38 build
 rule STEP4_hg38align:
@@ -255,13 +255,13 @@ rule STEP4_hg38align:
     benchmark:
         '{path}benchmark/preprocessing/hg38align/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
     threads:
-        19
+        10
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
         mem_mb=40000
     shell:
-        "bowtie2 -q -p 20 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
+        "bowtie2 -q -p 10 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
 # Coordinate sort the aligned reads. This is required for blacklist filtering
 rule STEP5_coordsort_sam:
