@@ -1,6 +1,0 @@
-channels:
-  - r
-  - bioconda
-dependencies:
-  - bioconductor-bsgenome.hsapiens.ucsc.hg38
-  - bioconductor-biostrings

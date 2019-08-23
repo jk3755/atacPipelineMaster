@@ -1077,7 +1077,7 @@ rule FOOTPRINTING_raw_analysis:
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
     conda:
-        "snakeResources/envs/Rrawfootprint.yaml"
+        "snakeResources/envs/RFootprint.yaml"
     threads:
         1
     benchmark:
