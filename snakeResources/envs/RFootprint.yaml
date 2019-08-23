@@ -11,3 +11,4 @@ dependencies:
   - bioconductor-biostrings
   - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
   - bioconductor-chipseeker
+  - bioconductor-org.hs.eg.db

@@ -43,7 +43,7 @@ getAllBindingSites <- function(gene, pwmScanScore = "95%"){
   cat(geneIdx, "\n")
   cat("Found", length(geneIdx), "records matching current gene", "\n")
   
-  cat("retrieving relevante records from mdb", "\n")
+  cat("retrieving relevant records from mdb", "\n")
   tempMotifs <- list()
   c <- 1
   for (idx in geneIdx){
@@ -230,6 +230,15 @@ if (file.exists(footprintDataFilepath) == TRUE){
   cat("Calculating library normalization factors", "\n")
   libraryNormalization <- calculateLibraryNormalization(bamPath, allSites)
   
+  #### Set scope of analysis ####
+  scope <- paste0("chr", c(1:22, "X", "Y"))
+  cat("scope of analysis:", scope, "\n")
+  
+  #### Determine scope for current binding sites ####
+  currentScope <- scope[which(scope %in% allSites@seqnames@values)]
+  cat("scope of current binding sites:", currentScope, "\n")
+  
+  
   #### Split binding sites by chromosome  ####
   cat("Splitting binding sites by chromosome", "\n")
   chr1Sites <- allSites[seqnames(allSites) == "chr1"]
@@ -261,8 +270,8 @@ if (file.exists(footprintDataFilepath) == TRUE){
   
   #### Generate insertion matrix for each chromosome one at a time and convert to basic footprint statistics ####
   ## Doing it this way allows the script to keep the memory usage low
-  scope <- paste0("chr", 1:22)
-  scope <- c(scope, "chrX", "chrY")
+  
+  
   ##
   for (item in scope){
     com <- paste0("insMatrix <- generateInsMatrix(bamPath,", item, "Sites,maxWidth,'", item, "')")
