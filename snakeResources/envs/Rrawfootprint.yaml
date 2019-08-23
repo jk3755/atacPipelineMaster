@@ -5,3 +5,8 @@ dependencies:
   - bioconductor-genomicranges
   - bioconductor-genomicalignments
   - bioconductor-rsamtools
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  - bioconductor-motifdb
+  - bioconductor-biostrings
+  - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
+  - bioconductor-chipseeker
