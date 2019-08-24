@@ -8,7 +8,7 @@
 # [rule]
 # --resources mem_mb=50000
 # --use-conda
-# --restart-times=3
+# --restart-times 3
 #
 ## Parameters:
 # --snakefile: specify the file where the snakemake workflow is contained
@@ -1070,6 +1070,9 @@ rule AGGREGATOR_footprinting_raw_analysis:
         "touch {output}"
 
 # Generate the raw data used for downstream footprint analysis
+# The rule memory limit for this step will be adjusted based on the restart attempt of the job
+# This is useful because footprinting requires a lot of memory, so you can start small to
+# Streamline running of cluster jobs and increase as necessary
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
@@ -1080,7 +1083,10 @@ rule FOOTPRINTING_raw_analysis:
         "snakeResources/envs/RFootprint.yaml"
     threads:
         1
+    resources:
+        mem_mb=lambda params, attempt: attempt * 10000,
+        run_time=lambda params, attempt: attempt * 2
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
-        "snakeResources/scripts/footprints/snakeAnalyzeFP.R"
+        "snakeResources/scripts/snakeAnalyzeFP.R"

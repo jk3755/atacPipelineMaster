@@ -10,1219 +10,1217 @@ geneNames:
   - HEN1
   - ZN639
   - ZNF350
-  # - ZN524
-  # - ZNF282
-  # - PAX9
-  # - ZBTB49
-  # - DMC1
-  # - ZNF713
-  # - ZNF8
-  # - STAT5B
-  # - ZBTB16
-  # - TBX19
-  # - PTF1A
-  # - AP2D
-  # - MCR
-  # - BHE41
-  # - TF2LX
-  # - TF7L1
-  # - ZN423
-  # - ZN232
-  # - ZN143
-  # - ZBT7A
-  # - HXA7
-  # - ZN589
-  # - PAX6
-  # - HXC6
-  # - HXC8
-  # - KCNIP1
-  # - AP2A
-  # - ZNF232
-  # - HME1
-  # - PO5F1
-  # - MGAP
-  # - P5F1B
-  # - HOXC8
-  # - CR3L2
-  # - RAD21
-  # - HOXA7
-  # - ZBT7B
-  # - SMC3
-  # - ZKSCAN3
-  # - ZNF306
-  # - HSFY1
-  # - ZBTB7C
-  # - PURA
-  # - ZNF410
-  # - RFX7
-  # - HLX
-  # - HOXC4
-  # - BC11A
-  # - ZEP2
-  # - NR3C2
-  # - ZSCAN4
-  # - ZBT18
-  # - HOXB4
-  # - GMEB1
-  # - HCFC1
-  # - P53
-  # - KLF7
-  # - ZNF691
-  # - OTP
-  # - HOXC5
-  # - ZNF423
-  # - SIX3
-  # - Trp73
-  # - RHOXF2
-  # - BARH2
-  # - PO3F4
-  # - PRD14
-  # - SIN3A
-  # - NKX61
-  # - PSMC2
-  # - SIX6
-  # - COE1
-  # - ANDR
-  # - GZF1
-  # - HOXD1
-  # - EVI1
-  # - SIX5
-  # - ZBTB14
-  # - HXA9
-  # - ZBTB3
-  # - TCF21
-  # - ZNF148
-  # - BCL3
-  # - SP100
-  # - SIX4
-  # - HOXC9
-  # - PO4F3
-  # - ZN713
-  # - ZN282
-  # - TFCP2L1
-  # - PO3F3
-  # - PO2F3
-  # - HXB2
-  # - CHD2
-  # - LHX1
-  # - LHX5
-  # - BBX
-  # - HDX
-  # - BMAL1
-  # - PO2F2
-  # - CREB3L2
-  # - PKNX1
-  # - SOX30
-  # - BSH
-  # - ERR1
-  # - PO3F1
-  # - OSR2
-  # - MYBA
-  # - NDF1
-  # - PO4F1
-  # - PO6F1
-  # - GRHL2
-  # - RORA_2
-  # - ATF6A
-  # - CYCS
-  # - GTF2F1
-  # - ZN410
-  # - HXC10
-  # - AP2C
-  # - HOXA9
-  # - ZEP1
-  # - IRX4
-  # - HIVEP1
-  # - ZNF281
-  # - POU4F1
-  # - ZN384
-  # - BHE23
-  # - OSR1
-  # - ZKSC3
-  # - TFAP2E
-  # - HOXC6
-  # - IRX6
-  # - ZKSC1
-  # - ZSCA4
-  # - SMARCC2
-  # - RORG
-  # - HXC11
-  # - PKNX2
-  # - ZNF274
-  # - TBL1XR1
-  # - FOXJ1
-  # - NR1H2
-  # - EP300
-  # - HOXA3
-  # - TYY1
-  # - PAX1
-  # - KLF9
-  # - PRDM14
-  # - FOXN1
-  # - ARI5B
-  # - HXC13
-  # - SP8
-  # - HXB6
-  # - TLX2
-  # - MECOM
-  # - ZN148
-  # - TFAP2D
-  # - CR3L1
-  # - HXB3
-  # - ETV7
-  # - KAISO
-  # - TBX3
-  # - SOX17
-  # - AIRE
-  # - ZN740
-  # - ZBTB7B
-  # - PIT1
-  # - NGN2
-  # - GLIS1
-  # - MIZF
-  # - ZNF143
-  # - IRF3
-  # - ZIC4
-  # - PATZ1
-  # - HXD3
-  # - PAX8
-  # - PO4F2
-  # - BHE22
-  # - PRDM4
-  # - ZBT49
-  # - CENPB
-  # - PPARD
-  # - ZNF524
-  # - NR1D1
-  # - SIX2
-  # - ZNF75A
-  # - PROX1
-  # - SCRT1
-  # - MAZ
-  # - HME2
-  # - ATF4
-  # - HOMEZ
-  # - ASCL1
-  # - SOX12
-  # - TCF7
-  # - TAF1
-  # - ELF4
-  # - NFYC
-  # - NF2L2
-  # - SRBP2
-  # - TYY2
-  # - E2F8
-  # - ZFX
-  # - BCL6
-  # - PLAL1
-  # - CTCF
-  # - GLIS2
-  # - SCRT2
-  # - ZBTB6
-  # - ZBTB33
-  # - KLF15
-  # - STAT2
-  # - TF7L2
-  # - HMGA2
-  # - RREB1
-  # - KLF14
-  # - ERF
-  # - MAFA
-  # - HINFP1
-  # - MTF1
-  # - BARHL1
-  # - ZBTB7A
-  # - NR3C1
-  # - RHXF1
-  # - SP4
-  # - HXA10
-  # - ARID5A
-  # - SOX11
-  # - TP63
-  # - Trp53
-  # - ELF3
-  # - IRF9
-  # - T
-  # - SIX1
-  # - THRB
-  # - HES1
-  # - E2F7
-  # - CREB5
-  # - PLAG1
-  # - IRF4
-  # - NR6A1
-  # - SOX1
-  # - IRF8
-  # - IRF2
-  # - ZN784
-  # - SMRC1
-  # - SP2
-  # - ATF7
-  # - NKX31
-  # - POU1F1
-  # - DBX2
-  # - ASCL2
-  # - EPAS1
-  # - HNF1A
-  # - HXA11
-  # - NR2C1
-  # - COT2
-  # - E2F5
-  # - CTCFL
-  # - LHX8
-  # - REST
-  # - PKNOX1
-  # - MYOG
-  # - TP53
-  # - ONECUT3
-  # - IRF5
-  # - HSF4
-  # - ZNF652
-  # - SOX7
-  # - TEAD2
-  # - ZN219
-  # - HES7
-  # - ZNF219
-  # - KLF16
-  # - HINFP
-  # - AR
-  # - TFCP2
-  # - IRX5
-  # - PML
-  # - STAT4
-  # - BACH2
-  # - KLF13
-  # - POU4F2
-  # - NFKB2
-  # - SOX18
-  # - CREM
-  # - MEF2B
-  # - ARID5B
-  # - NFAC1
-  # - RFX2
-  # - EBF3
-  # - ETV5
-  # - TFE2
-  # - EGR2
-  # - NDF2
-  # - GCM2
-  # - E2F3
-  # - BATF3
-  # - CREB3
-  # - VENTX
-  # - ETV3
-  # - IRX2
-  # - NKX32
-  # - ETV2
-  # - CDC5L
-  # - NFAT5
-  # - RFX5
-  # - RFX1
-  # - BHA15
-  # - NR2F6
-  # - ZN652
-  # - E4F1
-  # - NR2C2
-  # - ETV1
-  # - ESR1
-  # - ZNF35
-  # - WT1
-  # - HLTF
-  # - GCM1
-  # - NKX22
-  # - EGR3
-  # - TCF7L1
-  # - ETV6
-  # - GABP1
-  # - DMBX1
-  # - CLOCK
-  # - ZKSCAN1
-  # - SOX21
-  # - CUX2
-  # - POU3F1
-  # - Myf
-  # - HNF6
-  # - YBX1
-  # - ZNF238
-  # - PBX1
-  # - HNF4G
-  # - MAFF
-  # - TBX2
-  # - DMRT3
-  # - MLXIPL
-  # - CYB5R1
-  # - SPDEF
-  # - SRF
-  # - MYBL1
-  # - ELK3
-  # - TLX1
-  # - DDIT3
-  # - BARH1
-  # - NRF1
-  # - HIF1A
-  # - ZNF784
-  # - GLI2
-  # - SRBP1
-  # - HXA2
-  # - NME1
-  # - BHE40
-  # - CHD1
-  # - EOMES
-  # - ZSCAN31
-  # - BHLHB2
-  # - MYBB
-  # - HXB8
-  # - SPAG7
-  # - YY2
-  # - HOXB8
-  # - P73
-  # - RORB
-  # - CEBPE
-  # - ATF5
-  # - HXA13
-  # - YBOX1
-  # - RXRG
-  # - HNF1B
-  # - THB
-  # - TBX20
-  # - MAGOH
-  # - ONEC3
-  # - HXD8
-  # - XBP1
-  # - ZNF385A
-  # - GABPA
-  # - NR0B1
-  # - HXC12
-  # - ESRRB
-  # - PO6F2
-  # - HMBOX1
-  # - ELF5
-  # - SOX8
-  # - SMAD1
-  # - PBX2
-  # - NFYB
-  # - KLF1
-  # - RORA_1
-  # - HNF4A
-  # - RORC
-  # - NKX21
-  # - BHLHA15
-  # - AP2B
-  # - HAND1
-  # - ELF1
-  # - MEF2C
-  # - HLF
-  # - PBX3
-  # - NKX23
-  # - HSFY2
-  # - E2F4
-  # - GLI1
-  # - HTF4
-  # - TGIF2
-  # - TFEC
-  # - TBP
-  # - ONECUT2
-  # - GSC2
-  # - HIST1H2BN
-  # - HOXA10
-  # - FOXA2
-  # - THAP1
-  # - POU2F1
-  # - HXA1
-  # - MBD2
-  # - BCL6B
-  # - E2F6
-  # - CART1
-  # - TF65
-  # - LHX3
-  # - GLIS3
-  # - NFE2L2
-  # - EGR4
-  # - HXB1
-  # - HOXB1
-  # - ONECUT1
-  # - RELA
-  # - GBX1
-  # - NHLH1
-  # - NR1H4
-  # - UBE2V1
-  # - E2F2
-  # - HXB7
-  # - HXA5
-  # - HOXB7
-  # - DUX4
-  # - TBR1
-  # - HIC1
-  # - TRIM69
-  # - SP3
-  # - DUXA
-  # - MSC
-  # - GLI3
-  # - RORA
-  # - HXD12
-  # - SPIC
-  # - PHX2B
-  # - RELB
-  # - PHX2A
-  # - UNC4
-  # - ATF1
-  # - ELK4
-  # - ARX
-  # - EGR1
-  # - PAX7
-  # - STAU2
-  # - HESX1
-  # - STAT6
-  # - ESRRG
-  # - STAT1
-  # - EMX2
-  # - NEUROD1
-  # - ZHX3
-  # - RX
-  # - TCF7L2
-  # - STAT5A
-  # - P63
-  # - HXD13
-  # - HMX2
-  # - DRGX
-  # - HIST2H2BE
-  # - PRDM1
-  # - ZIC1
-  # - NKX62
-  # - DPRX
-  # - CEBPZ
-  # - WRNIP1
-  # - LHX6
-  # - ZNF24
-  # - FOSL2
-  # - HXD10
-  # - NEUROD2
-  # - HOXD10
-  # - FOSB
-  # - HOXD11
-  # - REL
-  # - PROP1
-  # - EVX2
-  # - ELK1
-  # - ERG
-  # - ZIC3
-  # - THA
-  # - FOXP4
-  # - FOXA3
-  # - FOXK2
-  # - LRRFIP1
-  # - ZDHHC15
-  # - CUX1
-  # - NFYA
-  # - ARNTL
-  # - ALX1
-  # - ZNF740
-  # - NR4A3
-  # - NFE2
-  # - TWST1
-  # - STAT3
-  # - SUH
-  # - TBX21
-  # - PO3F2
-  # - HSF2
-  # - ALX4
-  # - NR2F2
-  # - ATF6
-  # - ZFHX3
-  # - POU3F3
-  # - HMBX1
-  # - GBX2
-  # - CEBPD
-  # - ATF2
-  # - NKX28
-  # - GFI1B
-  # - DLX1
-  # - NFKB1
-  # - HMX3
-  # - HOXC13
-  # - BHLHE40
-  # - FOXQ1
-  # - E2F1
-  # - ATOH1
-  # - FOXH1
-  # - ETS2
-  # - MEOX1
-  # - GSC
-  # - ASAP3
-  # - POU6F2
-  # - MLX
-  # - SREBF2
-  # - NOTO
-  # - HOXB3
-  # - TEAD4
-  # - NFAC4
-  # - GMEB2
-  # - BARX2
-  # - RFX3
-  # - POU2F2
-  # - RXRB
-  # - EZH2
-  # - LBX2
-  # - MNT
-  # - TFAP2B
-  # - FOXF2
-  # - YWHAE
-  # - BHLHB3
-  # - HOXA2
-  # - ZNF263
-  # - STA5B
-  # - ZNF333
-  # - ZIC2
-  # - RUVBL1
-  # - HMX1
-  # - GSX2
-  # - RUNX1
-  # - DNMT3A
-  # - HOXA11
-  # - BPTF
-  # - COT1
-  # - PHOX2B
-  # - TAGLN2
-  # - BHLHE41
-  # - ID4
-  # - NFATC1
-  # - HXB13
-  # - IRX3
-  # - FOXA1
-  # - FOXC2
-  # - RBM22
-  # - KLF5
-  # - HOXD8
-  # - CEBPA
-  # - HOXD13
-  # - FOXF1
-  # - ERR3
-  # - STF1
-  # - FOXP1
-  # - ERR2
-  # - EMX1
-  # - JUND
-  # - SOX6
-  # - EN2
-  # - STA5A
-  # - HBP1
-  # - MRPS25
-  # - PEBB
-  # - BHLHE22
-  # - CERS4
-  # - HXD11
-  # - XG
-  # - H2AFZ
-  # - NR5A2
-  # - HEY1
-  # - VSX2
-  # - FIGLA
-  # - NCALD
-  # - SREBF1
-  # - TEF
-  # - POU6F1
-  # - GSX1
-  # - MTA3
-  # - EN1
-  # - PITX2
-  # - BARHL2
-  # - MEF2D
-  # - MYC
-  # - KLF8
-  # - THAP5
-  # - TWIST1
-  # - JUNB
-  # - HOXB13
-  # - NEUROG2
-  # - MAFK
-  # - BATF
-  # - HOXB2
-  # - RCOR1
-  # - OVOL1
-  # - MRPL1
-  # - HOXA1
-  # - ZN333
-  # - ATF3
-  # - IKZF2
-  # - PCK2
-  # - HSPA5
-  # - GATA1
-  # - HOXA13
-  # - BHLHE23
-  # - SMARCC1
-  # - ZC3H7A
-  # - MITF
-  # - MEF2A
-  # - MNX1
-  # - EWSR1
-  # - MYBL2
-  # - CEBPB
-  # - FOS
-  # - ZNF711
-  # - H2AFY
-  # - PAX4
-  # - HOXC12
-  # - ISL2
-  # - APEX2
-  # - NOBOX
-  # - POU5F1B
-  # - PO2F1
-  # - PITX3
-  # - OTX1
-  # - NFAC2
-  # - HNRNPLL
-  # - POU2F3
-  # - POU5F1P1
-  # - SEMA4A
-  # - NR2E1
-  # - RUNX2
-  # - FLI1
-  # - SMUG1
-  # - SRP9
-  # - HES5
-  # - DUSP26
-  # - MAX
-  # - HEY2
-  # - IRF7
-  # - EIF5A2
-  # - POU3F4
-  # - C9orf156
-  # - MAFB
-  # - HOXA5
-  # - OLIG2
-  # - TFAP4
-  # - ALX3
-  # - TBPL1
-  # - SMPX
-  # - FOXC1
-  # - AGGF1
-  # - GLYCTK
-  # - SND1
-  # - PPARG
-  # - HOXC10
-  # - TIMM8A
-  # - NNT
-  # - RPS4X
-  # - SOX9
-  # - HNRNPA1
-  # - RBPJ
-  # - SNRPB2
-  # - BACH1
-  # - ARNT
-  # - DDX20
-  # - SP1
-  # - ZBTB4
-  # - MESP1
-  # - GTF2I
-  # - VAX2
-  # - KLF6
-  # - PTCD1
-  # - FOXB1
-  # - ODC1
-  # - JUN
-  # - PURG
-  # - ELF2
-  # - MSRA
-  # - HIC2
-  # - GATA5
-  # - PRKRIR
-  # - NMI
-  # - PAX3
-  # - OTX2
-  # - HCLS1
-  # - TFE3
-  # - LARP4
-  # - FEZF2
-  # - TEAD3
-  # - LBX1
-  # - LUZP1
-  # - HOXD12
-  # - SNAPC5
-  # - NANOG
-  # - FOXJ3
-  # - TP73
-  # - XRCC1
-  # - MEIS3
-  # - SOX2
-  # - UBE2K
-  # - CNOT6
-  # - SSBP3
-  # - NFAC3
-  # - OLIG3
-  # - IL24
-  # - MXI1
-  # - TAL1
-  # - SMAD4
-  # - HOXC11
-  # - GFI1
-  # - GOT1
-  # - DHX36
-  # - RAN
-  # - TRIP10
-  # - LMX1A
-  # - HNRNPA0
-  # - FOXJ2
-  # - RUNX3
-  # - FIP1L1
-  # - ZNF695
-  # - CXXC1
-  # - VAX1
-  # - ZFP3
-  # - ZEB1
-  # - FHL2
-  # - PDX1
-  # - ESRP1
-  # - FEV
-  # - ZNF766
-  # - PAX2
-  # - JDP2
-  # - MIXL1
-  # - MAF
-  # - FOXO1
-  # - MYCN
-  # - FUBP1
-  # - ITF2
-  # - UQCRB
-  # - LARP1
-  # - TBX15
-  # - TBX4
-  # - ANXA1
-  # - TBX1
-  # - ZNF384
-  # - EDN1
-  # - SNAI1
-  # - CREB1
-  # - BSX
-  # - GPD1
-  # - PRDX5
-  # - RAB14
-  # - TFDP1
-  # - SOX14
-  # - DLX4
-  # - NR2E3
-  # - FAM127B
-  # - LINC00471
-  # - MEOX2
-  # - TFAP2A
-  # - TCF12
-  # - ZBTB18
-  # - PDE6H
-  # - CBX3
-  # - ZBED1
-  # - FOXD1
-  # - PRNP
-  # - SOX3
-  # - TFEB
-  # - ARNT2
-  # - AHR
-  # - RAB2A
-  # - FOXO3
-  # - CRX
-  # - SSX2
-  # - KDM5A
-  # - VSX1
-  # - LUZP2
-  # - HXD4
-  # - RFXANK
-  # - PGAM2
-  # - FOSL1
-  # - ETV4
-  # - HOXD4
-  # - LMX1B
-  # - TSC22D4
-  # - HOXD9
-  # - HXD9
-  # - NR1I3
-  # - DIABLO
-  # - ESRRA
-  # - MSX1
-  # - GRHL1
-  # - MAGEF1
-  # - HOXB5
-  # - ZNF124
-  # - PDCD11
-  # - TEAD1
-  # - MYB
-  # - CFL2
-  # - CD59
-  # - GATA4
-  # - AP1
-  # - PDS5A
-  # - NELFB
-  # - FOXN3
-  # - TCF3
-  # - EZR
-  # - ZNF71
-  # - FOXO6
-  # - FOXK1
-  # - FOXD2
-  # - OLIG1
-  # - FOXI1
-  # - NANOS1
-  # - ACO1
-  # - TFAP2C
-  # - BOLL
-  # - NFIA
-  # - DTL
-  # - POLI
-  # - FOXP2
-  # - KLF12
-  # - INSM1
-  # - NFIB
-  # - GRHPR
-  # - BRCA1
-  # - RBMS1
-  # - HIRIP3
-  # - UNCX
-  # - RAXL1
-  # - SHOX2
-  # - LHX9
-  # - RAX2
-  # - DBP
-  # - ZNF250
-  # - MRPL2
-  # - ADARB1
-  # - TMSB4XP8
-  # - MEIS2
-  # - NR1I2
-  # - ZSWIM1
-  # - CREB3L1
-  # - MGA
-  # - TAF1A
-  # - USF2
-  # - OTUD4
-  # - WDR83
-  # - KDM5D
-  # - TULP1
-  # - PQBP1
-  # - RPP25
-  # - FOXP3
-  # - DLX3
-  # - FOXG1
-  # - TIMELESS
-  # - TCEAL2
-  # - MEX3C
-  # - EEF1D
-  # - NUCB1
-  # - TSN
-  # - MXD4
-  # - ISX
-  # - ARFGAP1
-  # - TBX5
-  # - DAB2
-  # - ISL1
-  # - TPI1
-  # - ZBTB46
-  # - PGR
-  # - GCR
-  # - PRGR
-  # - MSX2
-  # - HTATIP2
-  # - ESR2
-  # - MBTPS2
-  # - FOXO4
-  # - ZKSCAN8
-  # - HNRNPC
-  # - NKX25
-  # - HHEX
-  # - NUP107
-  # - MAFG
-  # - SUCLG1
-  # - SOCS4
-  # - HOXD3
-  # - SHOX
-  # - USF1
-  # - ZNF76
-  # - ZNF326
-  # - SRBD1
-  # - DGCR8
-  # - SNAPC4
-  # - MDM2
-  # - TPPP
-  # - NELFA
-  # - FOXL1
-  # - GTPBP6
-  # - H1FX
-  # - MAGEA8
-  # - HP1BP3
-  # - POU3F2
-  # - EBF1
-  # - GTF3C5
-  # - NONO
-  # - CDX2
-  # - MYOD1
-  # - PPP2R3B
-  # - SNRNP70
-  # - TOB2
-  # - ZBTB12
-  # - IRF6
-  # - ETFB
-  # - DLX2
-  # - SPIB
-  # - ZNF304
-  # - VAMP3
-  # - ZNF205
-  # - POU5F1
-  # - EHF
-  # - RAX
-  # - SRY
-  # - MEIS1
-  # - TIA1
-  # - RXRA
-  # - SMAD3
-  # - ESRP2
-  # - NRL
-  # - RBM42
-  # - ZNF3
-  # - CPEB1
-  # - CDX1
-  # - NF2L1
-  # - TGIF2LX
-  # - PKNOX2
-  # - LEF1
-  # - PPARA
-  # - PPP1R10
-  # - SLC18A1
-  # - DIS3
-  # - MAP4K2
-  # - USP39
-  # - GTF2B
-  # - ZCCHC14
-  # - FOXD3
-  # - EXO5
-  # - MSI2
-  # - TSNAX
-  # - NFATC2
-  # - TCF4
-  # - TIMM44
-  # - KLF3
-  # - PIK3C3
-  # - GTF3C2
-  # - SOX15
-  # - PKM
-  # - RIOK2
-  # - ZNF720
-  # - DLX5
-  # - PIR
-  # - ECSIT
-  # - IVD
-  # - NCBP2
-  # - SF3B1
-  # - KLF4
-  # - ZNF160
-  # - ZNF354C
-  # - SMCR7L
-  # - HCFC2
-  # - TAF9
-  # - HHAT
-  # - RARB
-  # - RHOXF1
-  # - ARI3A
-  # - ARID3A
-  # - NR4A2
-  # - ZNF830
-  # - TRMT1
-  # - RFX4
-  # - SRRM3
-  # - NFIC
-  # - ASPSCR1
-  # - ABCF2
-  # - YEATS4
-  # - ZNF26
-  # - SNAI2
-  # - HSF1
-  # - HOXA4
-  # - AGAP2
-  # - HOXB9
-  # - PDLIM5
-  # - ASCC1
-  # - SFT2D1
-  # - RARA
-  # - BAX
-  # - PRRX1
-  # - RBFOX2
-  # - GIT2
-  # - CBFA2T2
-  # - ZNF706
-  # - RAB7A
-  # - RPS10
-  # - ZNF655
-  # - NUP133
-  # - CBX7
-  # - PAXIP1
-  # - NMRAL1
-  # - MED30
-  # - MYEF2
-  # - FEZ1
-  # - PAX5
-  # - RBM8A
-  # - MSI1
-  # - ANXA11
-  # - RARG
-  # - ZBTB25
-  # - THRA
-  # - RNASEH2C
-  # - CAT
-  # - RFC3
-  # - RPS6KA5
-  # - SOX5
-  # - NFE2L1
-  # - NXPH3
-  # - TCEAL6
-  # - YY1
-  # - PSMA6
-  # - NFIL3
-  # - MZF1
-  # - VDR
-  # - LHX4
-  # - PITX1
-  # - ID2
-  # - ETS1
-  # - LSM6
-  # - TGIF1
-  # - SMAD2
-  # - UTP18
-  # - PLAGL1
-  # - POLE3
-  # - ZNF503
-  # - PHOX2A
-  # - CLK1
-  # - RAB18
-  # - HNRNPH3
-  # - ING3
-  # - ENO1
-  # - U2AF1
-  # - RPL6
-  # - IKZF1
-  # - P4HB
-  # - CCDC25
-  # - NOC2L
-  # - HDAC8
-  # - DDX43
-  # - SCAND2P
-  # - CSNK2B
-  # - FOXM1
-  # - SCMH1
-  # - POU4F3
-  # - UGP2
-  # - GATA6
-  # - C19orf40
-  # - HIST2H2AB
-  # - SMAP2
-  # - TRIM21
-  # - BCL11A
-  # - CSTF2
-  # - NR2F1
-  # - CELF5
-  # - NAP1L1
-  # - UBIP1
-  # - UBP1
-  # - MYF6
-  # - DLX6
-  # - SPI1
-  # - MTHFD1
-  # - RBBP5
-  # - MAGED4B
-  # - PHLDA2
-  # - TFAM
-  # - LAS1L
-  # - MYLK
-  # - AVEN
-  # - ZMAT4
-  # - EVX1
-  # - NFATC4
-  # - PICK1
-  # - CPSF4
-  # - VPS4B
-  # - R3HDM2
-  # - FGF19
-  # - AFF4
-  # - DUSP22
-  # - NFATC3
-  # - BARX1
-  # - HSPA1L
-  # - MSRB3
-  # - CEBPG
-  # - ZCCHC17
-  # - RNF114
-  # - RBM3
-  # - GATA2
-  # - GTPBP1
-  # - PLG
-  # - MECP2
-  # - CELF6
-  # - GAR1
-  # - GTF2H3
-  # - MORN1
-  # - NFIX
-  # - YWHAZ
-  # - RBM17
-  # - CKMT1B
-  # - GATA3
-  # - SOX10
-  # - PPP5C
-  # - SOD1
-  # - PTPMT1
-  # - HMGA1
-  # - CANX
-  # - SOX13
-  # - NR4A1
-  # - ZDHHC5
-  # - ZMAT2
-  # - WISP2
-  # - SF1
-  # - ZNF510
-  # - GPAM
-  # - ZNF131
-  # - HMG20A
-  # - ZNF671
-  # - RBBP9
-  # - UBXN1
-  # - C19orf25
-  # - STUB1
-  # - PHTF1
-  # - RUFY3
-  # - METTL21B
-  # - CELF4
-  # - A1CF
-  # - GPANK1
-  # - KIF22
-  # - HLCS
-  # - RFC2
-  # - IRF1
-  # - CDK2AP1
-  # - GADD45A
-  # - DUS3L
-  # - LHX2
-  # - ZNF207
-  # - KIAA0907
-  # - SPATS2
-  # - MAPK1
-  # - EXOSC3
-  # - DDX53
-  # - ZBTB43
-  # - GLTPD1
-  # - RNF138
-  # - UBB
-  # - BAD
-  # - DAZAP1
-  # - SSX3
-  # - AKR1A1
-  # - SPR
-  # - DDX4
-  # - RPL35
-  # - ESX1
-  # - CBFB
-  # - PRRX2
-  # - TROVE2
-  # - ZRSR2
-  # - MCTP2
-  # - RBM7
-  # - ZSCAN9
-  # - HOXA6
-  # - HOXB6
-
-geneNamesSectored:
+  - ZN524
+  - ZNF282
+  - PAX9
+  - ZBTB49
+  - DMC1
+  - ZNF713
+  - ZNF8
+  - STAT5B
+  - ZBTB16
+  - TBX19
+  - PTF1A
+  - AP2D
+  - MCR
+  - BHE41
+  - TF2LX
+  - TF7L1
+  - ZN423
+  - ZN232
+  - ZN143
+  - ZBT7A
+  - HXA7
+  - ZN589
+  - PAX6
+  - HXC6
+  - HXC8
+  - KCNIP1
+  - AP2A
+  - ZNF232
+  - HME1
+  - PO5F1
+  - MGAP
+  - P5F1B
+  - HOXC8
+  - CR3L2
+  - RAD21
+  - HOXA7
+  - ZBT7B
+  - SMC3
+  - ZKSCAN3
+  - ZNF306
+  - HSFY1
+  - ZBTB7C
+  - PURA
+  - ZNF410
+  - RFX7
+  - HLX
+  - HOXC4
+  - BC11A
+  - ZEP2
+  - NR3C2
+  - ZSCAN4
+  - ZBT18
+  - HOXB4
+  - GMEB1
+  - HCFC1
+  - P53
+  - KLF7
+  - ZNF691
+  - OTP
+  - HOXC5
+  - ZNF423
+  - SIX3
+  - Trp73
+  - RHOXF2
+  - BARH2
+  - PO3F4
+  - PRD14
+  - SIN3A
+  - NKX61
+  - PSMC2
+  - SIX6
+  - COE1
+  - ANDR
+  - GZF1
+  - HOXD1
+  - EVI1
+  - SIX5
+  - ZBTB14
+  - HXA9
+  - ZBTB3
+  - TCF21
+  - ZNF148
+  - BCL3
+  - SP100
+  - SIX4
+  - HOXC9
+  - PO4F3
+  - ZN713
+  - ZN282
+  - TFCP2L1
+  - PO3F3
+  - PO2F3
+  - HXB2
+  - CHD2
+  - LHX1
+  - LHX5
+  - BBX
+  - HDX
+  - BMAL1
+  - PO2F2
+  - CREB3L2
+  - PKNX1
+  - SOX30
+  - BSH
+  - ERR1
+  - PO3F1
+  - OSR2
+  - MYBA
+  - NDF1
+  - PO4F1
+  - PO6F1
+  - GRHL2
+  - RORA_2
+  - ATF6A
+  - CYCS
+  - GTF2F1
+  - ZN410
+  - HXC10
+  - AP2C
+  - HOXA9
+  - ZEP1
+  - IRX4
+  - HIVEP1
+  - ZNF281
+  - POU4F1
+  - ZN384
+  - BHE23
+  - OSR1
+  - ZKSC3
+  - TFAP2E
+  - HOXC6
+  - IRX6
+  - ZKSC1
+  - ZSCA4
+  - SMARCC2
+  - RORG
+  - HXC11
+  - PKNX2
+  - ZNF274
+  - TBL1XR1
+  - FOXJ1
+  - NR1H2
+  - EP300
+  - HOXA3
+  - TYY1
+  - PAX1
+  - KLF9
+  - PRDM14
+  - FOXN1
+  - ARI5B
+  - HXC13
+  - SP8
+  - HXB6
+  - TLX2
+  - MECOM
+  - ZN148
+  - TFAP2D
+  - CR3L1
+  - HXB3
+  - ETV7
+  - KAISO
+  - TBX3
+  - SOX17
+  - AIRE
+  - ZN740
+  - ZBTB7B
+  - PIT1
+  - NGN2
+  - GLIS1
+  - MIZF
+  - ZNF143
+  - IRF3
+  - ZIC4
+  - PATZ1
+  - HXD3
+  - PAX8
+  - PO4F2
+  - BHE22
+  - PRDM4
+  - ZBT49
+  - CENPB
+  - PPARD
+  - ZNF524
+  - NR1D1
+  - SIX2
+  - ZNF75A
+  - PROX1
+  - SCRT1
+  - MAZ
+  - HME2
+  - ATF4
+  - HOMEZ
+  - ASCL1
+  - SOX12
+  - TCF7
+  - TAF1
+  - ELF4
+  - NFYC
+  - NF2L2
+  - SRBP2
+  - TYY2
+  - E2F8
+  - ZFX
+  - BCL6
+  - PLAL1
+  - CTCF
+  - GLIS2
+  - SCRT2
+  - ZBTB6
+  - ZBTB33
+  - KLF15
+  - STAT2
+  - TF7L2
+  - HMGA2
+  - RREB1
+  - KLF14
+  - ERF
+  - MAFA
+  - HINFP1
+  - MTF1
+  - BARHL1
+  - ZBTB7A
+  - NR3C1
+  - RHXF1
+  - SP4
+  - HXA10
+  - ARID5A
+  - SOX11
+  - TP63
+  - Trp53
+  - ELF3
+  - IRF9
+  - T
+  - SIX1
+  - THRB
+  - HES1
+  - E2F7
+  - CREB5
+  - PLAG1
+  - IRF4
+  - NR6A1
+  - SOX1
+  - IRF8
+  - IRF2
+  - ZN784
+  - SMRC1
+  - SP2
+  - ATF7
+  - NKX31
+  - POU1F1
+  - DBX2
+  - ASCL2
+  - EPAS1
+  - HNF1A
+  - HXA11
+  - NR2C1
+  - COT2
+  - E2F5
+  - CTCFL
+  - LHX8
+  - REST
+  - PKNOX1
+  - MYOG
+  - TP53
+  - ONECUT3
+  - IRF5
+  - HSF4
+  - ZNF652
+  - SOX7
+  - TEAD2
+  - ZN219
+  - HES7
+  - ZNF219
+  - KLF16
+  - HINFP
+  - AR
+  - TFCP2
+  - IRX5
+  - PML
+  - STAT4
+  - BACH2
+  - KLF13
+  - POU4F2
+  - NFKB2
+  - SOX18
+  - CREM
+  - MEF2B
+  - ARID5B
+  - NFAC1
+  - RFX2
+  - EBF3
+  - ETV5
+  - TFE2
+  - EGR2
+  - NDF2
+  - GCM2
+  - E2F3
+  - BATF3
+  - CREB3
+  - VENTX
+  - ETV3
+  - IRX2
+  - NKX32
+  - ETV2
+  - CDC5L
+  - NFAT5
+  - RFX5
+  - RFX1
+  - BHA15
+  - NR2F6
+  - ZN652
+  - E4F1
+  - NR2C2
+  - ETV1
+  - ESR1
+  - ZNF35
+  - WT1
+  - HLTF
+  - GCM1
+  - NKX22
+  - EGR3
+  - TCF7L1
+  - ETV6
+  - GABP1
+  - DMBX1
+  - CLOCK
+  - ZKSCAN1
+  - SOX21
+  - CUX2
+  - POU3F1
+  - Myf
+  - HNF6
+  - YBX1
+  - ZNF238
+  - PBX1
+  - HNF4G
+  - MAFF
+  - TBX2
+  - DMRT3
+  - MLXIPL
+  - CYB5R1
+  - SPDEF
+  - SRF
+  - MYBL1
+  - ELK3
+  - TLX1
+  - DDIT3
+  - BARH1
+  - NRF1
+  - HIF1A
+  - ZNF784
+  - GLI2
+  - SRBP1
+  - HXA2
+  - NME1
+  - BHE40
+  - CHD1
+  - EOMES
+  - ZSCAN31
+  - BHLHB2
+  - MYBB
+  - HXB8
+  - SPAG7
+  - YY2
+  - HOXB8
+  - P73
+  - RORB
+  - CEBPE
+  - ATF5
+  - HXA13
+  - YBOX1
+  - RXRG
+  - HNF1B
+  - THB
+  - TBX20
+  - MAGOH
+  - ONEC3
+  - HXD8
+  - XBP1
+  - ZNF385A
+  - GABPA
+  - NR0B1
+  - HXC12
+  - ESRRB
+  - PO6F2
+  - HMBOX1
+  - ELF5
+  - SOX8
+  - SMAD1
+  - PBX2
+  - NFYB
+  - KLF1
+  - RORA_1
+  - HNF4A
+  - RORC
+  - NKX21
+  - BHLHA15
+  - AP2B
+  - HAND1
+  - ELF1
+  - MEF2C
+  - HLF
+  - PBX3
+  - NKX23
+  - HSFY2
+  - E2F4
+  - GLI1
+  - HTF4
+  - TGIF2
+  - TFEC
+  - TBP
+  - ONECUT2
+  - GSC2
+  - HIST1H2BN
+  - HOXA10
+  - FOXA2
+  - THAP1
+  - POU2F1
+  - HXA1
+  - MBD2
+  - BCL6B
+  - E2F6
+  - CART1
+  - TF65
+  - LHX3
+  - GLIS3
+  - NFE2L2
+  - EGR4
+  - HXB1
+  - HOXB1
+  - ONECUT1
+  - RELA
+  - GBX1
+  - NHLH1
+  - NR1H4
+  - UBE2V1
+  - E2F2
+  - HXB7
+  - HXA5
+  - HOXB7
+  - DUX4
+  - TBR1
+  - HIC1
+  - TRIM69
+  - SP3
+  - DUXA
+  - MSC
+  - GLI3
+  - RORA
+  - HXD12
+  - SPIC
+  - PHX2B
+  - RELB
+  - PHX2A
+  - UNC4
+  - ATF1
+  - ELK4
+  - ARX
+  - EGR1
+  - PAX7
+  - STAU2
+  - HESX1
+  - STAT6
+  - ESRRG
+  - STAT1
+  - EMX2
+  - NEUROD1
+  - ZHX3
+  - RX
+  - TCF7L2
+  - STAT5A
+  - P63
+  - HXD13
+  - HMX2
+  - DRGX
+  - HIST2H2BE
+  - PRDM1
+  - ZIC1
+  - NKX62
+  - DPRX
+  - CEBPZ
+  - WRNIP1
+  - LHX6
+  - ZNF24
+  - FOSL2
+  - HXD10
+  - NEUROD2
+  - HOXD10
+  - FOSB
+  - HOXD11
+  - REL
+  - PROP1
+  - EVX2
+  - ELK1
+  - ERG
+  - ZIC3
+  - THA
+  - FOXP4
+  - FOXA3
+  - FOXK2
+  - LRRFIP1
+  - ZDHHC15
+  - CUX1
+  - NFYA
+  - ARNTL
+  - ALX1
+  - ZNF740
+  - NR4A3
+  - NFE2
+  - TWST1
+  - STAT3
+  - SUH
+  - TBX21
+  - PO3F2
+  - HSF2
+  - ALX4
+  - NR2F2
+  - ATF6
+  - ZFHX3
+  - POU3F3
+  - HMBX1
+  - GBX2
+  - CEBPD
+  - ATF2
+  - NKX28
+  - GFI1B
+  - DLX1
+  - NFKB1
+  - HMX3
+  - HOXC13
+  - BHLHE40
+  - FOXQ1
+  - E2F1
+  - ATOH1
+  - FOXH1
+  - ETS2
+  - MEOX1
+  - GSC
+  - ASAP3
+  - POU6F2
+  - MLX
+  - SREBF2
+  - NOTO
+  - HOXB3
+  - TEAD4
+  - NFAC4
+  - GMEB2
+  - BARX2
+  - RFX3
+  - POU2F2
+  - RXRB
+  - EZH2
+  - LBX2
+  - MNT
+  - TFAP2B
+  - FOXF2
+  - YWHAE
+  - BHLHB3
+  - HOXA2
+  - ZNF263
+  - STA5B
+  - ZNF333
+  - ZIC2
+  - RUVBL1
+  - HMX1
+  - GSX2
+  - RUNX1
+  - DNMT3A
+  - HOXA11
+  - BPTF
+  - COT1
+  - PHOX2B
+  - TAGLN2
+  - BHLHE41
+  - ID4
+  - NFATC1
+  - HXB13
+  - IRX3
+  - FOXA1
+  - FOXC2
+  - RBM22
+  - KLF5
+  - HOXD8
+  - CEBPA
+  - HOXD13
+  - FOXF1
+  - ERR3
+  - STF1
+  - FOXP1
+  - ERR2
+  - EMX1
+  - JUND
+  - SOX6
+  - EN2
+  - STA5A
+  - HBP1
+  - MRPS25
+  - PEBB
+  - BHLHE22
+  - CERS4
+  - HXD11
+  - XG
+  - H2AFZ
+  - NR5A2
+  - HEY1
+  - VSX2
+  - FIGLA
+  - NCALD
+  - SREBF1
+  - TEF
+  - POU6F1
+  - GSX1
+  - MTA3
+  - EN1
+  - PITX2
+  - BARHL2
+  - MEF2D
+  - MYC
+  - KLF8
+  - THAP5
+  - TWIST1
+  - JUNB
+  - HOXB13
+  - NEUROG2
+  - MAFK
+  - BATF
+  - HOXB2
+  - RCOR1
+  - OVOL1
+  - MRPL1
+  - HOXA1
+  - ZN333
+  - ATF3
+  - IKZF2
+  - PCK2
+  - HSPA5
+  - GATA1
+  - HOXA13
+  - BHLHE23
+  - SMARCC1
+  - ZC3H7A
+  - MITF
+  - MEF2A
+  - MNX1
+  - EWSR1
+  - MYBL2
+  - CEBPB
+  - FOS
+  - ZNF711
+  - H2AFY
+  - PAX4
+  - HOXC12
+  - ISL2
+  - APEX2
+  - NOBOX
+  - POU5F1B
+  - PO2F1
+  - PITX3
+  - OTX1
+  - NFAC2
+  - HNRNPLL
+  - POU2F3
+  - POU5F1P1
+  - SEMA4A
+  - NR2E1
+  - RUNX2
+  - FLI1
+  - SMUG1
+  - SRP9
+  - HES5
+  - DUSP26
+  - MAX
+  - HEY2
+  - IRF7
+  - EIF5A2
+  - POU3F4
+  - C9orf156
+  - MAFB
+  - HOXA5
+  - OLIG2
+  - TFAP4
+  - ALX3
+  - TBPL1
+  - SMPX
+  - FOXC1
+  - AGGF1
+  - GLYCTK
+  - SND1
+  - PPARG
+  - HOXC10
+  - TIMM8A
+  - NNT
+  - RPS4X
+  - SOX9
+  - HNRNPA1
+  - RBPJ
+  - SNRPB2
+  - BACH1
+  - ARNT
+  - DDX20
+  - SP1
+  - ZBTB4
+  - MESP1
+  - GTF2I
+  - VAX2
+  - KLF6
+  - PTCD1
+  - FOXB1
+  - ODC1
+  - JUN
+  - PURG
+  - ELF2
+  - MSRA
+  - HIC2
+  - GATA5
+  - PRKRIR
+  - NMI
+  - PAX3
+  - OTX2
+  - HCLS1
+  - TFE3
+  - LARP4
+  - FEZF2
+  - TEAD3
+  - LBX1
+  - LUZP1
+  - HOXD12
+  - SNAPC5
+  - NANOG
+  - FOXJ3
+  - TP73
+  - XRCC1
+  - MEIS3
+  - SOX2
+  - UBE2K
+  - CNOT6
+  - SSBP3
+  - NFAC3
+  - OLIG3
+  - IL24
+  - MXI1
+  - TAL1
+  - SMAD4
+  - HOXC11
+  - GFI1
+  - GOT1
+  - DHX36
+  - RAN
+  - TRIP10
+  - LMX1A
+  - HNRNPA0
+  - FOXJ2
+  - RUNX3
+  - FIP1L1
+  - ZNF695
+  - CXXC1
+  - VAX1
+  - ZFP3
+  - ZEB1
+  - FHL2
+  - PDX1
+  - ESRP1
+  - FEV
+  - ZNF766
+  - PAX2
+  - JDP2
+  - MIXL1
+  - MAF
+  - FOXO1
+  - MYCN
+  - FUBP1
+  - ITF2
+  - UQCRB
+  - LARP1
+  - TBX15
+  - TBX4
+  - ANXA1
+  - TBX1
+  - ZNF384
+  - EDN1
+  - SNAI1
+  - CREB1
+  - BSX
+  - GPD1
+  - PRDX5
+  - RAB14
+  - TFDP1
+  - SOX14
+  - DLX4
+  - NR2E3
+  - FAM127B
+  - LINC00471
+  - MEOX2
+  - TFAP2A
+  - TCF12
+  - ZBTB18
+  - PDE6H
+  - CBX3
+  - ZBED1
+  - FOXD1
+  - PRNP
+  - SOX3
+  - TFEB
+  - ARNT2
+  - AHR
+  - RAB2A
+  - FOXO3
+  - CRX
+  - SSX2
+  - KDM5A
+  - VSX1
+  - LUZP2
+  - HXD4
+  - RFXANK
+  - PGAM2
+  - FOSL1
+  - ETV4
+  - HOXD4
+  - LMX1B
+  - TSC22D4
+  - HOXD9
+  - HXD9
+  - NR1I3
+  - DIABLO
+  - ESRRA
+  - MSX1
+  - GRHL1
+  - MAGEF1
+  - HOXB5
+  - ZNF124
+  - PDCD11
+  - TEAD1
+  - MYB
+  - CFL2
+  - CD59
+  - GATA4
+  - AP1
+  - PDS5A
+  - NELFB
+  - FOXN3
+  - TCF3
+  - EZR
+  - ZNF71
+  - FOXO6
+  - FOXK1
+  - FOXD2
+  - OLIG1
+  - FOXI1
+  - NANOS1
+  - ACO1
+  - TFAP2C
+  - BOLL
+  - NFIA
+  - DTL
+  - POLI
+  - FOXP2
+  - KLF12
+  - INSM1
+  - NFIB
+  - GRHPR
+  - BRCA1
+  - RBMS1
+  - HIRIP3
+  - UNCX
+  - RAXL1
+  - SHOX2
+  - LHX9
+  - RAX2
+  - DBP
+  - ZNF250
+  - MRPL2
+  - ADARB1
+  - TMSB4XP8
+  - MEIS2
+  - NR1I2
+  - ZSWIM1
+  - CREB3L1
+  - MGA
+  - TAF1A
+  - USF2
+  - OTUD4
+  - WDR83
+  - KDM5D
+  - TULP1
+  - PQBP1
+  - RPP25
+  - FOXP3
+  - DLX3
+  - FOXG1
+  - TIMELESS
+  - TCEAL2
+  - MEX3C
+  - EEF1D
+  - NUCB1
+  - TSN
+  - MXD4
+  - ISX
+  - ARFGAP1
+  - TBX5
+  - DAB2
+  - ISL1
+  - TPI1
+  - ZBTB46
+  - PGR
+  - GCR
+  - PRGR
+  - MSX2
+  - HTATIP2
+  - ESR2
+  - MBTPS2
+  - FOXO4
+  - ZKSCAN8
+  - HNRNPC
+  - NKX25
+  - HHEX
+  - NUP107
+  - MAFG
+  - SUCLG1
+  - SOCS4
+  - HOXD3
+  - SHOX
+  - USF1
+  - ZNF76
+  - ZNF326
+  - SRBD1
+  - DGCR8
+  - SNAPC4
+  - MDM2
+  - TPPP
+  - NELFA
+  - FOXL1
+  - GTPBP6
+  - H1FX
+  - MAGEA8
+  - HP1BP3
+  - POU3F2
+  - EBF1
+  - GTF3C5
+  - NONO
+  - CDX2
+  - MYOD1
+  - PPP2R3B
+  - SNRNP70
+  - TOB2
+  - ZBTB12
+  - IRF6
+  - ETFB
+  - DLX2
+  - SPIB
+  - ZNF304
+  - VAMP3
+  - ZNF205
+  - POU5F1
+  - EHF
+  - RAX
+  - SRY
+  - MEIS1
+  - TIA1
+  - RXRA
+  - SMAD3
+  - ESRP2
+  - NRL
+  - RBM42
+  - ZNF3
+  - CPEB1
+  - CDX1
+  - NF2L1
+  - TGIF2LX
+  - PKNOX2
+  - LEF1
+  - PPARA
+  - PPP1R10
+  - SLC18A1
+  - DIS3
+  - MAP4K2
+  - USP39
+  - GTF2B
+  - ZCCHC14
+  - FOXD3
+  - EXO5
+  - MSI2
+  - TSNAX
+  - NFATC2
+  - TCF4
+  - TIMM44
+  - KLF3
+  - PIK3C3
+  - GTF3C2
+  - SOX15
+  - PKM
+  - RIOK2
+  - ZNF720
+  - DLX5
+  - PIR
+  - ECSIT
+  - IVD
+  - NCBP2
+  - SF3B1
+  - KLF4
+  - ZNF160
+  - ZNF354C
+  - SMCR7L
+  - HCFC2
+  - TAF9
+  - HHAT
+  - RARB
+  - RHOXF1
+  - ARI3A
+  - ARID3A
+  - NR4A2
+  - ZNF830
+  - TRMT1
+  - RFX4
+  - SRRM3
+  - NFIC
+  - ASPSCR1
+  - ABCF2
+  - YEATS4
+  - ZNF26
+  - SNAI2
+  - HSF1
+  - HOXA4
+  - AGAP2
+  - HOXB9
+  - PDLIM5
+  - ASCC1
+  - SFT2D1
+  - RARA
+  - BAX
+  - PRRX1
+  - RBFOX2
+  - GIT2
+  - CBFA2T2
+  - ZNF706
+  - RAB7A
+  - RPS10
+  - ZNF655
+  - NUP133
+  - CBX7
+  - PAXIP1
+  - NMRAL1
+  - MED30
+  - MYEF2
+  - FEZ1
+  - PAX5
+  - RBM8A
+  - MSI1
+  - ANXA11
+  - RARG
+  - ZBTB25
+  - THRA
+  - RNASEH2C
+  - CAT
+  - RFC3
+  - RPS6KA5
+  - SOX5
+  - NFE2L1
+  - NXPH3
+  - TCEAL6
+  - YY1
+  - PSMA6
+  - NFIL3
+  - MZF1
+  - VDR
+  - LHX4
+  - PITX1
+  - ID2
+  - ETS1
+  - LSM6
+  - TGIF1
+  - SMAD2
+  - UTP18
+  - PLAGL1
+  - POLE3
+  - ZNF503
+  - PHOX2A
+  - CLK1
+  - RAB18
+  - HNRNPH3
+  - ING3
+  - ENO1
+  - U2AF1
+  - RPL6
+  - IKZF1
+  - P4HB
+  - CCDC25
+  - NOC2L
+  - HDAC8
+  - DDX43
+  - SCAND2P
+  - CSNK2B
+  - FOXM1
+  - SCMH1
+  - POU4F3
+  - UGP2
+  - GATA6
+  - C19orf40
+  - HIST2H2AB
+  - SMAP2
+  - TRIM21
+  - BCL11A
+  - CSTF2
+  - NR2F1
+  - CELF5
+  - NAP1L1
+  - UBIP1
+  - UBP1
+  - MYF6
+  - DLX6
+  - SPI1
+  - MTHFD1
+  - RBBP5
+  - MAGED4B
+  - PHLDA2
+  - TFAM
+  - LAS1L
+  - MYLK
+  - AVEN
+  - ZMAT4
+  - EVX1
+  - NFATC4
+  - PICK1
+  - CPSF4
+  - VPS4B
+  - R3HDM2
+  - FGF19
+  - AFF4
+  - DUSP22
+  - NFATC3
+  - BARX1
+  - HSPA1L
+  - MSRB3
+  - CEBPG
+  - ZCCHC17
+  - RNF114
+  - RBM3
+  - GATA2
+  - GTPBP1
+  - PLG
+  - MECP2
+  - CELF6
+  - GAR1
+  - GTF2H3
+  - MORN1
+  - NFIX
+  - YWHAZ
+  - RBM17
+  - CKMT1B
+  - GATA3
+  - SOX10
+  - PPP5C
+  - SOD1
+  - PTPMT1
+  - HMGA1
+  - CANX
+  - SOX13
+  - NR4A1
+  - ZDHHC5
+  - ZMAT2
+  - WISP2
+  - SF1
+  - ZNF510
+  - GPAM
+  - ZNF131
+  - HMG20A
+  - ZNF671
+  - RBBP9
+  - UBXN1
+  - C19orf25
+  - STUB1
+  - PHTF1
+  - RUFY3
+  - METTL21B
+  - CELF4
+  - A1CF
+  - GPANK1
+  - KIF22
+  - HLCS
+  - RFC2
+  - IRF1
+  - CDK2AP1
+  - GADD45A
+  - DUS3L
+  - LHX2
+  - ZNF207
+  - KIAA0907
+  - SPATS2
+  - MAPK1
+  - EXOSC3
+  - DDX53
+  - ZBTB43
+  - GLTPD1
+  - RNF138
+  - UBB
+  - BAD
+  - DAZAP1
+  - SSX3
+  - AKR1A1
+  - SPR
+  - DDX4
+  - RPL35
+  - ESX1
+  - CBFB
+  - PRRX2
+  - TROVE2
+  - ZRSR2
+  - MCTP2
+  - RBM7
+  - ZSCAN9
+  - HOXA6
+  - HOXB6
   - TFDP1
   - SOX14
   - DLX4

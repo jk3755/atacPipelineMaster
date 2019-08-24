@@ -1,0 +1,16 @@
+{
+    "__default__" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : 10000,
+        "name"      : "JOBNAME.{rule}.{wildcards}",
+        "runtime"   : "2"
+    },
+
+    "FOOTPRINTING_raw_analysis" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{params.run_time}"
+    }
+}
