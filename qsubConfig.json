@@ -11,6 +11,6 @@
     {
         "nCPUs"     : "1",
         "memory"    : "{resources.mem_mb}",
-        "runtime"   : "{params.run_time}"
+        "runtime"   : "{resources.run_time}"
     }
 }

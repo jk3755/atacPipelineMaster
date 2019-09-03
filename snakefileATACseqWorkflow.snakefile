@@ -20,6 +20,28 @@
 ## Resource definitions
 # mem_mb: specifies the total memory limit of the pipeline. This relies on mem_mb being user defined in individual rules
 #
+## Cluster configuration
+# When running snakemake workflows on a cluster, initiate an interactivate session from which you will run the pipeline
+# Note, limits seem to be weird on interactive, cant seem to initiate more than 6 hours?
+# qlogin -l mem=4G,time=8:0:0
+# make sure to cd to the appropriate directory
+# for example, /ifs/scratch/c2b2/ac_lab/jk3755/atac/
+# Activate the appropriate conda environment
+# module load conda
+# source activate atac
+# you can then use a command similar to this to execute the workflow from the interactive session
+# snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 1000 rawFP_lncap --cluster-config qsubConfig.json
+# --cluster "qsub -cwd -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" --use-conda --restart-times 5 --latency-wait 60
+#
+## Options that may be useful when running
+# --list-conda-envs - lists conda envs and their locations
+# --cleanup-conda - cleans up unused conda envs
+# --create-envs-only - allows you to run the pipeline but only create the conda envs necessary (first time runs)
+# --verbose - set verbose output
+# --debug-dag - print the dag workflow
+# --printshellcmds - print shell commands that will be executed
+# --reason - print the reason for execution of each rule
+#
 #
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
@@ -33,31 +55,6 @@ include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
 include: "snakeResources/modules/snakeBuildDirStructure.snakefile"
 #include: "snakeResources/modules/diffPeaks.snakefile"
-
-########################################################################################################################################
-#### CREATE LOCAL PWM SCAN DATABASE ####################################################################################################
-########################################################################################################################################
-# Run this rule to generate all needed data for scanning the genome for matches to PWMs
-# Will generate data for all annotated genes in motifDB, for all unique motifs
-rule run_PWMscan:
-    input:
-        expand("snakeResources/sites/data/genes/{genename}.bindingSites.Rdata", genename=config["geneNames"])
-
-# # Use the PWM information to scan the genome for matches and store the data
-# rule SITES_scanPWM:
-#     input:
-#         "snakeResources/sites/data/motifData.Rdata",
-#         "snakeResources/sites/operations/dirtree.built"
-#     output:
-#         "snakeResources/sites/operations/genes/{gene}.PWMscan.done"
-#     conda:
-#         "../envs/RscanPWM.yaml"
-#     threads:
-#         1
-#     benchmark:
-#         'snakeResources/sites/benchmark/{gene}.PWMscan.benchmark.txt'
-#     script:
-#         '../sites/scripts/snakeScanPWM.R'
 
 ########################################################################################################################################
 #### FULL ANALYSIS AGGREGATOR ##########################################################################################################
@@ -1084,7 +1081,7 @@ rule FOOTPRINTING_raw_analysis:
     threads:
         1
     resources:
-        mem_mb=lambda params, attempt: attempt * 10000,
+        mem_mb=lambda params, attempt: attempt * 5000,
         run_time=lambda params, attempt: attempt * 2
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
