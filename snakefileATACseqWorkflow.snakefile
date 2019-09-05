@@ -1081,8 +1081,8 @@ rule FOOTPRINTING_raw_analysis:
     threads:
         1
     resources:
-        mem_mb=lambda params, attempt: attempt * 5000,
-        run_time=lambda params, attempt: attempt * 2
+        mem_mb=lambda params, attempt: attempt * 10000,
+        run_time=lambda params, attempt: attempt * 4
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
