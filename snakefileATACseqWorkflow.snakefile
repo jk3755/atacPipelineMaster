@@ -111,7 +111,9 @@ rule AGGREGATOR_preprocessing:
 ## This rule determines what is run for the library saturation analysis
 rule AGGREGATOR_saturation:
     input:
-        "{path}operations/saturation/{sample}-REP{repnum}.downsampling.done"
+        "{path}operations/saturation/{sample}-REP{repnum}.downsampling.done",
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_numpeaks.txt",
+        "{path}operations/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.complete"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.complete"
     shell:
@@ -709,7 +711,7 @@ rule SATURATION_sort_downsampled:
 ## Purge duplicates from the downsampled .bam files
 rule SATURATION_purge_duplicates:
     input:
-        "{path}preprocessing/12saturation/downsample/sorted/{sample}-REP{repnum}.{prob}.sorted.bam"
+        "{path}preprocessing/12saturation/downsampled/sorted/{sample}-REP{repnum}.{prob}.sorted.bam"
     output:
         a="{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam",
         b="{path}preprocessing/12saturation/duplication/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
@@ -804,75 +806,61 @@ rule SATURATION_peaks:
     threads:
         4
     benchmark:
-        '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
+        '{path}benchmark/saturation/peaks/{sample}-REP{repnum}.{prob}.downsampled.peak.benchmark.txt'
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 ## Count the number of peaks with global normalization from downsampled libraries
+## THIS MAY NEED MORE WORK - TEST THE ACTUAL CODE ##
 rule SATURATION_peak_calling_aggregator:
     input:
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_globalnorm_peaks.xls"
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.9_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.8_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.7_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.6_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.5_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.4_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.3_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.2_globalnorm_peaks.xls",
+        "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.1_globalnorm_peaks.xls"
     output:
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt"
+        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_numpeaks.txt"
     shell:
         "wc -l < {input} >> {output}"
 
-
-
-
-## This rule determines which genes will be analyzed for the footprinting saturation analysis
-rule AGGREGATOR_saturation_footprints_genes:
+## Footprint analysis
+rule SATURATION_footprint_raw_analysis:
     input:
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bai"
     output:
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
-        touch {output}
-        """
+        "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.{prob}.downsampled.rawFPanalysis.done"
+    conda:
+        "snakeResources/envs/RFootprint.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 2
+    script:
+        "snakeResources/scripts/analyzeFP.R"
 
-
-## An aggregator for the footprinting saturation analysis
-rule AGGREGATOR_saturation_footprints:
+## An aggregator for the footprinting saturation analysis probabilities
+rule SATURATION_raw_footprint_aggregator:
     input:
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done"       
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.9.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.8.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.7.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.6.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.5.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.4.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.3.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.2.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.1.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"])
     output:
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.{gene}.footprint.downsampled.done"
+        "{path}operations/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.complete"
     shell:
         "touch {output}"
-
-## Perform the footprint saturation analysis
-rule SATURATION_analyze_raw_footprint_downsampled:
-    input:
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
-    output:
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
-    benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.{prob}.benchmark.txt'
-    script:
-        "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
 
 ########################################################################################################################################
 #### PEAK CALLING ######################################################################################################################
