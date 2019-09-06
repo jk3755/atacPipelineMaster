@@ -5,7 +5,7 @@ baiPath <- snakemake@input[[2]]
 outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
 sampleRep <- snakemake@wildcards[["repnum"]]
-svgOut1 <- gsub("operations/metrics", "metrics", outPath)
+svgOut1 <- gsub("operations/metrics", "metrics/fragsize", outPath)
 svgOut1 <- gsub("fragsizes.done", "fragsize1.svg", svgOut1)
 svgOut2 <- gsub("fragsize1", "fragsize2", svgOut1)
 svgOut3 <- gsub("fragsize1", "fragsize3", svgOut1)

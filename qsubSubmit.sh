@@ -3,7 +3,7 @@
 #$ -j y
 #$ -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac
 #$ -pe smp 4
-#$ -l mem=20G,time=168::
+#$ -l mem=40G,time=168::
 ##
 ## NOTES ##
 ## -x
@@ -26,7 +26,7 @@ echo "Setting up variables"
 SNAKEFILE="snakefileATACseqWorkflow.snakefile"
 SNAKEJOB="rawFP_lncap"
 CORES="999"
-JOBRESTARTS="12"
+JOBRESTARTS="5"
 LATENCYWAIT="60"
 CLUSTCONFIG="qsubConfig.json"
 WORKDIR="/ifs/scratch/c2b2/ac_lab/jk3755/atac"
@@ -44,13 +44,12 @@ echo "Cluster config: $CLUSTCONFIG"
 echo "Cluster submit: $CLUSTSUBMIT"
 echo "Working directory: $WORKDIR"
 echo "Conda directory: $CONDADIR"
-echo "Node localscratch: $TMPDIR"
 ##
 ## Always unlock the working directory first and use the --rerun-incomplete flag, in case a previous job crashed
 echo "Unlocking snakemake directory"
 snakemake \
 --snakefile $SNAKEFILE \
--j $CORES \
+--cores $CORES \
 $SNAKEJOB \
 --cluster-config $CLUSTCONFIG \
 --cluster "qsub -j y -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" \
@@ -67,7 +66,7 @@ echo "Snakemake directory unlocked"
 echo "Spooling the snakemake job"
 snakemake \
 --snakefile $SNAKEFILE \
--j $CORES \
+--cores $CORES \
 $SNAKEJOB \
 --cluster-config $CLUSTCONFIG \
 --cluster "qsub -j y -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" \

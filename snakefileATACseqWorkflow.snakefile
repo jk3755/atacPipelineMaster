@@ -29,6 +29,7 @@ rule AGGREGATOR_builddirectories:
         "{path}operations/dir/benchmark.built",
         "{path}operations/dir/metrics.built",
         "{path}operations/dir/preprocessing.built",
+        "{path}operations/dir/saturation.built",
         "{path}operations/dir/footprints.built",
         "{path}operations/dir/peaks.built"
     output:
@@ -46,14 +47,25 @@ rule AGGREGATOR_preprocessing:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         "{path}metrics/genomecov/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
         "{path}metrics/genomecov/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
-        "{path}operations/metrics/{sample}-REP{repnum}.globalpeak.annotations.done",
-        "{path}operations/metrics/{sample}-REP{repnum}.localpeak.annotations.done",
+        "{path}operations/metrics/peakannotation/{sample}-REP{repnum}.globalpeak.annotations.done",
+        "{path}operations/metrics/peakannotation/{sample}-REP{repnum}.localpeak.annotations.done",
         "{path}metrics/totalreads/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}operations/metrics/{sample}-REP{repnum}.fragsizes.done"
+        "{path}operations/metrics/{sample}-REP{repnum}.fragsizes.done",
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.complete"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
     shell:
         "touch {output}"
+
+## This rule determines what is run for the library saturation analysis
+rule AGGREGATOR_saturation:
+    input:
+        "{path}operations/saturation/{sample}-REP{repnum}.downsampling.done",
+
+    output:
+        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.complete"
+    shell:
+    	"touch {output}"
 
 ## This rule initiates the raw footprint analysis for all genes found in the config file
 rule AGGREGATOR_footprinting_raw_analysis:
@@ -129,7 +141,6 @@ rule DIR_metrics:
         mkdir -p -v {wildcards.path}metrics/myco
         mkdir -p -v {wildcards.path}metrics/hg38
         mkdir -p -v {wildcards.path}metrics/genomecov
-        mkdir -p -v {wildcards.path}metrics/duplication
         mkdir -p -v {wildcards.path}metrics/totalreads
         mkdir -p -v {wildcards.path}metrics/fragsize
         mkdir -p -v {wildcards.path}metrics/peakannotation
@@ -152,11 +163,21 @@ rule DIR_preprocessing:
         mkdir -p -v {wildcards.path}preprocessing/9dedup
         mkdir -p -v {wildcards.path}preprocessing/10unique
         mkdir -p -v {wildcards.path}preprocessing/11bigwig
-        mkdir -p -v {wildcards.path}preprocessing/saturation
-        mkdir -p -v {wildcards.path}preprocessing/saturation/complexity
-        mkdir -p -v {wildcards.path}preprocessing/saturation/peaks 
-        mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
-        mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled
+        mkdir -p -v {wildcards.path}preprocessing/12saturation
+        touch {output}
+        """
+
+rule DIR_saturation:
+    output:
+        "{path}operations/dir/saturation.built"
+    shell:
+        """
+        mkdir -p -v {wildcards.path}preprocessing/12saturation/downsampled {wildcards.path}preprocessing/12saturation/downsampled/raw
+        mkdir -p -v {wildcards.path}preprocessing/12saturation/downsampled/sorted {wildcards.path}preprocessing/12saturation/downsampled/deduplicated
+        mkdir -p -v {wildcards.path}preprocessing/12saturation/duplication
+
+
+        mkdir -p -v {wildcards.path}preprocessing/12saturation/peaks 
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled/raw {wildcards.path}preprocessing/saturation/downsampled/cs {wildcards.path}preprocessing/saturation/downsampled/md
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints/raw {wildcards.path}preprocessing/saturation/footprints/parsed {wildcards.path}preprocessing/saturation/footprints/processed
@@ -626,72 +647,20 @@ rule METRICS_sample_total_reads:
 #### SATURATION ANALYSIS ###############################################################################################################
 ########################################################################################################################################
 
-## Analyze saturation of library in terms of library complexity, called peaks, and selected TF footprints
-rule STEP21_saturation_analysis:
-    input:
-        "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
-        "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt",
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
-    output:
-        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
-    shell:
-    	"touch {output}"
-
-## When all saturation analysis is done, remove the intermediate data, as it is quite large
-rule SATURATION_clean_data_final:
-    input:
-        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
-    output:
-        "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bai
-        rm -f {wildcards.path}preprocessing/saturation/peaks/*REP{wildcards.repnum}*
-        touch {output}
-        """
-
-## This rule determines which genes will be analyzed for the footprinting saturation analysis
-rule AGGREGATOR_saturation_footprints_genes:
-    input:
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
-    output:
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
-        touch {output}
-        """
-
-## Determines the downsampling levels of the libraries
-rule AGGREGATOR_saturation_downsample:
-    input:
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.8.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.7.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.6.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.5.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.4.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.3.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.2.md.bai",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.1.md.bai"      
-    output:
-        "{path}operations/saturation/{sample}-REP{repnum}.downsample.done"
-    shell:
-        "touch {output}"
-
 ## Downsample the processed but NOT duplicate purged .bam files
 rule SATURATION_downsample_bam:
     input:
-        "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
+        "{path}bam/{sample}-REP{repnum}.bam"
     output:
-        "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
+        "{path}preprocessing/12saturation/downsample/raw/{sample}-REP{repnum}.{prob}.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=30000
     benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.downsample.bam.benchmark.txt'
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.downsample.benchmark.txt'
     shell:
         "picard DownsampleSam \
         I={input} \
@@ -701,11 +670,17 @@ rule SATURATION_downsample_bam:
 ## Coordinate sort the downsampled .bam files
 rule SATURATION_sort_downsampled:
     input:
-        "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
+        "{path}preprocessing/12saturation/downsample/raw/{sample}-REP{repnum}.{prob}.bam"
     output:
-        "{path}preprocessing/saturation/downsampled/cs/{sample}-REP{repnum}.{prob}.cs.bam"
+        "{path}preprocessing/12saturation/downsample/sorted/{sample}-REP{repnum}.{prob}.sorted.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=30000
     benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.sort.downsampled.benchmark.txt'
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.sort.benchmark.txt'
     shell:
         "picard SortSam \
         I={input} \
@@ -713,17 +688,20 @@ rule SATURATION_sort_downsampled:
         SORT_ORDER=coordinate"
 
 ## Purge duplicates from the downsampled .bam files
-rule SATURATION_purge_duplicates_downsampled:
+rule SATURATION_purge_duplicates:
     input:
-        "{path}preprocessing/saturation/downsampled/cs/{sample}-REP{repnum}.{prob}.cs.bam"
+        "{path}preprocessing/12saturation/downsample/sorted/{sample}-REP{repnum}.{prob}.sorted.bam"
     output:
-        a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
-        b="{path}metrics/saturation/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
+        a="{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam",
+        b="{path}preprocessing/12saturation/duplication/{sample}-REP{repnum}.{prob}.duplication-metrics.txt"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
     resources:
-        purgeDuplicates=1,
-        mem_mb=50000
+        mem_mb=30000
     benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.purgeduplicates.downsampled.benchmark.txt'
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.purgeduplicates.benchmark.txt'
     shell:
         "picard MarkDuplicates \
         I={input} \
@@ -735,150 +713,202 @@ rule SATURATION_purge_duplicates_downsampled:
 ## Generate .bai index for each downsampled .bam file
 rule SATURATION_index_downsampled:
     input:
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam"
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam"
     output:
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bai"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=10000
     benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.index.downsampled.benchmark.txt'
+        '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.index.benchmark.txt'
     shell:
         "picard BuildBamIndex \
         I={input} \
         O={output}"
 
-## Determine the library complexity of the downsampled libraries and output to metrics
-rule SATURATION_analyze_complexity_downsampled:
+## Aggregator rule for all the downsampling probabilities
+rule SATURATION_downsample_aggregator:
     input:
-        a="{path}metrics/saturation/{sample}-REP{repnum}.9.duplication-metrics.txt",
-        b="{path}metrics/saturation/{sample}-REP{repnum}.8.duplication-metrics.txt",
-        c="{path}metrics/saturation/{sample}-REP{repnum}.7.duplication-metrics.txt",
-        d="{path}metrics/saturation/{sample}-REP{repnum}.6.duplication-metrics.txt",
-        e="{path}metrics/saturation/{sample}-REP{repnum}.5.duplication-metrics.txt",
-        f="{path}metrics/saturation/{sample}-REP{repnum}.4.duplication-metrics.txt",
-        g="{path}metrics/saturation/{sample}-REP{repnum}.3.duplication-metrics.txt",
-        h="{path}metrics/saturation/{sample}-REP{repnum}.2.duplication-metrics.txt",
-        i="{path}metrics/saturation/{sample}-REP{repnum}.1.duplication-metrics.txt",
-        j="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
-        k="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.8.md.bai",
-        l="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.7.md.bai",
-        m="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.6.md.bai",
-        n="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.5.md.bai",
-        o="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.4.md.bai",
-        p="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.3.md.bai",
-        q="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.2.md.bai",
-        r="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.1.md.bai"
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.9.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.8.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.7.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.6.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.5.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.4.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.3.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.2.deduplicated.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.1.deduplicated.bai"    
     output:
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
-    shell:
-        """
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.b} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.c} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.d} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.e} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.f} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.g} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
-        awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
-        """
-
-## Cleanup the uneeded intermediate files
-rule SATURATION_clean_intermediate_data:
-    input:
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
-    output:
-        "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done"
-    shell:
-        """
-        rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
-        rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
-        touch {output}
-        """
-
-## Call peaks with global normalization from downsampled libraries
-rule SATURATION_peaks_globalnorm:
-    input:
-        a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
-        b="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
-    output:
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_globalnorm_peaks.xls"
-    shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-
-## Call peaks with local normalization from downsampled libraries
-rule SATURATION_peaks_localnorm:
-    input:
-        a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
-        b="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
-    output:
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_localnorm_peaks.xls"
-    shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_localnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
-
-## Count the number of peaks with global normalization from downsampled libraries and output to metrics
-rule SATURATION_analyze_peak_saturation_globalnorm:
-    input:
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_globalnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_globalnorm_peaks.xls"
-    output:
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt"
-    shell:
-        "wc -l < {input} >> {output}"
-
-## Count the number of peaks with local normalization from downsampled libraries and output to metrics
-rule SATURATION_analyze_peak_saturation_localnorm:
-    input:
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_localnorm_peaks.xls",
-        "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_localnorm_peaks.xls"
-    output:
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
-    shell:
-        "wc -l < {input} >> {output}"
-
-## An aggregator for the footprinting saturation analysis
-rule AGGREGATOR_saturation_footprints:
-    input:
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done"       
-    output:
-        "{path}operations/saturation/footprints/{sample}-REP{repnum}.{gene}.footprint.downsampled.done"
+        "{path}operations/saturation/{sample}-REP{repnum}.downsampling.done"
     shell:
         "touch {output}"
 
-## Perform the footprint saturation analysis
-rule SATURATION_analyze_raw_footprint_downsampled:
-    input:
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
-        "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai",
-        "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
-        "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
-    output:
-        "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
-    benchmark:
-        '{path}benchmark/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.{prob}.benchmark.txt'
-    script:
-        "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
+
+# ## When all saturation analysis is done, remove the intermediate data, as it is quite large
+# rule SATURATION_clean_data_final:
+#     input:
+#         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
+#     output:
+#         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
+#     shell:
+#         """
+#         rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bam
+#         rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bai
+#         rm -f {wildcards.path}preprocessing/saturation/peaks/*REP{wildcards.repnum}*
+#         touch {output}
+#         """
+
+# ## This rule determines which genes will be analyzed for the footprinting saturation analysis
+# rule AGGREGATOR_saturation_footprints_genes:
+#     input:
+#         "{path}operations/saturation/footprints/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
+#     output:
+#         "{path}operations/saturation/footprints/{sample}-REP{repnum}.allgenes.footprint.downsampled.done"
+#     shell:
+#         """
+#         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+#         rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
+#         rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
+#         touch {output}
+#         """
+
+# ## Determine the library complexity of the downsampled libraries and output to metrics
+# rule SATURATION_analyze_complexity_downsampled:
+#     input:
+#         a="{path}metrics/saturation/{sample}-REP{repnum}.9.duplication-metrics.txt",
+#         b="{path}metrics/saturation/{sample}-REP{repnum}.8.duplication-metrics.txt",
+#         c="{path}metrics/saturation/{sample}-REP{repnum}.7.duplication-metrics.txt",
+#         d="{path}metrics/saturation/{sample}-REP{repnum}.6.duplication-metrics.txt",
+#         e="{path}metrics/saturation/{sample}-REP{repnum}.5.duplication-metrics.txt",
+#         f="{path}metrics/saturation/{sample}-REP{repnum}.4.duplication-metrics.txt",
+#         g="{path}metrics/saturation/{sample}-REP{repnum}.3.duplication-metrics.txt",
+#         h="{path}metrics/saturation/{sample}-REP{repnum}.2.duplication-metrics.txt",
+#         i="{path}metrics/saturation/{sample}-REP{repnum}.1.duplication-metrics.txt",
+#         j="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
+#         k="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.8.md.bai",
+#         l="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.7.md.bai",
+#         m="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.6.md.bai",
+#         n="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.5.md.bai",
+#         o="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.4.md.bai",
+#         p="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.3.md.bai",
+#         q="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.2.md.bai",
+#         r="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.1.md.bai"
+#     output:
+#         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
+#     shell:
+#         """
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.a} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.b} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.c} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.d} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.e} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.f} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.g} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.h} >> {output}
+#         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
+#         """
+
+# ## Cleanup the uneeded intermediate files
+# rule SATURATION_clean_intermediate_data:
+#     input:
+#         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
+#     output:
+#         "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done"
+#     shell:
+#         """
+#         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+#         rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
+#         rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
+#         touch {output}
+#         """
+
+# ## Call peaks with global normalization from downsampled libraries
+# rule SATURATION_peaks_globalnorm:
+#     input:
+#         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
+#         b="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
+#     output:
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_globalnorm_peaks.xls"
+#     shell:
+#         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+
+# ## Call peaks with local normalization from downsampled libraries
+# rule SATURATION_peaks_localnorm:
+#     input:
+#         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
+#         b="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai"
+#     output:
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.{prob}_localnorm_peaks.xls"
+#     shell:
+#         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_localnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+
+# ## Count the number of peaks with global normalization from downsampled libraries and output to metrics
+# rule SATURATION_analyze_peak_saturation_globalnorm:
+#     input:
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_globalnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_globalnorm_peaks.xls"
+#     output:
+#         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_globalnorm_numpeaks.txt"
+#     shell:
+#         "wc -l < {input} >> {output}"
+
+# ## Count the number of peaks with local normalization from downsampled libraries and output to metrics
+# rule SATURATION_analyze_peak_saturation_localnorm:
+#     input:
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.8_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.7_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.6_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.5_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.4_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.3_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.2_localnorm_peaks.xls",
+#         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.1_localnorm_peaks.xls"
+#     output:
+#         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_localnorm_numpeaks.txt"
+#     shell:
+#         "wc -l < {input} >> {output}"
+
+# ## An aggregator for the footprinting saturation analysis
+# rule AGGREGATOR_saturation_footprints:
+#     input:
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.8.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.7.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.6.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.5.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.4.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.3.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.2.done",
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.1.done"       
+#     output:
+#         "{path}operations/saturation/footprints/{sample}-REP{repnum}.{gene}.footprint.downsampled.done"
+#     shell:
+#         "touch {output}"
+
+# ## Perform the footprint saturation analysis
+# rule SATURATION_analyze_raw_footprint_downsampled:
+#     input:
+#         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
+#         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bai",
+#         "snakeResources/sites/data/genes/{gene}.bindingSites.Rdata",
+#         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
+#     output:
+#         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.{prob}.done"
+#     benchmark:
+#         '{path}benchmark/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.{prob}.benchmark.txt'
+#     script:
+#         "snakeResources/scripts/saturation/snakeAnalyzeRawFootprintSaturation.R"
 
 ########################################################################################################################################
 #### PEAK CALLING ######################################################################################################################
@@ -912,8 +942,8 @@ rule FOOTPRINTING_raw_analysis:
     threads:
         1
     resources:
-        mem_mb=lambda params, attempt: attempt * 10000,
-        run_time=lambda params, attempt: attempt * 4
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 2
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
