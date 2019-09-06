@@ -13,18 +13,33 @@ include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 ## This rule determines what is run in the full analysis spooling option
 rule AGGREGATOR_full_analysis:
     input:
+        "{path}operations/dir/all.built",
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete",
-        "{path}operations/footprints/{sample}-REP{repnum}.sectored_footprinting_analysis_raw.complete"
     output:
         "{path}operations/modules/{sample}-REP{repnum}.full_analysis.finished"
+    shell:
+        "touch {output}"
+
+## This rule determines what is run in the directory building step
+rule AGGREGATOR_builddirectories:
+    input:
+        "{path}operations/dir/main.built",
+        "{path}operations/dir/operations.built",
+        "{path}operations/dir/benchmark.built",
+        "{path}operations/dir/metrics.built",
+        "{path}operations/dir/preprocessing.built",
+        "{path}operations/dir/footprints.built",
+        "{path}operations/dir/peaks.built"
+    output:
+        "{path}operations/dir/all.built"
     shell:
         "touch {output}"
 
 ## This rule determines what is run in the preprocessing spooling option
 rule AGGREGATOR_preprocessing:
     input:
-    	"{path}operations/dir/all.built",
+        "{path}operations/dir/all.built",
         "{path}bam/{sample}-REP{repnum}.bai",
         "{path}bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
@@ -39,25 +54,10 @@ rule AGGREGATOR_preprocessing:
     shell:
         "touch {output}"
 
-## This rule determines what is run in the directory building step
-rule AGGREGATOR_builddirectories:
-    input:
-    	"{path}operations/dir/main.built",
-    	"{path}operations/dir/operations.built",
-    	"{path}operations/dir/benchmark.built",
-    	"{path}operations/dir/metrics.built",
-    	"{path}operations/dir/preprocessing.built",
-    	"{path}operations/dir/footprints.built",
-    	"{path}operations/dir/peaks.built"
-    output:
-        "{path}operations/dir/all.built"
-    shell:
-        "touch {output}"
-
 ## This rule initiates the raw footprint analysis for all genes found in the config file
 rule AGGREGATOR_footprinting_raw_analysis:
     input:
-        "{path}operations/footprints/{sample}-REP{repnum}.footprint.prep.complete",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
     output:
         "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
@@ -93,11 +93,8 @@ rule DIR_operations:
         mkdir -p -v {wildcards.path}operations/modules
         mkdir -p -v {wildcards.path}operations/preprocessing
         mkdir -p -v {wildcards.path}operations/footprints
-        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
-        mkdir -p -v {wildcards.path}operations/footprints/temp
-        mkdir -p -v {wildcards.path}operations/footprints/merged
+        mkdir -p -v {wildcards.path}operations/footprints/raw 
         mkdir -p -v {wildcards.path}operations/saturation
-        mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
         touch {output}
         """
 
@@ -191,7 +188,7 @@ rule DIR_peaks:
 rule STEP1_gunzip:
     input:
         a="{path}preprocessing/1gz/{sample}-REP{repnum}_L{lane}_R{read}.fastq.gz",
-        b="{path}operations/preprocessing/dirtree.built"
+        b="{path}operations/dir/all.built"
     output:
         c="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R{read}.fastq"
     threads:
@@ -613,7 +610,7 @@ rule STEP20_sample_total_reads:
     benchmark:
         '{path}benchmark/preprocessing/totalreads/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
-        "snakeResources/scripts/QC/snakeCountSampleReads.R"
+        "snakeResources/scripts/countTotalSampleReads.R"
 
 ########################################################################################################################################
 #### SATURATION ANALYSIS ###############################################################################################################
@@ -896,8 +893,8 @@ rule PEAKS_differential_peak_calling_2samples:
 ##
 rule FOOTPRINTING_raw_analysis:
     input:
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-        "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
+        "{path}bam/{sample}-REP{repnum}.bam",
+        "{path}bam/{sample}-REP{repnum}.bai"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
     conda:
