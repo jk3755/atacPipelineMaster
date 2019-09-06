@@ -1,6 +1,10 @@
 channels:
   - r
   - bioconda
+  - anaconda
 dependencies:
+  - r-magrittr
+  - r-dplyr
   - r-ggplot2
-  - bioconductor-atacseqqc
+  - bioconductor-genomicalignments
+  - libpng

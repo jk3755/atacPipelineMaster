@@ -49,7 +49,7 @@ rule AGGREGATOR_preprocessing:
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
         "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
-        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+        "{path}operations/metrics/{sample}-REP{repnum}.fragsizes.done"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
     shell:
@@ -96,6 +96,7 @@ rule DIR_operations:
         mkdir -p -v {wildcards.path}operations/footprints
         mkdir -p -v {wildcards.path}operations/footprints/raw 
         mkdir -p -v {wildcards.path}operations/saturation
+        mkdir -p -v {wildcards.path}operations/metrics
         touch {output}
         """
 
@@ -555,7 +556,7 @@ rule STEP18_fragment_size_distribution:
         a="{path}bam/{sample}-REP{repnum}.bam",
         b="{path}bam/{sample}-REP{repnum}.bai"
     output:
-        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+        "{path}operations/metrics/{sample}-REP{repnum}.fragsizes.done"
     conda:
         "snakeResources/envs/Rfragsizedistribution.yaml"
     threads:
@@ -565,7 +566,7 @@ rule STEP18_fragment_size_distribution:
     benchmark:
         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
     script:
-        "snakeResources/scripts/QC/snakeFragSizeDist.R"
+        "snakeResources/scripts/generateFragSizeDistribution.R"
 
 ## Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
@@ -912,4 +913,4 @@ rule FOOTPRINTING_raw_analysis:
     benchmark:
         '{path}benchmark/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.benchmark.txt'
     script:
-        "snakeResources/scripts/snakeAnalyzeFP.R"
+        "snakeResources/scripts/analyzeFP.R"
