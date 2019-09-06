@@ -6,10 +6,11 @@ include: "snakeResources/modules/spoolPreprocessing.snakefile"
 include: "snakeResources/modules/spoolFootprinting.snakefile"
 include: "snakeResources/modules/spoolFullAnalysis.snakefile"
 include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
+
 ########################################################################################################################################
-#### FULL ANALYSIS AGGREGATOR ##########################################################################################################
+#### AGGREGATOR RULES ##################################################################################################################
 ########################################################################################################################################
-# This rule determines what is run in the full analysis spooling option
+## This rule determines what is run in the full analysis spooling option
 rule AGGREGATOR_full_analysis:
     input:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
@@ -20,12 +21,10 @@ rule AGGREGATOR_full_analysis:
     shell:
         "touch {output}"
 
-########################################################################################################################################
-#### PREPROCESSING RULES ###############################################################################################################
-########################################################################################################################################
+## This rule determines what is run in the preprocessing spooling option
 rule AGGREGATOR_preprocessing:
     input:
-    	"{path}operations/preprocessing/dirtree.built",
+    	"{path}operations/dir/all.built",
         "{path}bam/{sample}-REP{repnum}.bai",
         "{path}bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
@@ -40,25 +39,63 @@ rule AGGREGATOR_preprocessing:
     shell:
         "touch {output}"
 
-# Build the directory structure
-rule PREP_builddirstructure:
-    # params: -p ignore error if existing, make parent dirs, -v verbose
+## This rule determines what is run in the directory building step
+rule AGGREGATOR_builddirectories:
+    input:
+    	"{path}operations/dir/main.built",
+    	"{path}operations/dir/operations.built",
+    	"{path}operations/dir/benchmark.built",
+    	"{path}operations/dir/metrics.built",
+    	"{path}operations/dir/preprocessing.built",
+    	"{path}operations/dir/footprints.built",
+    	"{path}operations/dir/peaks.built"
     output:
-        "{path}operations/preprocessing/dirtree.built"
-    threads:
-        1
+        "{path}operations/dir/all.built"
+    shell:
+        "touch {output}"
+
+########################################################################################################################################
+#### BUILD DIRECTORY STRUCTURE #########################################################################################################
+########################################################################################################################################
+rule DIR_main:
+    output:
+        "{path}operations/dir/main.built"
     shell:
         """
+        mkdir -p -v {wildcards.path}operations
+        mkdir -p -v {wildcards.path}operations/dir
         mkdir -p -v {wildcards.path}benchmark
         mkdir -p -v {wildcards.path}metrics
-        mkdir -p -v {wildcards.path}operations
         mkdir -p -v {wildcards.path}preprocessing
         mkdir -p -v {wildcards.path}footprints
         mkdir -p -v {wildcards.path}peaks
         mkdir -p -v {wildcards.path}correlation
         mkdir -p -v {wildcards.path}bam
         mkdir -p -v {wildcards.path}bigwig
-        ####################################################################################################################################################################
+        touch {output}
+        """
+
+rule DIR_operations:
+    output:
+        "{path}operations/dir/operations.built"
+    shell:
+        """
+        mkdir -p -v {wildcards.path}operations/modules
+        mkdir -p -v {wildcards.path}operations/preprocessing
+        mkdir -p -v {wildcards.path}operations/footprints
+        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
+        mkdir -p -v {wildcards.path}operations/footprints/temp
+        mkdir -p -v {wildcards.path}operations/footprints/merged
+        mkdir -p -v {wildcards.path}operations/saturation
+        mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
+        touch {output}
+        """
+
+rule DIR_benchmark:
+    output:
+        "{path}operations/dir/benchmark.built"
+    shell:
+        """
         mkdir -p -v {wildcards.path}benchmark/preprocessing
         mkdir -p -v {wildcards.path}benchmark/preprocessing/gunzip {wildcards.path}benchmark/preprocessing/fastp {wildcards.path}benchmark/preprocessing/mycoalign
         mkdir -p -v {wildcards.path}benchmark/preprocessing/hg38align {wildcards.path}benchmark/preprocessing/coordsortsam {wildcards.path}benchmark/preprocessing/bamconversion
@@ -72,16 +109,26 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}benchmark/footprints
         mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
         mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}operations/modules
-        mkdir -p -v {wildcards.path}operations/preprocessing
-        mkdir -p -v {wildcards.path}operations/footprints
-        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
-        mkdir -p -v {wildcards.path}operations/footprints/temp
-        mkdir -p -v {wildcards.path}operations/footprints/merged
-        mkdir -p -v {wildcards.path}operations/saturation
-        mkdir -p -v {wildcards.path}operations/saturation/footprints {wildcards.path}operations/saturation/footprints/raw
-        ####################################################################################################################################################################
+        touch {output}
+        """
+
+rule DIR_metrics:
+    output:
+        "{path}operations/dir/metrics.built"
+    shell:
+        """
+        mkdir -p -v {wildcards.path}metrics/saturation
+        mkdir -p -v {wildcards.path}metrics/fastq
+        mkdir -p -v {wildcards.path}metrics/myco
+        mkdir -p -v {wildcards.path}metrics/hg38
+        touch {output}
+        """
+
+rule DIR_preprocessing:
+    output:
+        "{path}operations/dir/preprocessing.built"
+    shell:
+        """
         mkdir -p -v {wildcards.path}preprocessing/2fastq
         mkdir -p -v {wildcards.path}preprocessing/3goodfastq
         mkdir -p -v {wildcards.path}preprocessing/4mycoalign
@@ -93,7 +140,6 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/9dedup
         mkdir -p -v {wildcards.path}preprocessing/10unique
         mkdir -p -v {wildcards.path}preprocessing/11bigwig
-        ####################################################################################################################################################################
         mkdir -p -v {wildcards.path}preprocessing/saturation
         mkdir -p -v {wildcards.path}preprocessing/saturation/complexity
         mkdir -p -v {wildcards.path}preprocessing/saturation/peaks 
@@ -102,28 +148,37 @@ rule PREP_builddirstructure:
         mkdir -p -v {wildcards.path}preprocessing/saturation/downsampled/raw {wildcards.path}preprocessing/saturation/downsampled/cs {wildcards.path}preprocessing/saturation/downsampled/md
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints
         mkdir -p -v {wildcards.path}preprocessing/saturation/footprints/raw {wildcards.path}preprocessing/saturation/footprints/parsed {wildcards.path}preprocessing/saturation/footprints/processed
-        ####################################################################################################################################################################
+        touch {output}
+        """
+
+rule DIR_footprints:
+    output:
+        "{path}operations/dir/footprints.built"
+    shell:
+        """
         mkdir -p -v {wildcards.path}footprints/data 
         mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
         mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
         mkdir -p -v {wildcards.path}footprints/data/temp
         mkdir -p -v {wildcards.path}footprints/graphs
         mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}metrics/saturation
-        mkdir -p -v {wildcards.path}metrics/fastq
-        mkdir -p -v {wildcards.path}metrics/myco
-        mkdir -p -v {wildcards.path}metrics/hg38
-        ####################################################################################################################################################################
         touch {output}
         """
 
-# Gunzip the fastq files
+rule DIR_peaks:
+    output:
+        "{path}operations/dir/peaks.built"
+    shell:
+        """
+        mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
+        touch {output}
+        """
+
+########################################################################################################################################
+#### PREPROCESSING RULES ###############################################################################################################
+########################################################################################################################################
+## Gunzip the fastq files
 rule STEP1_gunzip:
-    # -k keep original files
-    # -c write to standard output
     input:
         a="{path}preprocessing/1gz/{sample}-REP{repnum}_L{lane}_R{read}.fastq.gz",
         b="{path}operations/preprocessing/dirtree.built"
@@ -136,13 +191,8 @@ rule STEP1_gunzip:
     shell:
         "gunzip -k -c {input.a} > {output.c}"
 
-# fastp fastq QC Filtering
+## Fastq QC filtering
 rule STEP2_fastp_filtering:
-    # -i, -I specify paired end input
-    # -o, -O specifies paired end output
-    # -w specifies the number of threads to use (16 max)
-    # -h specifies output for the html QC report
-    # -j specifies the json output QC report
     input:
         a="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R1.fastq",
         b="{path}preprocessing/2fastq/{sample}-REP{repnum}_L{lane}_R2.fastq"
@@ -158,15 +208,8 @@ rule STEP2_fastp_filtering:
     shell:
         "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 2 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -j {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
     
-# Check for mycoplasma contamination
+## Check for mycoplasma contamination
 rule STEP3_mycoalign:
-    # -q fastq input file format
-    # -p num threads to use
-    # -X1000 align to a maximum of 2000 bp frag length
-    # -1 is read 1 input fastq file
-    # -2 is read 2 input fastq file
-    # -S output file path
-    # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
     input:
         a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
         b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq"
@@ -183,16 +226,8 @@ rule STEP3_mycoalign:
     shell:
         "bowtie2 -q -p 10 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
-# Align reads to human hg38 build
+## Align reads to human hg38 build
 rule STEP4_hg38align:
-    # use 'snakemake --resources hg38align=1' to limit the number of parallel instances of this rule
-    # -q fastq input file format
-    # -p num threads to use
-    # -X1000 align to a maximum of 2000 bp frag length
-    # -1 is read 1 input fastq file
-    # -2 is read 2 input fastq file
-    # -S output file path
-    # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
     input:
         a="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R1.good.fq",
         b="{path}preprocessing/3goodfastq/{sample}-REP{repnum}_L{lane}_R2.good.fq",
@@ -210,10 +245,8 @@ rule STEP4_hg38align:
     shell:
         "bowtie2 -q -p 10 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
-# Coordinate sort the aligned reads. This is required for blacklist filtering
+## Coordinate sort the aligned reads. This is required for blacklist filtering
 rule STEP5_coordsort_sam:
-    # -o output file path
-    # -O output file format
     input:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.sam"
     output:
@@ -227,14 +260,8 @@ rule STEP5_coordsort_sam:
     shell:
         "samtools sort {input} -o {output} -O sam"
     
-# Remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
+## Remove aligned reads that map to hg38 blacklist regions as annotated by ENCODE
 rule STEP6_blacklistfilter_bamconversion:
-    # -b output in bam format
-    # -h include header in output file
-    # -o specify output file path
-    # -L only output alignments that overlap with the provided BED file
-    # -U write the alignments NOT selected by other parameters to the specified file
-    # -@ specify number of threads
     input:
         "{path}preprocessing/5hg38align/{sample}-REP{repnum}_L{lane}.hg38.cs.sam"
     output:
@@ -249,16 +276,8 @@ rule STEP6_blacklistfilter_bamconversion:
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 4 {input}"
     
-# Remove reads mapping to mitochondrial DNA
+## Remove reads mapping to mitochondrial DNA
 rule STEP7_chrM_contamination:
-    # remove mitochondrial reads
-    # params:
-    # -b input file is in bam format
-    # -h keep the sam header. important downstream
-    # -o output filepath for reads NOT matching to blacklist region
-    # -L path to the blacklist BED file
-    # -U output filepath for reads matching blacklist region
-    # -@ number of threads to use
     input:
         "{path}preprocessing/6raw/nonblacklist/{sample}-REP{repnum}_L{lane}.blrm.bam"
     output:
@@ -273,23 +292,8 @@ rule STEP7_chrM_contamination:
     shell:
         "samtools view -b -h -o {output.a} -L genomes/hg38/hg38.blacklist.bed -U {output.b} -@ 4 {input}"
     
-# Add @RG tags to the reads and perform coordinate sorting
+## Add @RG tags to the reads and perform coordinate sorting
 rule STEP8_addrgandcsbam:
-    # refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
-    # note - proper specification of RG tags is critical for downstream analysis and unique sample identification when submitting for publication
-    # specification of the lane allows optical duplicates to be detected(?)
-    # required by GATK standards
-    # also important for identifying batch effects/technical artifacts(?)
-    # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
-    # Required @RG parameter specifications:
-    # RGID (read group ID) - this must be a globally unique string. for illumina data, use flowcell + lane
-    # RGLB (read group library) - This is used by MarkDuplicates to collect reads from the same library on different lanes, so it must be common to all files from the same library
-    # RGPL (read group platform) - ILLUMINA
-    # RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
-    # RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
-    # params:
-    # I specifies the input file
-    # O specifies the output file
     input:
         "{path}preprocessing/6raw/{sample}-REP{repnum}_L{lane}.goodbam"
     output:
@@ -313,13 +317,8 @@ rule STEP8_addrgandcsbam:
         RGPU=H5YHHBGX3.{wildcards.lane}.{wildcards.sample} \
         RGSM={wildcards.sample}"
     
-# Clean the bam file
+## Clean the bam file
 rule STEP9_cleansam:
-    # soft-clips bases aligned past the end of the ref sequence
-    # soft-clipping retains the bases in the SEQ string, but they are not displayed or used in downstream data analysis
-    # sets MAPQ score to 0 for unmapped reads
-    # I specifies the input file
-    # O specifies the output file
     input:
         "{path}preprocessing/7rgsort/{sample}-REP{repnum}_L{lane}.rg.cs.bam"
     output:
@@ -339,13 +338,6 @@ rule STEP9_cleansam:
     
 # Merge reads from different NextSeq lanes
 rule STEP10_mergelanes:
-    # Merge files for individual lanes
-    # I specifies input files for each lane
-    # O specifies the output files
-    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
-    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
-    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
-    # USE_THREADING allows multithreadded operation for the bam compression
     input:
         a="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L1.clean.bam",
         b="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L2.clean.bam",
@@ -374,10 +366,7 @@ rule STEP10_mergelanes:
         USE_THREADING=true"
 
 # After the lanes are merged, you can remove the intermediate data 
-# This will help keep disk space open
 rule STEP10b_clean_intermediate_data:
-    # -rm removes files
-    # -f forces the removal
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
     output:
@@ -401,12 +390,6 @@ rule STEP10b_clean_intermediate_data:
 
 # Purge PCR duplicate reads
 rule STEP11_purgeduplicates:
-	# -Xmx50g specifies a 50 gb memory limit per process
-    # I specifies the input file
-    # O specifies the output file
-    # M specifies the duplication metrics output file
-    # REMOVE_DUPLICATES enables removal of duplicate reads from the output file
-    # ASSUME_SORTED indicates the input file is already sorted
     input:
         a="{path}operations/preprocessing/clean10b.{sample}.{repnum}.done",
         b="{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
@@ -976,35 +959,6 @@ rule PEAKS_differential_peak_calling_2samples:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
-rule FOOTPRINTING_builddirstructure:
-    # params: -p ignore error if existing, make parent dirs, -v verbose
-    output:
-        "{path}preprocessing/footprint_dirtree.built"
-    shell:
-        """
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}benchmark
-        mkdir -p -v {wildcards.path}benchmark/footprints
-        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
-        mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}operations
-        mkdir -p -v {wildcards.path}operations/footprints
-        mkdir -p -v {wildcards.path}operations/footprints/raw {wildcards.path}operations/footprints/parsed {wildcards.path}operations/footprints/processed
-        mkdir -p -v {wildcards.path}operations/footprints/temp
-        mkdir -p -v {wildcards.path}operations/footprints/merged
-        ####################################################################################################################################################################
-        mkdir -p -v {wildcards.path}footprints
-        mkdir -p -v {wildcards.path}footprints/data 
-        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
-        mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
-        mkdir -p -v {wildcards.path}footprints/data/temp
-        mkdir -p -v {wildcards.path}footprints/graphs
-        mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
-        ####################################################################################################################################################################
-        touch {output}
-        """
-
 # This rule initiates the raw footprint analysis for all genes found in the config file
 # this rule will call the process to generate the sites database if it doesnt exists
 rule AGGREGATOR_footprinting_raw_analysis:

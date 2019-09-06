@@ -41,3 +41,109 @@
 # --debug-dag - print the dag workflow
 # --printshellcmds - print shell commands that will be executed
 # --reason - print the reason for execution of each rule
+
+########################################################################################################################################
+#### RULE PARAMETERS ###################################################################################################################
+########################################################################################################################################
+Build dirs
+## -p ignore error if existing
+## -v verbose
+
+## 
+rule STEP1_gunzip:
+    # -k keep original files
+    # -c write to standard output
+
+    ## Fastp fastq QC Filtering
+rule STEP2_fastp_filtering:
+    # -i, -I specify paired end input
+    # -o, -O specifies paired end output
+    # -w specifies the number of threads to use (16 max)
+    # -h specifies output for the html QC report
+    # -j specifies the json output QC report
+
+    rule STEP3_mycoalign:
+    # -q fastq input file format
+    # -p num threads to use
+    # -X1000 align to a maximum of 2000 bp frag length
+    # -1 is read 1 input fastq file
+    # -2 is read 2 input fastq file
+    # -S output file path
+    # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
+
+rule STEP4_hg38align:
+    # use 'snakemake --resources hg38align=1' to limit the number of parallel instances of this rule
+    # -q fastq input file format
+    # -p num threads to use
+    # -X1000 align to a maximum of 2000 bp frag length
+    # -1 is read 1 input fastq file
+    # -2 is read 2 input fastq file
+    # -S output file path
+    # 2> bowtie2 outputs alignment metrics to STDERR, 2> will allow redirect to a text file
+
+ rule STEP5_coordsort_sam:
+    # -o output file path
+    # -O output file format
+
+rule STEP6_blacklistfilter_bamconversion:
+    # -b output in bam format
+    # -h include header in output file
+    # -o specify output file path
+    # -L only output alignments that overlap with the provided BED file
+    # -U write the alignments NOT selected by other parameters to the specified file
+    # -@ specify number of threads
+
+rule STEP7_chrM_contamination:
+    # remove mitochondrial reads
+    # params:
+    # -b input file is in bam format
+    # -h keep the sam header. important downstream
+    # -o output filepath for reads NOT matching to blacklist region
+    # -L path to the blacklist BED file
+    # -U output filepath for reads matching blacklist region
+    # -@ number of threads to use
+
+rule STEP8_addrgandcsbam:
+    # refer to https://software.broadinstitute.org/gatk/documentation/article.php?id=6472 for information on read group tags
+    # note - proper specification of RG tags is critical for downstream analysis and unique sample identification when submitting for publication
+    # specification of the lane allows optical duplicates to be detected(?)
+    # required by GATK standards
+    # also important for identifying batch effects/technical artifacts(?)
+    # see: https://software.broadinstitute.org/gatk/documentation/article.php?id=6472
+    # Required @RG parameter specifications:
+    # RGID (read group ID) - this must be a globally unique string. for illumina data, use flowcell + lane
+    # RGLB (read group library) - This is used by MarkDuplicates to collect reads from the same library on different lanes, so it must be common to all files from the same library
+    # RGPL (read group platform) - ILLUMINA
+    # RGPU (read group platform unit) - The PU holds three types of information, the {FLOWCELL_BARCODE}.{LANE}.{SAMPLE_BARCODE}
+    # RGSM (read group sample name) - the name of the sample sequenced in this file. should be consistent across different files from different lanes
+    # params:
+    # I specifies the input file
+    # O specifies the output file
+
+rule STEP9_cleansam:
+    # soft-clips bases aligned past the end of the ref sequence
+    # soft-clipping retains the bases in the SEQ string, but they are not displayed or used in downstream data analysis
+    # sets MAPQ score to 0 for unmapped reads
+    # I specifies the input file
+    # O specifies the output file
+
+rule STEP10_mergelanes:
+    # Merge files for individual lanes
+    # I specifies input files for each lane
+    # O specifies the output files
+    # SORT_ORDER/ASSUME_SORTED specify the type of sorting in the input files
+    # MERGE_SEQUENCE_DICTIONARIES will combine the sequence dictionaries from the individual files
+    # a sequence dictionary contains information about sequence name, length, genome assembly ID, etc
+    # USE_THREADING allows multithreadded operation for the bam compression
+
+rule STEP10b_clean_intermediate_data:
+    # -rm removes files
+    # -f forces the removal
+
+rule STEP11_purgeduplicates:
+	# -Xmx50g specifies a 50 gb memory limit per process
+    # I specifies the input file
+    # O specifies the output file
+    # M specifies the duplication metrics output file
+    # REMOVE_DUPLICATES enables removal of duplicate reads from the output file
+    # ASSUME_SORTED indicates the input file is already sorted
