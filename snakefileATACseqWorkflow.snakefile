@@ -48,7 +48,8 @@ rule AGGREGATOR_preprocessing:
         "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
         "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
         "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
     shell:
@@ -548,19 +549,23 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
-# ## Generate the fragment size distribution graph
-# rule STEP18_fragment_size_distribution:
-#     input:
-#         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
-#         b="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bai"
-#     output:
-#         "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
-#     resources:
-#         mem_mb=20000
-#     benchmark:
-#         '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
-#     script:
-#         "snakeResources/scripts/QC/snakeFragSizeDist.R"
+## Generate the fragment size distribution graph
+rule STEP18_fragment_size_distribution:
+    input:
+        a="{path}bam/{sample}-REP{repnum}.bam",
+        b="{path}bam/{sample}-REP{repnum}.bai"
+    output:
+        "{path}metrics/{sample}-REP{repnum}.fragsizes.svg"
+    conda:
+        "snakeResources/envs/Rfragsizedistribution.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=20000
+    benchmark:
+        '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
+    script:
+        "snakeResources/scripts/QC/snakeFragSizeDist.R"
 
 ## Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
