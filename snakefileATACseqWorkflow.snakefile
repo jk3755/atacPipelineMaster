@@ -132,6 +132,7 @@ rule DIR_metrics:
         mkdir -p -v {wildcards.path}metrics/duplication
         mkdir -p -v {wildcards.path}metrics/totalreads
         mkdir -p -v {wildcards.path}metrics/fragsize
+        mkdir -p -v {wildcards.path}metrics/peakannotation
         touch {output}
         """
 
@@ -167,12 +168,9 @@ rule DIR_footprints:
         "{path}operations/dir/footprints.built"
     shell:
         """
-        mkdir -p -v {wildcards.path}footprints/data 
-        mkdir -p -v {wildcards.path}footprints/data/raw {wildcards.path}footprints/data/parsed 
-        mkdir -p -v {wildcards.path}footprints/data/processed {wildcards.path}footprints/data/aggregated
-        mkdir -p -v {wildcards.path}footprints/data/temp
-        mkdir -p -v {wildcards.path}footprints/graphs
-        mkdir -p -v {wildcards.path}footprints/graphs/insprob {wildcards.path}footprints/graphs/heatmaps
+        mkdir -p -v {wildcards.path}footprints/raw
+        mkdir -p -v {wildcards.path}footprints/aggregated
+        mkdir -p -v {wildcards.path}footprints/figures
         touch {output}
         """
 
@@ -418,7 +416,7 @@ rule STEP11_purgeduplicates:
         "picard MarkDuplicates \
         I={input.b} \
         O={output} \
-        M={wildcards.path}metrics/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
+        M={wildcards.path}metrics/duplication/{wildcards.sample}-REP{wildcards.repnum}.duplication.txt \
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
     
@@ -570,7 +568,7 @@ rule METRICS_fragment_size_distribution:
     resources:
         mem_mb=20000
     benchmark:
-        '{path}benchmark/metrics/fragsize/{sample}-REP{repnum}.fragsizes.benchmark.txt'
+        '{path}benchmark/metrics/{sample}-REP{repnum}.fragsizes.benchmark.txt'
     script:
         "snakeResources/scripts/generateFragSizeDistribution.R"
 
@@ -579,7 +577,7 @@ rule METRICS_annotate_peaks_global:
     input:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
     output:
-        "{path}operations/metrics/{sample}-REP{repnum}.globalpeak.annotations.done"
+        "{path}operations/metrics/peakannotation/{sample}-REP{repnum}.globalpeak.annotations.done"
     conda:
         "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
@@ -587,7 +585,7 @@ rule METRICS_annotate_peaks_global:
     resources:
         mem_mb=10000
     benchmark:
-        '{path}benchmark/metrics/genomecov/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
+        '{path}benchmark/metrics/peakannotation/global/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/annotatePeaks.R"
 
@@ -596,7 +594,7 @@ rule METRICS_annotate_peaks_local:
     input:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
     output:
-        "{path}operations/metrics/{sample}-REP{repnum}.localpeak.annotations.done"
+        "{path}operations/metrics/peakannotation/{sample}-REP{repnum}.localpeak.annotations.done"
     conda:
         "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
@@ -604,7 +602,7 @@ rule METRICS_annotate_peaks_local:
     resources:
         mem_mb=10000
     benchmark:
-        '{path}benchmark/metrics/genomecov/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
+        '{path}benchmark/metrics/peakannotation/local/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/annotatePeaks.R"
 
@@ -620,7 +618,7 @@ rule METRICS_sample_total_reads:
     threads:
         1
     benchmark:
-        '{path}benchmark/metrics/totalreads/{sample}-REP{repnum}.totalreads.benchmark.txt'
+        '{path}benchmark/metrics/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
         "snakeResources/scripts/countTotalSampleReads.R"
 

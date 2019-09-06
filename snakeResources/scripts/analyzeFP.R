@@ -185,7 +185,7 @@ tryCatch({
   }
   
   #### Perform a filecheck ####
-  footprintDataFilepath <- paste0(dirPath, "footprints/data/", sampleName, "-REP", sampleRep, ".", geneName, ".FPdata.Rdata")
+  footprintDataFilepath <- paste0(dirPath, "footprints/raw/", sampleName, "-REP", sampleRep, ".", geneName, ".FPdata.Rdata")
   cat("Output filepath for footprint data:", footprintDataFilepath, "\n")
   
   if (file.exists(footprintDataFilepath) == TRUE){
