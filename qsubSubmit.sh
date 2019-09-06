@@ -24,7 +24,7 @@ echo "Conda env activated"
 ## Set up the desired variables for running the job
 echo "Setting up variables"
 SNAKEFILE="snakefileATACseqWorkflow.snakefile"
-SNAKEJOB="rawFP_lncap"
+SNAKEJOB="full_lncap"
 CORES="999"
 JOBRESTARTS="5"
 LATENCYWAIT="60"

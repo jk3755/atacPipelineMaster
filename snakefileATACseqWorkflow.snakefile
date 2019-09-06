@@ -1,14 +1,4 @@
-# ## After the lanes are merged, you can remove the intermediate data 
-# rule STEP10b_clean_intermediate_data:
-#     input:
-#         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
-#     output:
-#         "{path}operations/preprocessing/clean10b.{sample}.{repnum}.done"
-#     threads:
-#         1
-#     shell:
-#         """
-#         rm -f {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*.fastq
+# rm -rf {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*.fastq
 #         rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*.fq
 #         rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*.sam
 #         rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*.sam
@@ -16,39 +6,16 @@
 #         rm -f {wildcards.path}preprocessing/6raw/blacklist/*REP{wildcards.repnum}*.bam
 #         rm -f {wildcards.path}preprocessing/6raw/mitochondrial/*REP{wildcards.repnum}*.bam
 #         rm -f {wildcards.path}preprocessing/6raw/nonblacklist/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam
-#         #
-#         touch {output}
-#rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
- #       rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
-#         """
-## When all saturation analysis is done, remove the intermediate data, as it is quite large
-# rule SATURATION_clean_data_final:
-#     input:
-#         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
-#     output:
-#         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.done"
-#     shell:
-#         """
+#         rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam  
+# 		rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
+#         rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
+#         rmdir 
 #         rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bam
 #         rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bai
 #         rm -f {wildcards.path}preprocessing/saturation/peaks/*REP{wildcards.repnum}*
-#         touch {output}
-#         """
-# ## Cleanup the uneeded intermediate files
-# rule SATURATION_clean_intermediate_data:
-#     input:
-#         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
-#     output:
-#         "{path}operations/preprocessing/saturation/clean1.{sample}.{repnum}.done"
-#     shell:
-#         """
 #         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
 #         rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
 #         rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
-#         touch {output}
-#         """
-
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
@@ -64,13 +31,25 @@ include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 ## This rule determines what is run in the full analysis spooling option
 rule AGGREGATOR_full_analysis:
     input:
-        "{path}operations/dir/all.built",
-        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
-        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete",
+        "{path}operations/modules/{sample}-REP{repnum}.intermediate_data_cleaned.done"
     output:
         "{path}operations/modules/{sample}-REP{repnum}.full_analysis.finished"
     shell:
         "touch {output}"
+
+## Clean up all the intermediate files just before touching the final flag file
+rule AGGREGATOR_clean_intermediate_data:
+    input:
+        "{path}operations/dir/all.built",
+        "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete",
+        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete",
+    output:
+        "{path}operations/modules/{sample}-REP{repnum}.intermediate_data_cleaned.done"
+    shell:
+        """
+        rm -rf {wildcards.path}preprocessing/2fastq
+        touch {output}
+        """
 
 ## This rule determines what is run in the directory building step
 rule AGGREGATOR_builddirectories:
@@ -113,7 +92,7 @@ rule AGGREGATOR_saturation:
     input:
         "{path}operations/saturation/{sample}-REP{repnum}.downsampling.done",
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_numpeaks.txt",
-        "{path}operations/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.complete"
+        "{path}operations/saturation/{sample}-REP{repnum}.rawfootprints.downsampled.complete"
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.complete"
     shell:
@@ -228,6 +207,7 @@ rule DIR_saturation:
         mkdir -p -v {wildcards.path}preprocessing/12saturation/downsampled {wildcards.path}preprocessing/12saturation/downsampled/raw
         mkdir -p -v {wildcards.path}preprocessing/12saturation/downsampled/sorted {wildcards.path}preprocessing/12saturation/downsampled/deduplicated
         mkdir -p -v {wildcards.path}preprocessing/12saturation/duplication
+        mkdir -p -v {wildcards.path}preprocessing/12saturation/peaks
         touch {output}
         """
 
@@ -808,7 +788,7 @@ rule SATURATION_peaks:
     benchmark:
         '{path}benchmark/saturation/peaks/{sample}-REP{repnum}.{prob}.downsampled.peak.benchmark.txt'
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/12saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 ## Count the number of peaks with global normalization from downsampled libraries
 ## THIS MAY NEED MORE WORK - TEST THE ACTUAL CODE ##
@@ -858,26 +838,9 @@ rule SATURATION_raw_footprint_aggregator:
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.2.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
         expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.1.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"])
     output:
-        "{path}operations/saturation/{sample}-REP{repnum}.{gene}.rawfootprint.downsampled.complete"
+        "{path}operations/saturation/{sample}-REP{repnum}.rawfootprints.downsampled.complete"
     shell:
         "touch {output}"
-
-########################################################################################################################################
-#### PEAK CALLING ######################################################################################################################
-########################################################################################################################################
-## Call peaks differentially across two samples
-rule PEAKS_differential_peak_calling_2samples:
-    input:
-        a="{parentpath}{path1}bam/{sample1}.bam",
-        b="{parentpath}{path2}bam/{sample2}.bam"
-    output:
-        "{parentpath}diffpeaks/ctrl-{sample1}.treat-{sample2}_globalnorm_peaks.narrowPeak"
-    conda:
-        "snakeResources/envs/macs2.yaml"
-    threads:
-        4
-    shell:
-        "macs2 callpeak -t {input.a} -c {input.b} -n ctrl-{wildcards.sample1}.treat-{wildcards.sample2}_globalnorm --outdir {wildcards.parentpath}diffpeaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
@@ -886,7 +849,8 @@ rule PEAKS_differential_peak_calling_2samples:
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}bam/{sample}-REP{repnum}.bam",
-        "{path}bam/{sample}-REP{repnum}.bai"
+        "{path}bam/{sample}-REP{repnum}.bai",
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
     conda:
