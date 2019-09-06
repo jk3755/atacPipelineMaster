@@ -1,19 +1,79 @@
 #!/bin/bash -x
-#$ -N TEST
+#$ -N snakemakeATACseqFP
+#$ -j y
 #$ -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac
-#$ -pe smp 25
-#$ -l mem=50G,time=96::
+#$ -pe smp 4
+#$ -l mem=20G,time=168::
+##
+## NOTES ##
+## -x
+## -N
+## -wd
+## -pe
+## -l
+## -j
+##
+## Load the conda environment for running snakemake on the master job
 echo "Running qsubSubmit.sh script"
-#
-echo "module load conda"
+echo "Loading conda module"
 module load conda
-#
-echo "source activate atac"
+echo "Activating atac conda env"
 source activate atac
-#
-#echo "snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 999 rawFP --cluster-config qsubConfig.json --cluster 'qsub -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time=8:0:0'-V" --latency-wait 60
-# always unlock first
-echo "unlocking"
-snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 999 rawFP_lncap --cluster-config qsubConfig.json --cluster "qsub -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" --use-conda --conda-prefix /ifs/scratch/c2b2/ac_lab/jk3755/atac/conda --restart-times 12 --latency-wait 60 --rerun-incomplete --unlock
-echo "unlocked"
-snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 999 rawFP_lncap --cluster-config qsubConfig.json --cluster "qsub -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" --use-conda --conda-prefix /ifs/scratch/c2b2/ac_lab/jk3755/atac/conda --restart-times 12 --latency-wait 60 --rerun-incomplete
+echo "Conda env activated"
+##
+## Set up the desired variables for running the job
+echo "Setting up variables"
+SNAKEFILE="snakefileATACseqWorkflow.snakefile"
+SNAKEJOB="rawFP_lncap"
+CORES="999"
+JOBRESTARTS="12"
+LATENCYWAIT="60"
+CLUSTCONFIG="qsubConfig.json"
+WORKDIR="/ifs/scratch/c2b2/ac_lab/jk3755/atac"
+CONDADIR="/ifs/scratch/c2b2/ac_lab/jk3755/atac/conda"
+CLUSTSUBMIT="qsub -wd {$WORKDIR} -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V"
+##
+## Echo variable settings
+echo "Echoing current variables"
+echo "Snakefile: $SNAKEFILE"
+echo "Snakejob: $SNAKEJOB"
+echo "Cores: $CORES"
+echo "Job restarts: $JOBRESTARTS"
+echo "Filesystem latency wait: $LATENCYWAIT"
+echo "Cluster config: $CLUSTCONFIG"
+echo "Cluster submit: $CLUSTSUBMIT"
+echo "Working directory: $WORKDIR"
+echo "Conda directory: $CONDADIR"
+echo "Node localscratch: $TMPDIR"
+##
+## Always unlock the working directory first and use the --rerun-incomplete flag, in case a previous job crashed
+echo "Unlocking snakemake directory"
+snakemake \
+--snakefile $SNAKEFILE \
+-j $CORES \
+$SNAKEJOB \
+--cluster-config $CLUSTCONFIG \
+--cluster "qsub -j y -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" \
+--use-conda \
+--conda-prefix $CONDADIR \
+--restart-times $JOBRESTARTS \
+--latency-wait $LATENCYWAIT \
+--rerun-incomplete \
+--keep-going \
+--unlock
+echo "Snakemake directory unlocked"
+##
+## Run the job
+echo "Spooling the snakemake job"
+snakemake \
+--snakefile $SNAKEFILE \
+-j $CORES \
+$SNAKEJOB \
+--cluster-config $CLUSTCONFIG \
+--cluster "qsub -j y -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" \
+--use-conda \
+--conda-prefix $CONDADIR \
+--restart-times $JOBRESTARTS \
+--latency-wait $LATENCYWAIT \
+--rerun-incomplete \
+--keep-going

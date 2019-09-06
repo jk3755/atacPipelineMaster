@@ -1,15 +1,3 @@
-
-#### TESTING ####
-# bamPath <- "C:\\Users\\jsk33\\Desktop\\test\\test-REP1.u.bam"
-# baiPath <- "C:\\Users\\jsk33\\Desktop\\test\\test-REP1.u.bai"
-# geneName <- "MUSC"
-# sampleName <- "TEST"
-# sampleRep <- 1
-# dirPath <- "C:\\Users\\jsk33\\Desktop\\test\\"
-# snakemakeTouchPath <- "C:\\Users\\jsk33\\Desktop\\test\\touch.txt"
-# gc()
-#########################################################################################################
-
 #### Encase all code in a tryCatch block, so if anything unexpected goes wrong, pipeline will still run ####
 tryCatch({
   
@@ -21,7 +9,7 @@ tryCatch({
   geneName <- snakemake@wildcards[["gene"]]
   dirPath <- snakemake@wildcards[["path"]]
   snakemakeTouchPath <- snakemake@output[[1]]
-  
+
   #### Report ####
   cat("Spooling footprint analysis", "\n")
   cat("Bam file:", bamPath, "\n")
@@ -35,7 +23,7 @@ tryCatch({
   #### Generate functions ####
   cat("Generating functions", "\n")
   
-  getAllBindingSites <- function(gene, pwmScanScore = "95%"){
+  getAllBindingSites <- function(gene, pwmScanScore = "99%"){
     
     suppressMessages(library(MotifDb))
     cat("querying mdb", "\n")
@@ -203,6 +191,7 @@ tryCatch({
   if (file.exists(footprintDataFilepath) == TRUE){
     cat("Footprint data file already exists, skipping operation", "\n")
   } else {
+    cat("Footprint data file not found, generating", "\n")
     
     #### Load libraries ####
     cat("Loading libraries", "\n")
@@ -261,12 +250,16 @@ tryCatch({
     com <- paste0("footprintSiteStatistics <- rbind(", currentTablesStr, ")")
     eval(parse(text = com))
     
+    cat("Saving footprint data file", "\n")
     save(footprintSiteStatistics, file = footprintDataFilepath)
     }
   } # end filecheck
   
+  cat("Finished, touching snakemake flag file", "\n")
   file.create(snakemakeTouchPath)
   
 }, finally = {
+  
+  cat("Finished, touching snakemake flag file", "\n")
   file.create(snakemakeTouchPath)
 })

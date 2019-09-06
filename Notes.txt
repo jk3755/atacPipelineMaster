@@ -1,0 +1,43 @@
+########################################################################################################################################
+#### NOTES #############################################################################################################################
+########################################################################################################################################
+## Spool the pipeline with the following parameters:
+# snakemake
+# --snakefile snakefileATACseqWorkflow.snakefile
+# -j 20 
+# [rule]
+# --resources mem_mb=50000
+# --use-conda
+# --restart-times 3
+#
+## Parameters:
+# --snakefile: specify the file where the snakemake workflow is contained
+# j: specifies the number of threads the run will use
+# restart-times: sets the number of times snakemake will attempt to restart a failed job
+# --rerun-incomplete: can be used to regenerate incomple files
+# --unlock: unlocks the snakemake working directory, such as after a power loss or kill signal
+#
+## Resource definitions
+# mem_mb: specifies the total memory limit of the pipeline. This relies on mem_mb being user defined in individual rules
+#
+## Cluster configuration
+# When running snakemake workflows on a cluster, initiate an interactivate session from which you will run the pipeline
+# Note, limits seem to be weird on interactive, cant seem to initiate more than 6 hours?
+# qlogin -l mem=4G,time=8:0:0
+# make sure to cd to the appropriate directory
+# for example, /ifs/scratch/c2b2/ac_lab/jk3755/atac/
+# Activate the appropriate conda environment
+# module load conda
+# source activate atac
+# you can then use a command similar to this to execute the workflow from the interactive session
+# snakemake --snakefile snakefileATACseqWorkflow.snakefile -j 1000 rawFP_lncap --cluster-config qsubConfig.json
+# --cluster "qsub -cwd -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" --use-conda --restart-times 5 --latency-wait 60
+#
+## Options that may be useful when running
+# --list-conda-envs - lists conda envs and their locations
+# --cleanup-conda - cleans up unused conda envs
+# --create-envs-only - allows you to run the pipeline but only create the conda envs necessary (first time runs)
+# --verbose - set verbose output
+# --debug-dag - print the dag workflow
+# --printshellcmds - print shell commands that will be executed
+# --reason - print the reason for execution of each rule
