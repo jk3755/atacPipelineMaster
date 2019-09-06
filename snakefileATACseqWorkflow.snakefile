@@ -577,7 +577,7 @@ rule STEP19_annotate_peaks_global:
     benchmark:
         '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
-        "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
+        "snakeResources/scripts/annotatePeaks.R"
 
 ## Annotate the peaks with local normalization
 rule STEP19_annotate_peaks_local:
@@ -594,7 +594,7 @@ rule STEP19_annotate_peaks_local:
     benchmark:
         '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
-        "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
+        "snakeResources/scripts/annotatePeaks.R"
 
 ## Count the total number of reads in the sample
 rule STEP20_sample_total_reads:

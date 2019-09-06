@@ -1,8 +1,10 @@
 ## Set snakemake variables
+cat("Setting snakemake variables", "\n")
 bamPath <- snakemake@input[[1]]
 baiPath <- snakemake@input[[2]]
 outPath <- snakemake@output[[1]]
 sampleName <- snakemake@wildcards[["sample"]]
+sampleRep <- snakemake@wildcards[["repnum"]]
 dirPath <- snakemake@wildcards[["path"]]
 
 ## Report
@@ -10,6 +12,7 @@ cat("Bam filepath:", bamPath, "\n")
 cat("Bai filepath:", baiPath, "\n")
 cat("Output filepath:", outPath, "\n")
 cat("Sample name:", sampleName, "\n")
+cat("Sample rep:", sampleRep, "\n")
 cat("Directory path:", dirPath, "\n")
 
 ## Load libraries
