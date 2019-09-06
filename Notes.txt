@@ -147,3 +147,93 @@ rule STEP11_purgeduplicates:
     # M specifies the duplication metrics output file
     # REMOVE_DUPLICATES enables removal of duplicate reads from the output file
     # ASSUME_SORTED indicates the input file is already sorted
+
+rule STEP12_mapqfilter:
+    # Remove multimapping reads
+    # for an explanation of how bowtie2 calculates mapq scores:
+    # http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
+    # for bowtie2, mapq higher than 2 is a uniquely mapped read
+    # params:
+    # -h include the header in the output
+    # -q only include reads with mapping quality X or higher
+    # -b output as a bam file
+
+rule STEP13_build_index:
+    # creates a bai index for the bam files
+    # this is required for many downstream operations
+    # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
+    # I specifies the input bam file
+    # O specifies the output index file
+
+rule STEP14_makebigwig_bamcov:
+    # params:
+    # -b bam input
+    # -o output file
+    # -of output format
+    # -bs binsize in bp
+    # -p number of processors to use
+    # -v verbose mode
+    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
+
+rule STEP15_MACS2_peaks_global_normilization:
+    # notes:
+    # because we are going to use the TCGA data downstream likely as a reference point,
+    # we will need to call the peaks in the exact same way as they did in this paper:
+    # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+    # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+    # params:
+    # -t input bam file (treatment)
+    # -n base name for output files
+    # --outdir output directory
+    # --shift find all tags in the bam, and shift them by 75 bp
+    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+    # --nomodel do not use the macs2 function to determine shifting model
+    # --call-summits call the peak summits, detect subpeaks within a peaks
+    # --nolambda do not use local bias correction, use background nolambda
+    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+    # -p set the p-value cutoff for peak calling
+
+rule STEP16_MACS2_peaks_local_normalization:
+    # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
+    # params:
+    # -t input bam file (treatment)
+    # -n base name for output files
+    # --outdir output directory
+    # --shift find all tags in the bam, and shift them by 75 bp
+    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+    # --nomodel do not use the macs2 function to determine shifting model
+    # --call-summits call the peak summits, detect subpeaks within a peaks
+    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+    # -p set the p-value cutoff for peak calling
+
+rule STEP17a_percent_peak_genome_coverage_globalnorm:
+    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
+    # parameters:
+    # --echo output will be at least a three-column bed file
+    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
+    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
+
+rule STEP17b_percent_peak_genome_coverage_localnorm:
+    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
+    # parameters:
+    # --echo output will be at least a three-column bed file
+    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
+    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
+
+rule PEAKS_differential_peak_calling_2samples:
+    # notes:
+    # because we are going to use the TCGA data downstream likely as a reference point,
+    # we will need to call the peaks in the exact same way as they did in this paper:
+    # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
+    # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+    # params:
+    # -t input bam file (treatment)
+    # -n base name for output files
+    # --outdir output directory
+    # --shift find all tags in the bam, and shift them by 75 bp
+    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
+    # --nomodel do not use the macs2 function to determine shifting model
+    # --call-summits call the peak summits, detect subpeaks within a peaks
+    # --nolambda do not use local bias correction, use background nolambda
+    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
+    # -p set the p-value cutoff for peak calling

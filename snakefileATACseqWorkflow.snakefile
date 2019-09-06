@@ -54,6 +54,16 @@ rule AGGREGATOR_builddirectories:
     shell:
         "touch {output}"
 
+## This rule initiates the raw footprint analysis for all genes found in the config file
+rule AGGREGATOR_footprinting_raw_analysis:
+    input:
+        "{path}operations/footprints/{sample}-REP{repnum}.footprint.prep.complete",
+        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
+    output:
+        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
+    shell:
+        "touch {output}"
+
 ########################################################################################################################################
 #### BUILD DIRECTORY STRUCTURE #########################################################################################################
 ########################################################################################################################################
@@ -336,7 +346,7 @@ rule STEP9_cleansam:
         I={input} \
         O={output}"
     
-# Merge reads from different NextSeq lanes
+## Merge reads from different NextSeq lanes
 rule STEP10_mergelanes:
     input:
         a="{path}preprocessing/7rgsort/{sample}-REP{repnum}_L1.clean.bam",
@@ -365,7 +375,7 @@ rule STEP10_mergelanes:
         MERGE_SEQUENCE_DICTIONARIES=true \
         USE_THREADING=true"
 
-# After the lanes are merged, you can remove the intermediate data 
+## After the lanes are merged, you can remove the intermediate data 
 rule STEP10b_clean_intermediate_data:
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
@@ -388,7 +398,7 @@ rule STEP10b_clean_intermediate_data:
         touch {output}
         """
 
-# Purge PCR duplicate reads
+## Purge PCR duplicate reads
 rule STEP11_purgeduplicates:
     input:
         a="{path}operations/preprocessing/clean10b.{sample}.{repnum}.done",
@@ -411,16 +421,8 @@ rule STEP11_purgeduplicates:
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
     
-# Filter reads for only uniquely mapping
+## Filter reads for only uniquely mapping
 rule STEP12_mapqfilter:
-    # Remove multimapping reads
-    # for an explanation of how bowtie2 calculates mapq scores:
-    # http://biofinysics.blogspot.com/2014/05/how-does-bowtie2-assign-mapq-scores.html
-    # for bowtie2, mapq higher than 2 is a uniquely mapped read
-    # params:
-    # -h include the header in the output
-    # -q only include reads with mapping quality X or higher
-    # -b output as a bam file
     input:
         "{path}preprocessing/9dedup/{sample}-REP{repnum}.dp.bam"
     output:
@@ -434,9 +436,7 @@ rule STEP12_mapqfilter:
     shell:
         "samtools view -h -q 2 -b {input} > {output}"
     
-# Remove intermediate data to this point 
-# This will help keep disk space open
-# This step will also copy the bam file out to the parent bam folder
+## Remove intermediate data to this point and copy the bam file out to the parent bam folder
 rule STEP12b_clean_intermediate_data:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam"
@@ -450,13 +450,8 @@ rule STEP12b_clean_intermediate_data:
         touch {output}
         """
 
-# Build the .bai index for the processed bam file
+## Build the .bai index for the processed bam file
 rule STEP13_build_index:
-    # creates a bai index for the bam files
-    # this is required for many downstream operations
-    # the bai index allows other processes to access specific reads in the bam file without having to read through the entire bam contents to find them (its like a table of contents)
-    # I specifies the input bam file
-    # O specifies the output index file
     input:
         "{path}bam/{sample}-REP{repnum}.bam"
     output:
@@ -474,16 +469,8 @@ rule STEP13_build_index:
         I={input} \
         O={output}"
     
-# Make a bigwig file from the bam file
+## Make a bigwig file from the bam file
 rule STEP14_makebigwig_bamcov:
-    # params:
-    # -b bam input
-    # -o output file
-    # -of output format
-    # -bs binsize in bp
-    # -p number of processors to use
-    # -v verbose mode
-    # --normalizeUsing probably not useful for ATAC-seq normalization, need to find a good way (normalize to total library size)
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
         b="{path}bam/{sample}-REP{repnum}.bai"
@@ -500,24 +487,8 @@ rule STEP14_makebigwig_bamcov:
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 10 -v"
     
-# Call peaks using global normalization
+## Call peaks using global normalization
 rule STEP15_MACS2_peaks_global_normilization:
-    # notes:
-    # because we are going to use the TCGA data downstream likely as a reference point,
-    # we will need to call the peaks in the exact same way as they did in this paper:
-    # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-    # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-    # params:
-    # -t input bam file (treatment)
-    # -n base name for output files
-    # --outdir output directory
-    # --shift find all tags in the bam, and shift them by 75 bp
-    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-    # --nomodel do not use the macs2 function to determine shifting model
-    # --call-summits call the peak summits, detect subpeaks within a peaks
-    # --nolambda do not use local bias correction, use background nolambda
-    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-    # -p set the p-value cutoff for peak calling
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
         b="{path}bam/{sample}-REP{repnum}.bai"
@@ -532,19 +503,8 @@ rule STEP15_MACS2_peaks_global_normilization:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_globalnorm --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
     
-# Call peaks using local normalization
+## Call peaks using local normalization
 rule STEP16_MACS2_peaks_local_normalization:
-    # call peaks with MACS2 local normalization (+/- 1000 bp) enabled
-    # params:
-    # -t input bam file (treatment)
-    # -n base name for output files
-    # --outdir output directory
-    # --shift find all tags in the bam, and shift them by 75 bp
-    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-    # --nomodel do not use the macs2 function to determine shifting model
-    # --call-summits call the peak summits, detect subpeaks within a peaks
-    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-    # -p set the p-value cutoff for peak calling
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
         b="{path}bam/{sample}-REP{repnum}.bai"
@@ -559,13 +519,8 @@ rule STEP16_MACS2_peaks_local_normalization:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
     
-# Calculate percent genome coverage from peaks with global normalization
+## Calculate percent genome coverage from peaks with global normalization
 rule STEP17a_percent_peak_genome_coverage_globalnorm:
-    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
-    # parameters:
-    # --echo output will be at least a three-column bed file
-    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
-    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
     input:
         a="{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
@@ -580,13 +535,8 @@ rule STEP17a_percent_peak_genome_coverage_globalnorm:
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
-# Calculate percent genome coverage from peaks with local normalization
+## Calculate percent genome coverage from peaks with local normalization
 rule STEP17b_percent_peak_genome_coverage_localnorm:
-    # returns a fraction value of the basepairs of the genome covered by the merged peak file. multiple by 100 for percentages
-    # parameters:
-    # --echo output will be at least a three-column bed file
-    # --bases-uniq the number of distinct bases from ref covered by overlap bed file
-    # --delim change output delimeter from '|' to <delim>, e.g. '\t'
     input:
         a="{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
@@ -601,7 +551,7 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
-# # Generate the fragment size distribution graph
+# ## Generate the fragment size distribution graph
 # rule STEP18_fragment_size_distribution:
 #     input:
 #         a="{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
@@ -615,7 +565,7 @@ rule STEP17b_percent_peak_genome_coverage_localnorm:
 #     script:
 #         "snakeResources/scripts/QC/snakeFragSizeDist.R"
 
-# Annotate the peaks with global normalization
+## Annotate the peaks with global normalization
 rule STEP19_annotate_peaks_global:
     input:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
@@ -632,7 +582,7 @@ rule STEP19_annotate_peaks_global:
     script:
         "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
 
-# Annotate the peaks with local normalization
+## Annotate the peaks with local normalization
 rule STEP19_annotate_peaks_local:
     input:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
@@ -649,7 +599,7 @@ rule STEP19_annotate_peaks_local:
     script:
         "snakeResources/scripts/QC/snakeAnnotatePeaks.R"
 
-# Count the total number of reads in the sample
+## Count the total number of reads in the sample
 rule STEP20_sample_total_reads:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
@@ -669,7 +619,7 @@ rule STEP20_sample_total_reads:
 #### SATURATION ANALYSIS ###############################################################################################################
 ########################################################################################################################################
 
-# Analyze saturation of library in terms of library complexity, called peaks, and selected TF footprints
+## Analyze saturation of library in terms of library complexity, called peaks, and selected TF footprints
 rule STEP21_saturation_analysis:
     input:
         "{path}operations/saturation/{sample}-REP{repnum}.downsample.done",
@@ -682,7 +632,7 @@ rule STEP21_saturation_analysis:
     shell:
     	"touch {output}"
 
-# When all saturation analysis is done, remove the intermediate data, as it is quite large
+## When all saturation analysis is done, remove the intermediate data, as it is quite large
 rule SATURATION_clean_data_final:
     input:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.aggregator"
@@ -696,7 +646,7 @@ rule SATURATION_clean_data_final:
         touch {output}
         """
 
-# This rule determines which genes will be analyzed for the footprinting saturation analysis
+## This rule determines which genes will be analyzed for the footprinting saturation analysis
 rule AGGREGATOR_saturation_footprints_genes:
     input:
         "{path}operations/saturation/footprints/{sample}-REP{repnum}.CTCF.footprint.downsampled.done"
@@ -710,7 +660,7 @@ rule AGGREGATOR_saturation_footprints_genes:
         touch {output}
         """
 
-# Determines the downsampling levels of the libraries
+## Determines the downsampling levels of the libraries
 rule AGGREGATOR_saturation_downsample:
     input:
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.9.md.bai",
@@ -727,7 +677,7 @@ rule AGGREGATOR_saturation_downsample:
     shell:
         "touch {output}"
 
-# Downsample the processed but NOT duplicate purged .bam files
+## Downsample the processed but NOT duplicate purged .bam files
 rule SATURATION_downsample_bam:
     input:
         "{path}preprocessing/8merged/{sample}-REP{repnum}.lanemerge.bam"
@@ -741,7 +691,7 @@ rule SATURATION_downsample_bam:
         O={output} \
         PROBABILITY=0.{wildcards.prob}"
 
-# Coordinate sort the downsampled .bam files
+## Coordinate sort the downsampled .bam files
 rule SATURATION_sort_downsampled:
     input:
         "{path}preprocessing/saturation/downsampled/raw/{sample}-REP{repnum}.{prob}.bam"
@@ -755,7 +705,7 @@ rule SATURATION_sort_downsampled:
         O={output} \
         SORT_ORDER=coordinate"
 
-# Purge duplicates from the downsampled .bam files
+## Purge duplicates from the downsampled .bam files
 rule SATURATION_purge_duplicates_downsampled:
     input:
         "{path}preprocessing/saturation/downsampled/cs/{sample}-REP{repnum}.{prob}.cs.bam"
@@ -775,7 +725,7 @@ rule SATURATION_purge_duplicates_downsampled:
         REMOVE_DUPLICATES=true \
         ASSUME_SORTED=true"
 
-# Generate .bai index for each downsampled .bam file
+## Generate .bai index for each downsampled .bam file
 rule SATURATION_index_downsampled:
     input:
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam"
@@ -788,7 +738,7 @@ rule SATURATION_index_downsampled:
         I={input} \
         O={output}"
 
-# Determine the library complexity of the downsampled libraries and output to metrics
+## Determine the library complexity of the downsampled libraries and output to metrics
 rule SATURATION_analyze_complexity_downsampled:
     input:
         a="{path}metrics/saturation/{sample}-REP{repnum}.9.duplication-metrics.txt",
@@ -824,7 +774,7 @@ rule SATURATION_analyze_complexity_downsampled:
         awk '/ESTIMATED_LIBRARY_SIZE/ {{ getline; print $10; }}' {input.i} >> {output}
         """
 
-# Cleanup the uneeded intermediate files
+## Cleanup the uneeded intermediate files
 rule SATURATION_clean_intermediate_data:
     input:
         "{path}metrics/saturation/{sample}-REP{repnum}.downsampled_library_size.txt"
@@ -838,7 +788,7 @@ rule SATURATION_clean_intermediate_data:
         touch {output}
         """
 
-# Call peaks with global normalization from downsampled libraries
+## Call peaks with global normalization from downsampled libraries
 rule SATURATION_peaks_globalnorm:
     input:
         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
@@ -848,7 +798,7 @@ rule SATURATION_peaks_globalnorm:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
-# Call peaks with local normalization from downsampled libraries
+## Call peaks with local normalization from downsampled libraries
 rule SATURATION_peaks_localnorm:
     input:
         a="{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
@@ -858,7 +808,7 @@ rule SATURATION_peaks_localnorm:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}.{wildcards.prob}_localnorm --outdir {wildcards.path}preprocessing/saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
-# Count the number of peaks with global normalization from downsampled libraries and output to metrics
+## Count the number of peaks with global normalization from downsampled libraries and output to metrics
 rule SATURATION_analyze_peak_saturation_globalnorm:
     input:
         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_globalnorm_peaks.xls",
@@ -875,7 +825,7 @@ rule SATURATION_analyze_peak_saturation_globalnorm:
     shell:
         "wc -l < {input} >> {output}"
 
-# Count the number of peaks with local normalization from downsampled libraries and output to metrics
+## Count the number of peaks with local normalization from downsampled libraries and output to metrics
 rule SATURATION_analyze_peak_saturation_localnorm:
     input:
         "{path}preprocessing/saturation/peaks/{sample}-REP{repnum}.9_localnorm_peaks.xls",
@@ -892,7 +842,7 @@ rule SATURATION_analyze_peak_saturation_localnorm:
     shell:
         "wc -l < {input} >> {output}"
 
-# An aggregator for the footprinting saturation analysis
+## An aggregator for the footprinting saturation analysis
 rule AGGREGATOR_saturation_footprints:
     input:
         "{path}operations/saturation/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.downsampled.9.done",
@@ -909,7 +859,7 @@ rule AGGREGATOR_saturation_footprints:
     shell:
         "touch {output}"
 
-# Perform the footprint saturation analysis
+## Perform the footprint saturation analysis
 rule SATURATION_analyze_raw_footprint_downsampled:
     input:
         "{path}preprocessing/saturation/downsampled/md/{sample}-REP{repnum}.{prob}.md.bam",
@@ -926,24 +876,8 @@ rule SATURATION_analyze_raw_footprint_downsampled:
 ########################################################################################################################################
 #### PEAK CALLING ######################################################################################################################
 ########################################################################################################################################
-# Call peaks differentially across two samples
+## Call peaks differentially across two samples
 rule PEAKS_differential_peak_calling_2samples:
-    # notes:
-    # because we are going to use the TCGA data downstream likely as a reference point,
-    # we will need to call the peaks in the exact same way as they did in this paper:
-    # http://science.sciencemag.org/content/sci/suppl/2018/10/24/362.6413.eaav1898.DC1/aav1898_Corces_SM.pdf
-    # which is "macs2 callpeak --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
-    # params:
-    # -t input bam file (treatment)
-    # -n base name for output files
-    # --outdir output directory
-    # --shift find all tags in the bam, and shift them by 75 bp
-    # --extsize extend all shifted tags by 150 bp (should be roughly equal to avg frag size in lib)
-    # --nomodel do not use the macs2 function to determine shifting model
-    # --call-summits call the peak summits, detect subpeaks within a peaks
-    # --nolambda do not use local bias correction, use background nolambda
-    # --keep-dup all keep all duplicate reads (bam should be purged of PCR duplicates at this point)
-    # -p set the p-value cutoff for peak calling
     input:
         a="{parentpath}{path1}bam/{sample1}.bam",
         b="{parentpath}{path2}bam/{sample2}.bam"
@@ -959,21 +893,7 @@ rule PEAKS_differential_peak_calling_2samples:
 ########################################################################################################################
 #### FOOTPRINTING ######################################################################################################
 ########################################################################################################################
-# This rule initiates the raw footprint analysis for all genes found in the config file
-# this rule will call the process to generate the sites database if it doesnt exists
-rule AGGREGATOR_footprinting_raw_analysis:
-    input:
-        "{path}operations/footprints/{sample}-REP{repnum}.footprint.prep.complete",
-        expand("{{path}}operations/footprints/raw/{{sample}}-REP{{repnum}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
-    output:
-        "{path}operations/footprints/{sample}-REP{repnum}.footprinting_raw_analysis.complete"
-    shell:
-        "touch {output}"
-
-# Generate the raw data used for downstream footprint analysis
-# The rule memory limit for this step will be adjusted based on the restart attempt of the job
-# This is useful because footprinting requires a lot of memory, so you can start small to
-# Streamline running of cluster jobs and increase as necessary
+##
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}preprocessing/10unique/{sample}-REP{repnum}.u.bam",
