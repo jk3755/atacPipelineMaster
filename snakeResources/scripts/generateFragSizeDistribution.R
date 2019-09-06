@@ -39,7 +39,7 @@ insertSizes <- abs(elementMetadata(atacReads_read1)$isize)
 
 ## Plot 1
 cat("Generating fragment size distribution 1", "\n")
-svg(file = svgOut1)
+svg(filename = svgOut1)
 fragLenPlot <- table(insertSizes) %>% data.frame %>% rename(InsertSize = insertSizes, 
                                                             Count = Freq) %>% mutate(InsertSize = as.numeric(as.vector(InsertSize)), 
                                                             Count = as.numeric(as.vector(Count))) %>% ggplot(aes(x = InsertSize, y = Count)) + 
@@ -49,13 +49,13 @@ dev.off()
 
 ## Plot 2
 cat("Generating fragment size distribution 2", "\n")
-svg(file = svgOut2)
+svg(filename = svgOut2)
 fragLenPlot + scale_y_continuous(trans = "log2") + theme_bw()
 dev.off()
 
 ## Plot 3
 cat("Generating fragment size distribution 3", "\n")
-svg(file = svgOut3)
+svg(filename = svgOut3)
 fragLenPlot + geom_vline(xintercept = c(180, 247),
                          colour = "red") + geom_vline(xintercept = c(315, 437),
                          colour = "darkblue") + geom_vline(xintercept = c(100), colour = "darkgreen") + theme_bw()
@@ -63,7 +63,7 @@ dev.off()
 
 ## Plot 4
 cat("Generating fragment size distribution 4", "\n")
-svg(file = svgOut4)
+svg(filename = svgOut4)
 fragLenPlot + scale_y_continuous(trans = "log2") + geom_vline(xintercept = c(180, 247),
                                 colour = "red") + geom_vline(xintercept = c(315, 437),
                                 colour = "darkblue") +

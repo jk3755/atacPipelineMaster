@@ -27,8 +27,8 @@ narrowPeaks <- trim(narrowPeaks)
 
 ## Coverage plots make plot of genome wide peak coverage
 cat("Generating genome coverage plots", "\n")
-covplotPath <- gsub("annotations.done", "peak.genomecov.svg", outputPath)
-covplotPath <- gsub("operations/preprocessing", "metrics", covplotPath)
+covplotPath <- gsub("annotations.done", "peak.genomecov.svg", outPath)
+covplotPath <- gsub("operations/metrics", "metrics", covplotPath)
 cat("Output path for peak genomve coverage plot:", covplotPath, "\n")
 svg(file = covplotPath)
 weightname <- names(narrowPeaks@elementMetadata@listData[2])
@@ -74,4 +74,4 @@ dev.off()
 
 ## Finish up
 cat("Touching snakemake flag file", "\n")
-file.create(outputPath)
+file.create(outPath)

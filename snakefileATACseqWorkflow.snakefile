@@ -44,11 +44,11 @@ rule AGGREGATOR_preprocessing:
         "{path}bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
-        "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
-        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
-        "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done",
-        "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done",
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata",
+        "{path}metrics/genomecov/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt",
+        "{path}metrics/genomecov/{sample}-REP{repnum}.peak.localnorm.genomecov.txt",
+        "{path}operations/metrics/{sample}-REP{repnum}.globalpeak.annotations.done",
+        "{path}operations/metrics/{sample}-REP{repnum}.localpeak.annotations.done",
+        "{path}metrics/totalreads/{sample}-REP{repnum}.totalreads.Rdata",
         "{path}operations/metrics/{sample}-REP{repnum}.fragsizes.done"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
@@ -111,13 +111,11 @@ rule DIR_benchmark:
         mkdir -p -v {wildcards.path}benchmark/preprocessing/removemitochondrial {wildcards.path}benchmark/preprocessing/addRG {wildcards.path}benchmark/preprocessing/cleansam
         mkdir -p -v {wildcards.path}benchmark/preprocessing/mergelanes {wildcards.path}benchmark/preprocessing/purgeduplicates {wildcards.path}benchmark/preprocessing/mapqfilter
         mkdir -p -v {wildcards.path}benchmark/preprocessing/buildindex {wildcards.path}benchmark/preprocessing/bigwig {wildcards.path}benchmark/preprocessing/peaks
-        mkdir -p -v {wildcards.path}benchmark/preprocessing/peakcov {wildcards.path}benchmark/preprocessing/install {wildcards.path}benchmark/preprocessing/annotatepeaks
-        mkdir -p -v {wildcards.path}benchmark/preprocessing/totalreads
+        mkdir -p -v {wildcards.path}benchmark/metrics
         mkdir -p -v {wildcards.path}benchmark/correlation
         mkdir -p -v {wildcards.path}benchmark/saturation
         mkdir -p -v {wildcards.path}benchmark/footprints
-        mkdir -p -v {wildcards.path}benchmark/footprints/raw {wildcards.path}benchmark/footprints/parsed
-        mkdir -p -v {wildcards.path}benchmark/footprints/processed {wildcards.path}benchmark/footprints/merge
+        mkdir -p -v {wildcards.path}benchmark/footprints/raw
         touch {output}
         """
 
@@ -130,6 +128,10 @@ rule DIR_metrics:
         mkdir -p -v {wildcards.path}metrics/fastq
         mkdir -p -v {wildcards.path}metrics/myco
         mkdir -p -v {wildcards.path}metrics/hg38
+        mkdir -p -v {wildcards.path}metrics/genomecov
+        mkdir -p -v {wildcards.path}metrics/duplication
+        mkdir -p -v {wildcards.path}metrics/totalreads
+        mkdir -p -v {wildcards.path}metrics/fragsize
         touch {output}
         """
 
@@ -517,41 +519,45 @@ rule STEP16_MACS2_peaks_local_normalization:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}-REP{wildcards.repnum}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+
+########################################################################################################################################
+#### QC METRICS  #######################################################################################################################
+########################################################################################################################################
     
 ## Calculate percent genome coverage from peaks with global normalization
-rule STEP17a_percent_peak_genome_coverage_globalnorm:
+rule METRICS_percent_peak_genome_coverage_globalnorm:
     input:
         a="{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
     output:
-        "{path}metrics/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt"
+        "{path}metrics/genomecov/{sample}-REP{repnum}.peak.globalnorm.genomecov.txt"
     conda:
         "snakeResources/envs/bedops.yaml"
     threads:
         1  	
     benchmark:
-        '{path}benchmark/preprocessing/peakcov/{sample}-REP{repnum}.genomecov.globalnorm.benchmark.txt'
+        '{path}benchmark/metrics/{sample}-REP{repnum}.genomecov.globalnorm.benchmark.txt'
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
 ## Calculate percent genome coverage from peaks with local normalization
-rule STEP17b_percent_peak_genome_coverage_localnorm:
+rule METRICS_percent_peak_genome_coverage_localnorm:
     input:
         a="{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
         b="genomes/hg38/hg38.extents.bed"
     output:
-        "{path}metrics/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
+        "{path}metrics/genomecov/{sample}-REP{repnum}.peak.localnorm.genomecov.txt"
     conda:
         "snakeResources/envs/bedops.yaml"
     threads:
         1  
     benchmark:
-        '{path}benchmark/preprocessing/peakcov/{sample}-REP{repnum}.genomecov.localnorm.benchmark.txt'
+        '{path}benchmark/metrics/{sample}-REP{repnum}.genomecov.localnorm.benchmark.txt'
     shell:
         "bedmap --echo --bases-uniq --delim '\t' {input.b} {input.a} | awk 'BEGIN {{ genome_length = 0; masked_length = 0; }} {{ genome_length += ($3 - $2); masked_length += $4; }} END {{ print (masked_length / genome_length); }}' - > {output}"
     
 ## Generate the fragment size distribution graph
-rule STEP18_fragment_size_distribution:
+rule METRICS_fragment_size_distribution:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
         b="{path}bam/{sample}-REP{repnum}.bai"
@@ -564,16 +570,16 @@ rule STEP18_fragment_size_distribution:
     resources:
         mem_mb=20000
     benchmark:
-        '{path}benchmark/preprocessing/{sample}-REP{repnum}.fragsizes.benchmark.txt'
+        '{path}benchmark/metrics/fragsize/{sample}-REP{repnum}.fragsizes.benchmark.txt'
     script:
         "snakeResources/scripts/generateFragSizeDistribution.R"
 
 ## Annotate the peaks with global normalization
-rule STEP19_annotate_peaks_global:
+rule METRICS_annotate_peaks_global:
     input:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
     output:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.globalpeak.annotations.done"
+        "{path}operations/metrics/{sample}-REP{repnum}.globalpeak.annotations.done"
     conda:
         "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
@@ -581,16 +587,16 @@ rule STEP19_annotate_peaks_global:
     resources:
         mem_mb=10000
     benchmark:
-        '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
+        '{path}benchmark/metrics/genomecov/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/annotatePeaks.R"
 
 ## Annotate the peaks with local normalization
-rule STEP19_annotate_peaks_local:
+rule METRICS_annotate_peaks_local:
     input:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
     output:
-        "{path}operations/preprocessing/{sample}-REP{repnum}.localpeak.annotations.done"
+        "{path}operations/metrics/{sample}-REP{repnum}.localpeak.annotations.done"
     conda:
         "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
@@ -598,23 +604,23 @@ rule STEP19_annotate_peaks_local:
     resources:
         mem_mb=10000
     benchmark:
-        '{path}benchmark/preprocessing/annotatepeaks/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
+        '{path}benchmark/metrics/genomecov/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
         "snakeResources/scripts/annotatePeaks.R"
 
 ## Count the total number of reads in the sample
-rule STEP20_sample_total_reads:
+rule METRICS_sample_total_reads:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
         b="{path}bam/{sample}-REP{repnum}.bai"
     output:
-        "{path}metrics/{sample}-REP{repnum}.totalreads.Rdata"
+        "{path}metrics/totalreads/{sample}-REP{repnum}.totalreads.Rdata"
     conda:
         "snakeResources/envs/Rcountsamplereads.yaml"
     threads:
         1
     benchmark:
-        '{path}benchmark/preprocessing/totalreads/{sample}-REP{repnum}.totalreads.benchmark.txt'
+        '{path}benchmark/metrics/totalreads/{sample}-REP{repnum}.totalreads.benchmark.txt'
     script:
         "snakeResources/scripts/countTotalSampleReads.R"
 
