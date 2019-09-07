@@ -1,10 +1,118 @@
 {
+
     "__default__" :
     {
         "nCPUs"     : "1",
-        "memory"    : 10000,
+        "memory"    : 20000,
         "name"      : "JOBNAME.{rule}.{wildcards}",
         "runtime"   : "2"
+    },
+
+    "STEP2_fastp_filtering" :
+    {
+        "nCPUs"     : "6",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP3_mycoalign" :
+    {
+        "nCPUs"     : "6",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP4_hg38align" :
+    {
+        "nCPUs"     : "6",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP6_blacklistfilter_bamconversion" :
+    {
+        "nCPUs"     : "5"
+    },
+
+    "STEP7_chrM_contamination" :
+    {
+        "nCPUs"     : "5"
+    },
+
+    "STEP8_addrgandcsbam" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP10_mergelanes" :
+    {
+        "nCPUs"     : "2",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP11_purgeduplicates" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP12_mapqfilter" :
+    {
+        "nCPUs"     : "1",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP14_build_bai_index" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "STEP15_makebigwig_bamcov" :
+    {
+        "nCPUs"     : "6",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "SATURATION_downsample_bam" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "SATURATION_sort_downsampled" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "SATURATION_purge_duplicates" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "SATURATION_index_downsampled" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
+    },
+
+    "SATURATION_footprint_raw_analysis" :
+    {
+        "nCPUs"     : "1",
+        "memory"    : "{resources.mem_mb}",
+        "runtime"   : "{resources.run_time}"
     },
 
     "FOOTPRINTING_raw_analysis" :
@@ -13,4 +121,5 @@
         "memory"    : "{resources.mem_mb}",
         "runtime"   : "{resources.run_time}"
     }
+
 }

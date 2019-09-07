@@ -1,21 +1,3 @@
-# rm -rf {wildcards.path}preprocessing/2fastq/*REP{wildcards.repnum}*.fastq
-#         rm -f {wildcards.path}preprocessing/3goodfastq/*REP{wildcards.repnum}*.fq
-#         rm -f {wildcards.path}preprocessing/4mycoalign/*REP{wildcards.repnum}*.sam
-#         rm -f {wildcards.path}preprocessing/5hg38align/*REP{wildcards.repnum}*.sam
-#         rm -f {wildcards.path}preprocessing/6raw/*REP{wildcards.repnum}*.goodbam
-#         rm -f {wildcards.path}preprocessing/6raw/blacklist/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/6raw/mitochondrial/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/6raw/nonblacklist/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/7rgsort/*REP{wildcards.repnum}*.bam  
-# 		rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/9dedup/*REP{wildcards.repnum}*.bam
-#         rmdir 
-#         rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/saturation/downsampled/md/*REP{wildcards.repnum}*.bai
-#         rm -f {wildcards.path}preprocessing/saturation/peaks/*REP{wildcards.repnum}*
-#         rm -f {wildcards.path}preprocessing/8merged/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/saturation/downsampled/raw/*REP{wildcards.repnum}*.bam
-#         rm -f {wildcards.path}preprocessing/saturation/downsampled/cs/*REP{wildcards.repnum}*.bam
 ########################################################################################################################################
 #### IMPORT MODULES AND CONFIG #########################################################################################################
 ########################################################################################################################################
@@ -48,6 +30,15 @@ rule AGGREGATOR_clean_intermediate_data:
     shell:
         """
         rm -rf {wildcards.path}preprocessing/2fastq
+        rm -rf {wildcards.path}preprocessing/3goodfastq
+        rm -rf {wildcards.path}preprocessing/4mycoalign
+        rm -rf {wildcards.path}preprocessing/5hg38align
+        rm -rf {wildcards.path}preprocessing/6raw
+        rm -rf {wildcards.path}preprocessing/7rgsort
+        rm -rf {wildcards.path}preprocessing/8merged
+        rm -rf {wildcards.path}preprocessing/9dedup
+        rm -rf {wildcards.path}preprocessing/8merged
+        rm -rf {wildcards.path}preprocessing/saturation
         touch {output}
         """
 
@@ -84,6 +75,8 @@ rule AGGREGATOR_preprocessing:
         "{path}operations/saturation/{sample}-REP{repnum}.saturation_analysis.complete"
     output:
         "{path}operations/preprocessing/{sample}-REP{repnum}.preprocessing.complete"
+    priority:
+        1
     shell:
         "touch {output}"
 
@@ -246,7 +239,7 @@ rule STEP1_gunzip:
     benchmark:
         '{path}benchmark/preprocessing/gunzip/{sample}-REP{repnum}_L{lane}_R{read}.gunzip.benchmark.txt'
     shell:
-        "gunzip -k -c {input.a} > {output.c}"
+        "gunzip -c {input.a} > {output.c}"
 
 ## Fastq QC filtering
 rule STEP2_fastp_filtering:
@@ -259,11 +252,14 @@ rule STEP2_fastp_filtering:
     benchmark:
         '{path}benchmark/preprocessing/fastp/{sample}-REP{repnum}.{lane}.fastp.benchmark.txt'
     threads:
-        2
+        6
+    resources:
+        mem_mb=lambda params, attempt: attempt * 10000,
+        run_time=lambda params, attempt: attempt * 1
     conda:
     	"snakeResources/envs/fastp.yaml"
     shell:
-        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 2 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -j {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
+        "fastp -i {input.a} -I {input.b} -o {output.c} -O {output.d} -w 6 -h {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.html -j {wildcards.path}metrics/fastq/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.fastq.quality.json"
     
 ## Check for mycoplasma contamination
 rule STEP3_mycoalign:
@@ -275,13 +271,14 @@ rule STEP3_mycoalign:
     benchmark:
         '{path}benchmark/preprocessing/mycoalign/{sample}-REP{repnum}.{lane}.mycoalign.benchmark.txt'
     threads:
-        10
+        6
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
-        mem_mb=10000
+        mem_mb=lambda params, attempt: attempt * 10000,
+        run_time=lambda params, attempt: attempt * 1
     shell:
-        "bowtie2 -q -p 10 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
+        "bowtie2 -q -p 12 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
     
 ## Align reads to human hg38 build
 rule STEP4_hg38align:
@@ -294,13 +291,14 @@ rule STEP4_hg38align:
     benchmark:
         '{path}benchmark/preprocessing/hg38align/{sample}-REP{repnum}.{lane}.hg38align.benchmark.txt'
     threads:
-        10
+        6
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
-        mem_mb=40000
+        mem_mb=lambda params, attempt: attempt * 40000,
+        run_time=lambda params, attempt: attempt * 3
     shell:
-        "bowtie2 -q -p 10 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
+        "bowtie2 -q -p 6 -X2000 -x genomes/hg38/hg38 -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/hg38/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.hg38.alignment.txt"
     
 ## Coordinate sort the aligned reads. This is required for blacklist filtering
 rule STEP5_coordsort_sam:
@@ -360,7 +358,8 @@ rule STEP8_addrgandcsbam:
     threads:
         1
     resources:
-        mem_mb=10000
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 1
     benchmark:
         '{path}benchmark/preprocessing/addRG/{sample}-REP{repnum}.{lane}.addRGtag.benchmark.txt'
     shell:
@@ -384,8 +383,6 @@ rule STEP9_cleansam:
         "snakeResources/envs/picard.yaml"
     threads:
         1
-    resources:
-        mem_mb=10000
     benchmark:
         '{path}benchmark/preprocessing/cleansam/{sample}-REP{repnum}.{lane}.cleansam.benchmark.txt'
     shell:
@@ -407,7 +404,8 @@ rule STEP10_mergelanes:
     threads:
         2
     resources:
-        mem_mb=10000
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 1
     benchmark:
         '{path}benchmark/preprocessing/mergelanes/{sample}-REP{repnum}.mergelanes.benchmark.txt'
     shell:
@@ -433,7 +431,8 @@ rule STEP11_purgeduplicates:
     threads:
         1
     resources:
-        mem_mb=25000
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 3
     benchmark:
         '{path}benchmark/preprocessing/purgeduplicates/{sample}-REP{repnum}.purgeduplicates.benchmark.txt'
     shell:
@@ -454,6 +453,8 @@ rule STEP12_mapqfilter:
         "snakeResources/envs/samtools.yaml"
     threads:
         1
+    resources:
+        run_time=lambda params, attempt: attempt * 4
     benchmark:
         '{path}benchmark/preprocessing/mapqfilter/{sample}-REP{repnum}.mapqfilter.benchmark.txt'
     shell:
@@ -482,7 +483,8 @@ rule STEP14_build_bai_index:
     threads:
         1
     resources:
-        mem_mb=10000
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 3
     benchmark:
         '{path}benchmark/preprocessing/buildindex/{sample}-REP{repnum}.buildindex.benchmark.txt'
     shell:
@@ -500,13 +502,14 @@ rule STEP15_makebigwig_bamcov:
     conda:
         "snakeResources/envs/deeptools.yaml"
     threads:
-        10
+        6
     resources:
-        mem_mb=10000
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 2
     benchmark:
         '{path}benchmark/preprocessing/bigwig/{sample}-REP{repnum}.makebigwig.benchmark.txt'
     shell:
-        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 10 -v"
+        "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 6 -v"
     
 ## Call peaks using global normalization
 rule STEP16_MACS2_peaks_global_normilization:
@@ -518,7 +521,7 @@ rule STEP16_MACS2_peaks_global_normilization:
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        4
+        1
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.globalnorm.benchmark.txt'
     shell:
@@ -534,7 +537,7 @@ rule STEP17_MACS2_peaks_local_normalization:
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        4
+        1
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}-REP{repnum}.callpeaks.localnorm.benchmark.txt'
     shell:
@@ -587,8 +590,6 @@ rule METRICS_fragment_size_distribution:
         "snakeResources/envs/Rfragsizedistribution.yaml"
     threads:
         1
-    resources:
-        mem_mb=20000
     benchmark:
         '{path}benchmark/metrics/{sample}-REP{repnum}.fragsizes.benchmark.txt'
     script:
@@ -604,8 +605,6 @@ rule METRICS_annotate_peaks_global:
         "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
         1
-    resources:
-        mem_mb=10000
     benchmark:
         '{path}benchmark/metrics/peakannotation/global/{sample}-REP{repnum}.globalpeak.annotations.benchmark.txt'
     script:
@@ -621,8 +620,6 @@ rule METRICS_annotate_peaks_local:
         "snakeResources/envs/Rannotatepeaks.yaml"
     threads:
         1
-    resources:
-        mem_mb=10000
     benchmark:
         '{path}benchmark/metrics/peakannotation/local/{sample}-REP{repnum}.localpeak.annotations.benchmark.txt'
     script:
@@ -659,7 +656,8 @@ rule SATURATION_downsample_bam:
     threads:
         1
     resources:
-        mem_mb=30000
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 2
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.downsample.benchmark.txt'
     shell:
@@ -679,7 +677,8 @@ rule SATURATION_sort_downsampled:
     threads:
         1
     resources:
-        mem_mb=30000
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 3
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.sort.benchmark.txt'
     shell:
@@ -700,7 +699,8 @@ rule SATURATION_purge_duplicates:
     threads:
         1
     resources:
-        mem_mb=30000
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 3
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.purgeduplicates.benchmark.txt'
     shell:
@@ -722,7 +722,8 @@ rule SATURATION_index_downsampled:
     threads:
         1
     resources:
-        mem_mb=10000
+        mem_mb=lambda params, attempt: attempt * 20000,
+        run_time=lambda params, attempt: attempt * 1
     benchmark:
         '{path}benchmark/saturation/{sample}-REP{repnum}.{prob}.index.benchmark.txt'
     shell:
@@ -784,7 +785,7 @@ rule SATURATION_peaks:
     conda:
         "snakeResources/envs/macs2.yaml"
     threads:
-        4
+        1
     benchmark:
         '{path}benchmark/saturation/peaks/{sample}-REP{repnum}.{prob}.downsampled.peak.benchmark.txt'
     shell:
