@@ -1,3 +1,6 @@
+bamPath <- "C:\\Users\\jsk33\\Desktop\\bam\\LNCaP-WT-02-REP1.bam"
+peakPath <- "C:\\Users\\jsk33\\Desktop\\bam\\LNCaP-WT-01-REP1_localnorm_peaks.narrowPeak"
+
 #### Encase all code in a tryCatch block, so if anything unexpected goes wrong, pipeline will still run ####
 tryCatch({
   
@@ -210,12 +213,12 @@ tryCatch({
     
     #### Retrieve the binding sites for the current gene ####
     cat("Retrieving binding sites", "\n")
-    allSites <- getAllBindingSites(gene = geneName)
+    tempAllSites <- getAllBindingSites(gene = geneName)
     
     #### Subset the binding sites with the peaks
     cat("Subsetting sites to peak regions", "\n")
     peaksGR <- importBED(peakPath)
-    allSites <- subsetByOverlaps(allSites, peaksGR)
+    allSites <- subsetByOverlaps(tempAllSites, peaksGR)
     numSites <- length(allSites@ranges)
     cat("Identified", numSites, "total binding sites", "\n")
     

@@ -62,7 +62,7 @@ rule AGGREGATOR_builddirectories:
 rule AGGREGATOR_preprocessing:
     input:
         "{path}operations/dir/all.built",
-        "{path}bam/{sample}-REP{repnum}.bai",
+        "{path}bam/{sample}-REP{repnum}.bam.bai",
         "{path}bigwig/{sample}-REP{repnum}.bw",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak",
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak",
@@ -477,7 +477,7 @@ rule STEP14_build_bai_index:
     input:
         "{path}bam/{sample}-REP{repnum}.bam"
     output:
-        "{path}bam/{sample}-REP{repnum}.bai"
+        "{path}bam/{sample}-REP{repnum}.bam.bai"
     conda:
         "snakeResources/envs/picard.yaml"
     threads:
@@ -496,7 +496,7 @@ rule STEP14_build_bai_index:
 rule STEP15_makebigwig_bamcov:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
-        b="{path}bam/{sample}-REP{repnum}.bai"
+        b="{path}bam/{sample}-REP{repnum}.bam.bai"
     output:
         "{path}bigwig/{sample}-REP{repnum}.bw"
     conda:
@@ -515,7 +515,7 @@ rule STEP15_makebigwig_bamcov:
 rule STEP16_MACS2_peaks_global_normilization:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
-        b="{path}bam/{sample}-REP{repnum}.bai"
+        b="{path}bam/{sample}-REP{repnum}.bam.bai"
     output:
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     conda:
@@ -531,7 +531,7 @@ rule STEP16_MACS2_peaks_global_normilization:
 rule STEP17_MACS2_peaks_local_normalization:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
-        b="{path}bam/{sample}-REP{repnum}.bai"
+        b="{path}bam/{sample}-REP{repnum}.bam.bai"
     output:
         "{path}peaks/localnorm/{sample}-REP{repnum}_localnorm_peaks.narrowPeak"
     conda:
@@ -583,7 +583,7 @@ rule METRICS_percent_peak_genome_coverage_localnorm:
 rule METRICS_fragment_size_distribution:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
-        b="{path}bam/{sample}-REP{repnum}.bai"
+        b="{path}bam/{sample}-REP{repnum}.bam.bai"
     output:
         "{path}operations/metrics/{sample}-REP{repnum}.fragsizes.done"
     conda:
@@ -629,7 +629,7 @@ rule METRICS_annotate_peaks_local:
 rule METRICS_sample_total_reads:
     input:
         a="{path}bam/{sample}-REP{repnum}.bam",
-        b="{path}bam/{sample}-REP{repnum}.bai"
+        b="{path}bam/{sample}-REP{repnum}.bam.bai"
     output:
         "{path}metrics/totalreads/{sample}-REP{repnum}.totalreads.Rdata"
     conda:
@@ -716,7 +716,7 @@ rule SATURATION_index_downsampled:
     input:
         "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam"
     output:
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bai"
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam.bai"
     conda:
         "snakeResources/envs/picard.yaml"
     threads:
@@ -734,15 +734,15 @@ rule SATURATION_index_downsampled:
 ## Aggregator rule for all the downsampling probabilities
 rule SATURATION_downsample_aggregator:
     input:
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.9.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.8.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.7.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.6.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.5.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.4.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.3.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.2.deduplicated.bai",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.1.deduplicated.bai"    
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.9.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.8.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.7.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.6.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.5.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.4.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.3.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.2.deduplicated.bam.bai",
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.1.deduplicated.bam.bai"    
     output:
         "{path}operations/saturation/{sample}-REP{repnum}.downsampling.done"
     shell:
@@ -779,7 +779,7 @@ rule SATURATION_parse_duplication_metrics_downsampled:
 rule SATURATION_peaks:
     input:
         a="{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam",
-        b="{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bai"
+        b="{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam.bai"
     output:
         "{path}preprocessing/12saturation/peaks/{sample}-REP{repnum}.{prob}_globalnorm_peaks.xls"
     conda:
@@ -813,7 +813,8 @@ rule SATURATION_peak_calling_aggregator:
 rule SATURATION_footprint_raw_analysis:
     input:
         "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam",
-        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bai"
+        "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}-REP{repnum}.{prob}.deduplicated.bam.bai",
+        "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.{prob}.downsampled.rawFPanalysis.done"
     conda:
@@ -850,7 +851,7 @@ rule SATURATION_raw_footprint_aggregator:
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}bam/{sample}-REP{repnum}.bam",
-        "{path}bam/{sample}-REP{repnum}.bai",
+        "{path}bam/{sample}-REP{repnum}.bam.bai",
         "{path}peaks/globalnorm/{sample}-REP{repnum}_globalnorm_peaks.narrowPeak"
     output:
         "{path}operations/footprints/raw/{sample}-REP{repnum}.{gene}.rawFPanalysis.done"
