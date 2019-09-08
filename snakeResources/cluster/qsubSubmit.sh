@@ -29,6 +29,7 @@ CORES="999"
 JOBRESTARTS="5"
 LATENCYWAIT="5"
 CLUSTCONFIG="/ifs/scratch/c2b2/ac_lab/jk3755/atac/snakeResources/cluster/qsubConfig.json"
+CLUSTSTATUS=
 WORKDIR="/ifs/scratch/c2b2/ac_lab/jk3755/atac"
 CONDADIR="/ifs/scratch/c2b2/ac_lab/jk3755/atac/conda"
 CLUSTSUBMIT="qsub -wd {$WORKDIR} -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V"
@@ -41,6 +42,7 @@ echo "Cores: $CORES"
 echo "Job restarts: $JOBRESTARTS"
 echo "Filesystem latency wait: $LATENCYWAIT"
 echo "Cluster config: $CLUSTCONFIG"
+echo "Cluster status: $CLUSTSTATUS"
 echo "Cluster submit: $CLUSTSUBMIT"
 echo "Working directory: $WORKDIR"
 echo "Conda directory: $CONDADIR"
@@ -52,6 +54,7 @@ snakemake \
 --cores $CORES \
 $SNAKEJOB \
 --cluster-config $CLUSTCONFIG \
+--cluster-status $CLUSTSTATUS \
 --cluster "qsub -j y -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -V" \
 --use-conda \
 --conda-prefix $CONDADIR \

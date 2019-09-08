@@ -1,4 +1,6 @@
-Description of files and directories:
+##################################################################
+#### Description of files and directories ########################
+##################################################################
 
 cluster - 
 config -
@@ -7,8 +9,10 @@ modules -
 scripts -
 
 
+##################################################################
+#### Description of pipeline execution on a local environment ####
+##################################################################
 
-## Spool the pipeline with the following parameters:
 # snakemake
 # --snakefile snakefileATACseqWorkflow.snakefile
 # -j 20 
@@ -16,8 +20,7 @@ scripts -
 # --resources mem_mb=50000
 # --use-conda
 # --restart-times 3
-#
-## Parameters:
+
 # --snakefile: specify the file where the snakemake workflow is contained
 # j: specifies the number of threads the run will use
 # restart-times: sets the number of times snakemake will attempt to restart a failed job
@@ -49,9 +52,6 @@ scripts -
 # --printshellcmds - print shell commands that will be executed
 # --reason - print the reason for execution of each rule
 
-########################################################################################################################################
-#### NOTES #############################################################################################################################
-########################################################################################################################################
 # Spool the pipeline with the following parameters:
 # snakemake -j 20 [rule] --resources hg38align=1 rawFPanalysisLarge=1 purgeduplicates=10 mem_mb=95000 --restart-times=3
 #
@@ -63,10 +63,20 @@ scripts -
 # mem_mb: specifies the global memory limit the snakemake run can use
 # restart-times: sets the number of times snakemake will attempt to restart a failed job
 
+##################################################################
+#### Description pipeline execution on an SGE cluster ############
+##################################################################
+
+
+
+
+
+
+##################################################################
+####  Description of rules and options/parameters ################
+##################################################################
+
 ## Sample correlation
-########################################################################################################################################
-#### NOTES #############################################################################################################################
-########################################################################################################################################
 # This analysis relies on the deepTools package: https://deeptools.readthedocs.io/en/develop/index.html
 #
 # parameters:
@@ -86,9 +96,6 @@ rule CORRELATION_spearman_8samples:
     # -p set the number of computing processors to use
     # -v verbose mode
 
-########################################################################################################################################
-#### RULE PARAMETERS ###################################################################################################################
-########################################################################################################################################
 Build dirs
 ## -p ignore error if existing
 ## -v verbose
