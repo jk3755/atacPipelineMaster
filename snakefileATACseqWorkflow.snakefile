@@ -278,7 +278,7 @@ rule STEP3_mycoalign:
         mem_mb=lambda params, attempt: attempt * 10000,
         run_time=lambda params, attempt: attempt * 1
     shell:
-        "bowtie2 -q -p 12 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}-REP{wildcards.repnum}_L{wildcards.lane}.myco.alignment.txt"
+        "bowtie2 -q -p 12 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_L{wildcards.lane}.myco.alignment.txt"
     
 ## Align reads to reference genome
 rule STEP4_refgenome_align:
@@ -467,7 +467,7 @@ rule STEP13_move_bam:
         "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam"
     shell:
         """
-        mv {wildcards.path}preprocessing/10unique/*REP{wildcards.repnum}*.bam {wildcards.path}bam/{wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}.bam
+        mv {wildcards.path}preprocessing/10unique/*rep{wildcards.repnum}*.bam {wildcards.path}bam/{wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}.bam
         touch {output}
         """
 
@@ -540,7 +540,7 @@ rule STEP17_MACS2_peaks_local_normalization:
     benchmark:
         '{path}benchmark/preprocessing/peaks/{sample}.rep{repnum}.ref{refgenome}.callpeaks.localnorm.benchmark.txt'
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{refgenome}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
 
 ########################################################################################################################################
 #### QC METRICS  #######################################################################################################################
@@ -788,7 +788,7 @@ rule SATURATION_peaks:
     benchmark:
         '{path}benchmark/saturation/peaks/{sample}.rep{repnum}.ref{refgenome}.{prob}.downsampled.peak.benchmark.txt'
     shell:
-        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{refgenome}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/12saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/12saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 ## Count the number of peaks with global normalization from downsampled libraries
 ## THIS MAY NEED MORE WORK - TEST THE ACTUAL CODE ##
