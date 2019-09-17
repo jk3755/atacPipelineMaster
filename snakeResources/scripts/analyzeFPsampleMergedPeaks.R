@@ -1,6 +1,11 @@
 #### Encase all code in a tryCatch block, so if anything unexpected goes wrong, pipeline will still run ####
 tryCatch({
   
+  #### Memory statistics ####
+  cat("Setting gc options", "\n")
+  gcinfo(TRUE)
+  gc()
+  
   #### Set snakemake variables ####
   cat("Setting snakemake variables", "\n")
   bamPath <- snakemake@input[[1]]
@@ -11,8 +16,8 @@ tryCatch({
   sampleRep <- snakemake@wildcards[["repnum"]]
   geneName <- snakemake@wildcards[["gene"]]
   refGenome <- snakemake@wildcards[["refgenome"]]
-  dirPath <- snakemake@wildcards[["path"]]
   functionSourcePath <- snakemake@input[[4]]
+  dirPath <- snakemake@wildcards[["path"]]
   
   #### Report ####
   cat("Spooling footprint analysis", "\n")
@@ -28,7 +33,7 @@ tryCatch({
   cat("Snakemake touchfile path:", snakemakeTouchPath, "\n")
   
   #### Perform a filecheck ####
-  footprintDataFilepath <- paste0(dirPath, "footprints/raw/", sampleName, ".rep", sampleRep, ".ref", refGenome, ".", geneName, ".FPdata.Rdata")
+  footprintDataFilepath <- paste0(dirPath, "footprints/samplemergedpeaks/raw/", sampleName, ".rep", sampleRep, ".ref", refGenome, ".", geneName, ".sampleMergedPeaks.FPdata.Rdata")
   cat("Output filepath for footprint data:", footprintDataFilepath, "\n")
   
   if (file.exists(footprintDataFilepath) == TRUE){
@@ -92,7 +97,7 @@ tryCatch({
         rm(insMatrix)
       }
       
-      #### Cleanup some memory ####
+      #### Clear memory ####
       rm(allSites)
       gc()
       

@@ -22,9 +22,9 @@
         "runtime"   : "{resources.run_time}"
     },
 
-    "STEP4_hg38align" :
+    "STEP4_refgenome_align" :
     {
-        "nCPUs"     : "6",
+        "nCPUs"     : "12",
         "memory"    : "{resources.mem_mb}",
         "runtime"   : "{resources.run_time}"
     },

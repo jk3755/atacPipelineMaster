@@ -1,0 +1,15 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=3.6.1
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+  - bioconductor-biostrings
+  - bioconductor-motifdb
+  - bioconductor-genomicranges
+  - bioconductor-rsamtools
+  - bioconductor-genomicalignments
+  - bioconductor-chipseeker
+  - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
+  - bioconductor-genomation
+  - bioconductor-org.hs.eg.db

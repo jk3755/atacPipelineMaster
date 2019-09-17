@@ -1,4 +1,22 @@
 ##################################################################
+#### Important notes when running on SGE cluster #################
+##################################################################
+For this to work properly, you need to give snakemake some way to check the job status
+If not, it will submit the original number of jobs specified in -j, but then get stuck
+and fail to submit new jobs, as it seems to be waiting for the original jobs to end
+
+
+## NOTES ##
+## -x
+## -N
+## -wd
+## -pe
+## -l
+## -j
+##
+
+
+##################################################################
 #### Description of files and directories ########################
 ##################################################################
 

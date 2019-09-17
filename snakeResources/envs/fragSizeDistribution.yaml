@@ -1,8 +1,9 @@
 channels:
-  - r
+  - conda-forge
   - bioconda
   - anaconda
 dependencies:
+  - r-base=3.6.1
   - r-magrittr
   - r-dplyr
   - r-ggplot2

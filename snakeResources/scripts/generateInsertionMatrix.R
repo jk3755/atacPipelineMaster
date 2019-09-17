@@ -6,16 +6,16 @@ tryCatch({
   bamPath <- snakemake@input[[1]]
   baiPath <- snakemake@input[[2]]
   peakPath <- snakemake@input[[3]]
-  snakemakeTouchPath <- snakemake@output[[1]]
+  insertionMatrixFilepath <- snakemake@output[[1]]
   sampleName <- snakemake@wildcards[["sample"]]
   sampleRep <- snakemake@wildcards[["repnum"]]
   geneName <- snakemake@wildcards[["gene"]]
   refGenome <- snakemake@wildcards[["refgenome"]]
-  dirPath <- snakemake@wildcards[["path"]]
   functionSourcePath <- snakemake@input[[4]]
+  dirPath <- snakemake@wildcards[["path"]]
   
   #### Report ####
-  cat("Spooling footprint analysis", "\n")
+  cat("Generating insertion matrix with the following parameters:", "\n")
   cat("Bam file:", bamPath, "\n")
   cat("Bai file:", baiPath, "\n")
   cat("Peaks file:", peakPath, "\n")
@@ -25,16 +25,19 @@ tryCatch({
   cat("Reference genome used:", refGenome, "\n")
   cat("Directory path:", dirPath, "\n")
   cat("Filepath for loading functions:", functionSourcePath, "\n")
-  cat("Snakemake touchfile path:", snakemakeTouchPath, "\n")
+  cat("Insertion matrix output path:", insertionMatrixFilepath, "\n")
   
   #### Perform a filecheck ####
-  footprintDataFilepath <- paste0(dirPath, "footprints/raw/", sampleName, ".rep", sampleRep, ".ref", refGenome, ".", geneName, ".FPdata.Rdata")
-  cat("Output filepath for footprint data:", footprintDataFilepath, "\n")
   
-  if (file.exists(footprintDataFilepath) == TRUE){
-    cat("Footprint data file already exists, skipping operation", "\n")
+  cat("Output filepath for insertion matrix:", insertionMatrixFilepath, "\n")
+  
+  if (file.exists(insertionMatrixFilepath) == TRUE){
+    
+    cat("Insertion matrix data file already exists, skipping operation", "\n")
+    
   } else {
-    cat("Footprint data file not found, generating", "\n")
+    
+    cat("Insertion matrix data file not found, generating now", "\n")
     
     #### Load libraries ####
     cat("Loading libraries", "\n")
@@ -69,9 +72,8 @@ tryCatch({
       
     } else {
       
-      maxWidth <- max(allSites@ranges@width)
-      
       #### Set scope of analysis ####
+      maxWidth <- max(allSites@ranges@width)
       scope <- paste0("chr", c(1:22, "X", "Y"))
       cat("scope of analysis:", scope, "\n")
       
@@ -79,40 +81,31 @@ tryCatch({
       currentScope <- scope[which(scope %in% allSites@seqnames@values)]
       cat("scope of current binding sites:", currentScope, "\n")
       
-      #### Generate insertion matrix for each chromosome one at a time and convert to basic footprint statistics ####
-      ## Doing it this way allows the script to keep the memory usage low
-      for (item in currentScope){
-        cat("Generating insertion matrix for", item, "\n")
+      #### Generate insertion matrix for all sites ####
+      for (item in currentScope)
+      {
         com <- paste0("tempSites <- allSites[seqnames(allSites) == '", item, "']")
         eval(parse(text = com))
-        com <- paste0("insMatrix <- generateInsertionMatrixByChr(bamPath,tempSites,maxWidth,'", item, "')")
+        com <- paste0(item, "insMatrix <- generateInsertionMatrixByChr(bamPath, tempSites, maxWidth,'", item, "')")
         eval(parse(text = com))
-        com <- paste0(item, "SiteStatistics <- calculateBasicFootprintStatistics(insMatrix,tempSites,'", item, "')")
-        eval(parse(text = com))
-        rm(insMatrix)
       }
       
-      #### Cleanup some memory ####
-      rm(allSites)
-      gc()
-      
-      #### Merge all of the site statistics tables ####
-      cat("Merging site statistics tables", "\n")
-      currentTables <- as.character(paste0(currentScope, "SiteStatistics"))
-      currentTablesStr <- paste(currentTables, collapse = ",")
-      com <- paste0("footprintSiteStatistics <- rbind(", currentTablesStr, ")")
+      #### Merge the individual insertion matrices and save ####
+      currentMatrixNames <- as.character(paste0(currentScope, "insMatrix"))
+      currentMatrixNamesString <- paste(currentMatrixNames, collapse = ",")
+      com <- paste0("insertionMatrix <- rbind(", currentMatrixNamesString, ")")
       eval(parse(text = com))
+      insertionMatrixData <- list()
+      insertionMatrixData$bindingSites <- allSites
+      insertionMatrixData$insertionMatrix <- insertionMatrix
+
+      #### Save the insertion matrix and input sites ####
+      cat("Saving insertion matrix file", "\n")
+      save(insertionMatrixData, file = insertionMatrixFilepath)
       
-      cat("Saving footprint data file", "\n")
-      save(footprintSiteStatistics, file = footprintDataFilepath)
     }
   } # end filecheck
-  
-  cat("Finished, touching snakemake flag file", "\n")
-  file.create(snakemakeTouchPath)
-  
+
 }, finally = {
   
-  cat("Finished, touching snakemake flag file", "\n")
-  file.create(snakemakeTouchPath)
 })

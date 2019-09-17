@@ -1,139 +1,103 @@
-########################################################################################################################################
-#### TEST DATA #########################################################################################################################
-########################################################################################################################################
-rule preprocessing_test:
+rule preprocessing_all:
     input:
-        "data/test/operations/preprocessing/test-REP1.preprocessing.complete",
-        "data/test/operations/preprocessing/test-REP2.preprocessing.complete",
-        "data/test/operations/preprocessing/test-REP3.preprocessing.complete"
+        #### PROS
+        "data/pros/lncap/wt01/operations/preprocessing/LNCaP-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/wt02/operations/preprocessing/LNCaP-WT-02.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr01/operations/preprocessing/LNCaP-CR-01.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr02/operations/preprocessing/LNCaP-CR-02.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr04/operations/preprocessing/LNCaP-CR-04.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr05/operations/preprocessing/LNCaP-CR-05.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr07/operations/preprocessing/LNCaP-CR-07.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr08/operations/preprocessing/LNCaP-CR-08.rep1.refhg38.preprocessing.complete",
+        #### COAD
+        "data/coad/h508/wt01/operations/preprocessing/H508-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/coad/h508/wt02/operations/preprocessing/H508-WT-02.rep1.refhg38.preprocessing.complete",
+        "data/coad/h508/wt03/operations/preprocessing/H508-WT-03.rep1.refhg38.preprocessing.complete",
+        "data/coad/h508/wt04/operations/preprocessing/H508-WT-04.rep1.refhg38.preprocessing.complete",
+        "data/coad/h508/wt05/operations/preprocessing/H508-WT-05.rep1.refhg38.preprocessing.complete",
+        "data/coad/h508/wt06/operations/preprocessing/H508-WT-06.rep1.refhg38.preprocessing.complete",
+        #
+        "data/coad/hs675t/wt01/operations/preprocessing/Hs675T-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/coad/hs675t/wt02/operations/preprocessing/Hs675T-WT-02.rep1.refhg38.preprocessing.complete",
+        "data/coad/hs675t/wt03/operations/preprocessing/Hs675T-WT-03.rep1.refhg38.preprocessing.complete",
+        #
+        "data/coad/ls1034/wt01/operations/preprocessing/LS1034-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/coad/ls1034/wt02/operations/preprocessing/LS1034-WT-02.rep1.refhg38.preprocessing.complete",
+        "data/coad/ls1034/wt03/operations/preprocessing/LS1034-WT-03.rep1.refhg38.preprocessing.complete",
+        "data/coad/ls1034/wt04/operations/preprocessing/LS1034-WT-04.rep1.refhg38.preprocessing.complete",
+        "data/coad/ls1034/wt05/operations/preprocessing/LS1034-WT-05.rep1.refhg38.preprocessing.complete",
+        "data/coad/ls1034/wt06/operations/preprocessing/LS1034-WT-06.rep1.refhg38.preprocessing.complete",
+        #
+        "data/coad/mdst8/wt01/operations/preprocessing/MDST8-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/coad/mdst8/wt02/operations/preprocessing/MDST8-WT-02.rep1.refhg38.preprocessing.complete",
+        #
+        "data/coad/snu16/wt01/operations/preprocessing/SNU16-WT-01.rep1a.refhg38.preprocessing.complete",
+        "data/coad/snu16/wt02/operations/preprocessing/SNU16-WT-01.rep2a.refhg38.preprocessing.complete",
+        "data/coad/snu16/wt03/operations/preprocessing/SNU16-WT-01.rep3a.refhg38.preprocessing.complete",
+        "data/coad/snu16/wt04/operations/preprocessing/SNU16-WT-01.rep1f.refhg38.preprocessing.complete",
+        "data/coad/snu16/wt05/operations/preprocessing/SNU16-WT-01.rep2f.refhg38.preprocessing.complete",
+        "data/coad/snu16/wt06/operations/preprocessing/SNU16-WT-01.rep3f.refhg38.preprocessing.complete",
+        #
+        "data/coad/snu61/wt01/operations/preprocessing/SNU61-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/coad/snu61/wt02/operations/preprocessing/SNU61-WT-01.rep2.refhg38.preprocessing.complete",
+        "data/coad/snu61/wt03/operations/preprocessing/SNU61-WT-01.rep3.refhg38.preprocessing.complete",
+        #### PANC
+        "data/panc/capan1/wt01r1/operations/preprocessing/CAPANI-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/capan1/wt01r2/operations/preprocessing/CAPANI-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/capan1/wt02r1/operations/preprocessing/CAPANI-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/capan1/wt02r2/operations/preprocessing/CAPANI-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/capan1/wt03r1/operations/preprocessing/CAPANI-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/capan1/wt03r2/operations/preprocessing/CAPANI-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
+        #
+        "data/panc/hpafii/wt01r1/operations/preprocessing/HPAFII-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/hpafii/wt01r2/operations/preprocessing/HPAFII-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/hpafii/wt02r1/operations/preprocessing/HPAFII-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/hpafii/wt02r2/operations/preprocessing/HPAFII-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/hpafii/wt03r1/operations/preprocessing/HPAFII-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/hpafii/wt03r2/operations/preprocessing/HPAFII-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
+        #
+        "data/panc/kp4/wt01r1/operations/preprocessing/KP4-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/kp4/wt01r2/operations/preprocessing/KP4-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/kp4/wt02r1/operations/preprocessing/KP4-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/kp4/wt02r2/operations/preprocessing/KP4-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/kp4/wt03r1/operations/preprocessing/KP4-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/kp4/wt03r2/operations/preprocessing/KP4-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
+        #
+        "data/panc/panc1/wt01r1/operations/preprocessing/PANC1-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc1/wt01r2/operations/preprocessing/PANC1-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc1/wt02r1/operations/preprocessing/PANC1-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc1/wt02r2/operations/preprocessing/PANC1-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc1/wt03r1/operations/preprocessing/PANC1-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc1/wt03r2/operations/preprocessing/PANC1-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
+        #
+        "data/panc/panc0403/wt01r1/operations/preprocessing/PANC0403-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc0403/wt01r2/operations/preprocessing/PANC0403-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc0403/wt02r1/operations/preprocessing/PANC0403-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc0403/wt02r2/operations/preprocessing/PANC0403-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc0403/wt03r1/operations/preprocessing/PANC0403-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/panc0403/wt03r2/operations/preprocessing/PANC0403-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
+        #
+        "data/panc/patu8ss89/wt01r1/operations/preprocessing/PATU8SS89-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/patu8ss89/wt01r2/operations/preprocessing/PATU8SS89-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/patu8ss89/wt02r1/operations/preprocessing/PATU8SS89-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/patu8ss89/wt02r2/operations/preprocessing/PATU8SS89-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/patu8ss89/wt03r1/operations/preprocessing/PATU8SS89-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/patu8ss89/wt03r2/operations/preprocessing/PATU8SS89-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
+        #
+        "data/panc/pk45h/wt01r1/operations/preprocessing/PK45H-WT-01-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/pk45h/wt01r2/operations/preprocessing/PK45H-WT-01-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/pk45h/wt02r1/operations/preprocessing/PK45H-WT-02-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/pk45h/wt02r2/operations/preprocessing/PK45H-WT-02-RUN2.rep1.refhg38.preprocessing.complete",
+        "data/panc/pk45h/wt03r1/operations/preprocessing/PK45H-WT-03-RUN1.rep1.refhg38.preprocessing.complete",
+        "data/panc/pk45h/wt03r2/operations/preprocessing/PK45H-WT-03-RUN2.rep1.refhg38.preprocessing.complete",
 
-########################################################################################################################################
-#### SNU-16 ############################################################################################################################
-########################################################################################################################################
-rule preprocessing_snu16_wt01:
+rule preprocessing_lncap:
     input:
-        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP1A.preprocessing.complete",
-        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP2A.preprocessing.complete",
-        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP3A.preprocessing.complete",
-        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP1F.preprocessing.complete",
-        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP2F.preprocessing.complete",
-        "snu16/wt01/operations/preprocessing/SNU16-WT-01-REP3F.preprocessing.complete"
-
-########################################################################################################################################
-#### MDST8 #############################################################################################################################
-########################################################################################################################################
-rule preprocessing_mdst8_wt01:
-    input:
-        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP1.preprocessing.complete",
-        "mdst8/wt01/operations/preprocessing/MDST8-WT-01-REP2.preprocessing.complete"
-
-########################################################################################################################################
-#### Hs675.T ###########################################################################################################################
-########################################################################################################################################
-rule preprocessing_hs675t_wt01:
-    input:
-        "hs675t/wt01/operations/preprocessing/Hs675T-WT-01-REP1.preprocessing.complete",
-        "hs675t/wt01/operations/preprocessing/Hs675T-WT-01-REP2.preprocessing.complete",
-        "hs675t/wt01/operations/preprocessing/Hs675T-WT-01-REP3.preprocessing.complete"
-
-########################################################################################################################################
-#### H508 ##############################################################################################################################
-########################################################################################################################################
-rule preprocessing_h508_wt01:
-    input:
-        "h508/wt01/operations/preprocessing/H508-WT-01-REP1.preprocessing.complete",
-        "h508/wt01/operations/preprocessing/H508-WT-01-REP2.preprocessing.complete",
-        "h508/wt01/operations/preprocessing/H508-WT-01-REP3.preprocessing.complete"
-
-rule preprocessing_h508_wt02:
-    input:
-        "h508/wt02/operations/preprocessing/H508-WT-02-REP1A.preprocessing.complete",
-        "h508/wt02/operations/preprocessing/H508-WT-02-REP2A.preprocessing.complete",
-        "h508/wt02/operations/preprocessing/H508-WT-02-REP1F.preprocessing.complete"
-
-########################################################################################################################################
-#### LS1034 ############################################################################################################################
-########################################################################################################################################
-rule preprocessing_ls1034_wt01:
-    input:
-        "ls1034/wt01/operations/preprocessing/LS1034-WT-01-REP1.preprocessing.complete",
-        "ls1034/wt01/operations/preprocessing/LS1034-WT-01-REP2.preprocessing.complete",
-        "ls1034/wt01/operations/preprocessing/LS1034-WT-01-REP3.preprocessing.complete"
-
-rule preprocessing_ls1034_wt02:
-    input:
-        "ls1034/wt02/operations/preprocessing/LS1034-WT-02-REP1.preprocessing.complete",
-        "ls1034/wt02/operations/preprocessing/LS1034-WT-02-REP2.preprocessing.complete",
-        "ls1034/wt02/operations/preprocessing/LS1034-WT-02-REP3.preprocessing.complete"
-
-########################################################################################################################################
-#### SNU61 #############################################################################################################################
-########################################################################################################################################
-rule preprocessing_snu61_wt01:
-    input:
-        "snu61/wt01/operations/preprocessing/SNU61-WT-01-REP1.preprocessing.complete",
-        "snu61/wt01/operations/preprocessing/SNU61-WT-01-REP2.preprocessing.complete",
-        "snu61/wt01/operations/preprocessing/SNU61-WT-01-REP3.preprocessing.complete"
-
-########################################################################################################################################
-#### LNCaP #############################################################################################################################
-########################################################################################################################################
-rule preprocessing_lncap_ex01:
-    input:
-        "pros/lncap/wt01/operations/preprocessing/LNCaP-WT-01-REP1.preprocessing.complete",
-        "pros/lncap/wt02/operations/preprocessing/LNCaP-WT-02-REP1.preprocessing.complete",
-        "pros/lncap/cr01/operations/preprocessing/LNCaP-CR-01-REP1.preprocessing.complete",
-        "pros/lncap/cr02/operations/preprocessing/LNCaP-CR-02-REP1.preprocessing.complete",
-        "pros/lncap/cr04/operations/preprocessing/LNCaP-CR-04-REP1.preprocessing.complete",
-        "pros/lncap/cr05/operations/preprocessing/LNCaP-CR-05-REP1.preprocessing.complete",
-        "pros/lncap/cr07/operations/preprocessing/LNCaP-CR-07-REP1.preprocessing.complete",
-        "pros/lncap/cr08/operations/preprocessing/LNCaP-CR-08-REP1.preprocessing.complete"
-
-########################################################################################################################################
-#### PANC #############################################################################################################################
-########################################################################################################################################
-rule preprocessing_panc_all:
-    input:
-        "data/panc/CAPANI/run1/operations/preprocessing/CAPANI-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/CAPANI/run1/operations/preprocessing/CAPANI-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/CAPANI/run1/operations/preprocessing/CAPANI-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/CAPANI/run2/operations/preprocessing/CAPANI-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/CAPANI/run2/operations/preprocessing/CAPANI-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/CAPANI/run2/operations/preprocessing/CAPANI-WT-01-RUN2-REP3.preprocessing.complete",
-        "data/panc/KP4/run1/operations/preprocessing/KP4-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/KP4/run1/operations/preprocessing/KP4-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/KP4/run1/operations/preprocessing/KP4-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/KP4/run2/operations/preprocessing/KP4-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/KP4/run2/operations/preprocessing/KP4-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/KP4/run2/operations/preprocessing/KP4-WT-01-RUN2-REP3.preprocessing.complete",
-        "data/panc/PANC1/run1/operations/preprocessing/PANC1-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/PANC1/run1/operations/preprocessing/PANC1-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/PANC1/run1/operations/preprocessing/PANC1-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/PANC1/run2/operations/preprocessing/PANC1-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/PANC1/run2/operations/preprocessing/PANC1-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/PANC1/run2/operations/preprocessing/PANC1-WT-01-RUN2-REP3.preprocessing.complete",
-        "data/panc/PANC0403/run1/operations/preprocessing/PANC0403-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/PANC0403/run1/operations/preprocessing/PANC0403-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/PANC0403/run1/operations/preprocessing/PANC0403-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/PANC0403/run2/operations/preprocessing/PANC0403-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/PANC0403/run2/operations/preprocessing/PANC0403-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/PANC0403/run2/operations/preprocessing/PANC0403-WT-01-RUN2-REP3.preprocessing.complete",
-        "data/panc/PATU8SS89/run1/operations/preprocessing/PATU8SS89-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/PATU8SS89/run1/operations/preprocessing/PATU8SS89-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/PATU8SS89/run1/operations/preprocessing/PATU8SS89-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/PATU8SS89/run2/operations/preprocessing/PATU8SS89-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/PATU8SS89/run2/operations/preprocessing/PATU8SS89-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/PATU8SS89/run2/operations/preprocessing/PATU8SS89-WT-01-RUN2-REP3.preprocessing.complete",
-        "data/panc/HPAFII/run1/operations/preprocessing/HPAFII-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/HPAFII/run1/operations/preprocessing/HPAFII-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/HPAFII/run1/operations/preprocessing/HPAFII-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/HPAFII/run2/operations/preprocessing/HPAFII-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/HPAFII/run2/operations/preprocessing/HPAFII-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/HPAFII/run2/operations/preprocessing/HPAFII-WT-01-RUN2-REP3.preprocessing.complete",
-        "data/panc/PK45H/run1/operations/preprocessing/PK45H-WT-01-RUN1-REP1.preprocessing.complete",
-        "data/panc/PK45H/run1/operations/preprocessing/PK45H-WT-01-RUN1-REP2.preprocessing.complete",
-        "data/panc/PK45H/run1/operations/preprocessing/PK45H-WT-01-RUN1-REP3.preprocessing.complete",
-        "data/panc/PK45H/run2/operations/preprocessing/PK45H-WT-01-RUN2-REP1.preprocessing.complete",
-        "data/panc/PK45H/run2/operations/preprocessing/PK45H-WT-01-RUN2-REP2.preprocessing.complete",
-        "data/panc/PK45H/run2/operations/preprocessing/PK45H-WT-01-RUN2-REP3.preprocessing.complete"
-        
+        "data/pros/lncap/wt01/operations/preprocessing/LNCaP-WT-01.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/wt02/operations/preprocessing/LNCaP-WT-02.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr01/operations/preprocessing/LNCaP-CR-01.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr02/operations/preprocessing/LNCaP-CR-02.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr04/operations/preprocessing/LNCaP-CR-04.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr05/operations/preprocessing/LNCaP-CR-05.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr07/operations/preprocessing/LNCaP-CR-07.rep1.refhg38.preprocessing.complete",
+        "data/pros/lncap/cr08/operations/preprocessing/LNCaP-CR-08.rep1.refhg38.preprocessing.complete"

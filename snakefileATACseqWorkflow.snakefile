@@ -10,23 +10,28 @@ include: "snakeResources/modules/spoolSampleCorrelation.snakefile"
 ########################################################################################################################################
 #### AGGREGATOR RULES ##################################################################################################################
 ########################################################################################################################################
+
 ## This rule determines what is run in the full analysis spooling option
 rule AGGREGATOR_full_analysis:
     input:
-        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.intermediate_data_cleaned.done"
+        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.preprocessing.complete",
+        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.generate_figures.complete",
+        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.footprinting_analysis.complete"
     output:
         "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.full_analysis.finished"
     shell:
         "touch {output}"
 
+########################################################################################################################################
+#### PREPROCESSING AGGREGATORS #########################################################################################################
+########################################################################################################################################
+
 ## Clean up all the intermediate files just before touching the final flag file
-rule AGGREGATOR_clean_intermediate_data:
+rule AGGREGATOR_preprocessing_clean_intermediate_data:
     input:
-        "{path}operations/dir/all.built",
-        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing.complete",
-        "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.footprinting_raw_analysis.complete",
+        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing_preclean.complete"  
     output:
-        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.intermediate_data_cleaned.done"
+        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.preprocessing.complete"
     shell:
         """
         rm -rf {wildcards.path}preprocessing/2fastq
@@ -37,13 +42,31 @@ rule AGGREGATOR_clean_intermediate_data:
         rm -rf {wildcards.path}preprocessing/7rgsort
         rm -rf {wildcards.path}preprocessing/8merged
         rm -rf {wildcards.path}preprocessing/9dedup
-        rm -rf {wildcards.path}preprocessing/8merged
+        rm -rf {wildcards.path}preprocessing/10unique
+        rm -rf {wildcards.path}preprocessing/11bigwig
         rm -rf {wildcards.path}preprocessing/saturation
         touch {output}
         """
 
+## This rule determines what is run in the preprocessing spooling option
+rule AGGREGATOR_preprocessing:
+    input:
+        "{path}operations/dir/all.built",
+        "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai",
+        "{path}bigwig/{sample}.rep{repnum}.ref{refgenome}.bw",
+        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.peak_calling.complete",
+        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing_metrics.complete",
+        "{path}peaks/samplemerged/{sample}.rep{repnum}.ref{refgenome}_sample_merged_peaks.narrowPeak",
+        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.saturation_analysis.complete"
+    output:
+        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing_preclean.complete"
+    priority:
+        1
+    shell:
+        "touch {output}"
+
 ## This rule determines what is run in the directory building step
-rule AGGREGATOR_builddirectories:
+rule AGGREGATOR_build_directory_structure:
     input:
         "{path}operations/dir/main.built",
         "{path}operations/dir/operations.built",
@@ -52,58 +75,127 @@ rule AGGREGATOR_builddirectories:
         "{path}operations/dir/preprocessing.built",
         "{path}operations/dir/saturation.built",
         "{path}operations/dir/footprints.built",
-        "{path}operations/dir/peaks.built"
+        "{path}operations/dir/peaks.built",
+        "{path}operations/dir/figures.built"
     output:
         "{path}operations/dir/all.built"
     shell:
         "touch {output}"
 
-## This rule determines what is run in the preprocessing spooling option
-rule AGGREGATOR_preprocessing:
+## This rule determines what is done for peak calling
+rule AGGREGATOR_peak_calling:
     input:
-        "{path}operations/dir/all.built",
-        "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai",
-        "{path}bigwig/{sample}.rep{repnum}.ref{refgenome}.bw",
         "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_peaks.narrowPeak",
         "{path}peaks/localnorm/{sample}.rep{repnum}.ref{refgenome}_localnorm_peaks.narrowPeak",
-        "{path}metrics/genomecov/{sample}.rep{repnum}.ref{refgenome}.peak.globalnorm.genomecov.txt",
-        "{path}metrics/genomecov/{sample}.rep{repnum}.ref{refgenome}.peak.localnorm.genomecov.txt",
-        "{path}operations/metrics/peakannotation/{sample}.rep{repnum}.ref{refgenome}.globalpeak.annotations.done",
-        "{path}operations/metrics/peakannotation/{sample}.rep{repnum}.ref{refgenome}.localpeak.annotations.done",
-        "{path}metrics/totalreads/{sample}.rep{repnum}.ref{refgenome}.totalreads.Rdata",
-        "{path}operations/metrics/{sample}.rep{repnum}.ref{refgenome}.fragsizes.done",
-        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.saturation_analysis.complete"
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_p001_peaks.narrowPeak",
+        "{path}peaks/localnorm/{sample}.rep{repnum}.ref{refgenome}_localnorm_p001_peaks.narrowPeak",
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_p0001_peaks.narrowPeak",
+        "{path}peaks/localnorm/{sample}.rep{repnum}.ref{refgenome}_localnorm_p0001_peaks.narrowPeak",
+        "{path}peaks/samplemerged/{sample}.rep{repnum}.ref{refgenome}_sample_merged_peaks.narrowPeak",
     output:
-        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing.complete"
+        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.peak_calling.complete"
     priority:
         1
     shell:
         "touch {output}"
 
-## This rule determines what is run for the library saturation analysis
-rule AGGREGATOR_saturation:
+## This rule determines what is done for the preprocessing metrics
+rule AGGREGATOR_preprocessing_metrics:
     input:
-        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.downsampling.done",
-        "{path}metrics/saturation/{sample}.rep{repnum}.ref{refgenome}.downsampled_numpeaks.txt",
-        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.rawfootprints.downsampled.complete"
+        "{path}metrics/genomecov/{sample}.rep{repnum}.ref{refgenome}.peak.globalnorm.genomecov.txt",
+        "{path}metrics/genomecov/{sample}.rep{repnum}.ref{refgenome}.peak.localnorm.genomecov.txt",
+        "{path}metrics/totalreads/{sample}.rep{repnum}.ref{refgenome}.totalreads.Rdata",
+        "{path}operations/metrics/{sample}.rep{repnum}.ref{refgenome}.fragsizes.done",
+        "{path}preprocessing/4mycoalign/{sample}.rep{repnum}.ref{refgenome}_L1.myco.sam",
+        "{path}preprocessing/4mycoalign/{sample}.rep{repnum}.ref{refgenome}_L2.myco.sam",
+        "{path}preprocessing/4mycoalign/{sample}.rep{repnum}.ref{refgenome}_L3.myco.sam",
+        "{path}preprocessing/4mycoalign/{sample}.rep{repnum}.ref{refgenome}_L4.myco.sam"
     output:
-        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.saturation_analysis.complete"
+        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing_metrics.complete"
+    priority:
+        1
     shell:
-    	"touch {output}"
+        "touch {output}"
+
+########################################################################################################################################
+#### FOOTPRINTING AGGREGATORS ##########################################################################################################
+########################################################################################################################################
+
+## This rule determines what is run for the footprinting analysis
+rule AGGREGATOR_footprinting_analysis:
+    input:
+        "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.footprinting_raw_analysis.complete",
+        "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.footprinting_raw_analysis.samplemergedpeaks.complete",
+        "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.samplemergedpeaks.insertionmatrix.complete"
+    output:
+        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.footprinting_analysis.complete"
+    shell:
+        "touch {output}"
 
 ## This rule initiates the raw footprint analysis for all genes found in the config file
 rule AGGREGATOR_footprinting_raw_analysis:
     input:
-        "{path}operations/preprocessing/{sample}.rep{repnum}.ref{refgenome}.preprocessing.complete",
         expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.rawFPanalysis.done", genename=config["geneNames"])
     output:
         "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.footprinting_raw_analysis.complete"
     shell:
         "touch {output}"
 
+## Same as above but using the sample merged peak files
+rule AGGREGATOR_footprinting_raw_analysis_sample_merged_peaks:
+    input:
+        expand("{{path}}operations/footprints/samplemergedpeaks/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.rawFPanalysis.samplemergedpeaks.done", genename=config["geneNames"])
+    output:
+        "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.footprinting_raw_analysis.samplemergedpeaks.complete"
+    shell:
+        "touch {output}"
+
+## Same as above but using the sample merged peak files
+rule AGGREGATOR_footprinting_insertion_matrix_sample_merged_peaks:
+    input:
+        expand("{{path}}footprints/samplemergedpeaks/insertionmatrix/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.samplemergedpeaks.insertionmatrix.RData", genename=config["geneNames"])
+    output:
+        "{path}operations/footprints/{sample}.rep{repnum}.ref{refgenome}.samplemergedpeaks.insertionmatrix.complete"
+    shell:
+        "touch {output}"
+
+########################################################################################################################################
+#### FIGURES AGGREGATORS ###############################################################################################################
+########################################################################################################################################
+
+##
+rule AGGREGATOR_generate_figures:
+    input:
+        "{path}figures/peakideogram/{sample}.rep{repnum}.ref{refgenome}.peakIdeogram.svg",
+        "{path}operations/figures/{sample}.rep{repnum}.ref{refgenome}.motif_insertion_probability_graphs.complete",
+        "{path}operations/figures/{sample}.rep{repnum}.ref{refgenome}.motif_aligned_heatmaps.complete"
+    output:
+        "{path}operations/modules/{sample}.rep{repnum}.ref{refgenome}.generate_figures.complete"
+    shell:
+        "touch {output}"
+
+## 
+rule AGGREGATOR_motif_insertion_probability_graph:
+    input:
+        expand("{{path}}figures/insertionprobability/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.insertionprobability.svg", genename=config["geneNames"])
+    output:
+        "{path}operations/figures/{sample}.rep{repnum}.ref{refgenome}.motif_insertion_probability_graphs.complete"
+    shell:
+        "touch {output}"
+
+## 
+rule AGGREGATOR_motif_aligned_heatmap:
+    input:
+        expand("{{path}}figures/motifalignedheatmap/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.motifalignedheatmap.svg", genename=config["geneNames"])
+    output:
+        "{path}operations/figures/{sample}.rep{repnum}.ref{refgenome}.motif_aligned_heatmaps.complete"
+    shell:
+        "touch {output}"
+
 ########################################################################################################################################
 #### BUILD DIRECTORY STRUCTURE #########################################################################################################
 ########################################################################################################################################
+
 rule DIR_main:
     output:
         "{path}operations/dir/main.built"
@@ -119,6 +211,7 @@ rule DIR_main:
         mkdir -p -v {wildcards.path}correlation
         mkdir -p -v {wildcards.path}bam
         mkdir -p -v {wildcards.path}bigwig
+        mkdir -p -v {wildcards.path}figures
         touch {output}
         """
 
@@ -130,9 +223,12 @@ rule DIR_operations:
         mkdir -p -v {wildcards.path}operations/modules
         mkdir -p -v {wildcards.path}operations/preprocessing
         mkdir -p -v {wildcards.path}operations/footprints
-        mkdir -p -v {wildcards.path}operations/footprints/raw 
+        mkdir -p -v {wildcards.path}operations/footprints/raw
+        mkdir -p -v {wildcards.path}operations/footprints/samplemergedpeaks
+        mkdir -p -v {wildcards.path}operations/footprints/samplemergedpeaks/raw {wildcards.path}operations/footprints/samplemergedpeaks/insertionmatrix
         mkdir -p -v {wildcards.path}operations/saturation
         mkdir -p -v {wildcards.path}operations/metrics
+        mkdir -p -v {wildcards.path}operations/figures
         touch {output}
         """
 
@@ -201,6 +297,7 @@ rule DIR_saturation:
         mkdir -p -v {wildcards.path}preprocessing/12saturation/downsampled/sorted {wildcards.path}preprocessing/12saturation/downsampled/deduplicated
         mkdir -p -v {wildcards.path}preprocessing/12saturation/duplication
         mkdir -p -v {wildcards.path}preprocessing/12saturation/peaks
+        mkdir -p -v {wildcards.path}preprocessing/12saturation/footprints
         touch {output}
         """
 
@@ -212,6 +309,8 @@ rule DIR_footprints:
         mkdir -p -v {wildcards.path}footprints/raw
         mkdir -p -v {wildcards.path}footprints/aggregated
         mkdir -p -v {wildcards.path}footprints/figures
+        mkdir -p -v {wildcards.path}footprints/samplemergedpeaks
+        mkdir -p -v {wildcards.path}footprints/samplemergedpeaks/raw {wildcards.path}footprints/samplemergedpeaks/insertionmatrix
         touch {output}
         """
 
@@ -220,17 +319,31 @@ rule DIR_peaks:
         "{path}operations/dir/peaks.built"
     shell:
         """
-        mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm
+        mkdir -p -v {wildcards.path}peaks/localnorm {wildcards.path}peaks/globalnorm {wildcards.path}peaks/samplemerged
         touch {output}
         """
+
+rule DIR_figures:
+    output:
+        "{path}operations/dir/figures.built"
+    shell:
+        """
+        mkdir -p -v {wildcards.path}figures/peakideogram
+        mkdir -p -v {wildcards.path}figures/insertionprobability
+        mkdir -p -v {wildcards.path}figures/motifalignedheatmap
+        touch {output}
+        """
+
+
 
 ########################################################################################################################################
 #### PREPROCESSING RULES ###############################################################################################################
 ########################################################################################################################################
+
 ## Gunzip the fastq files
 rule STEP1_gunzip:
     input:
-        a="{path}preprocessing/1gz/{sample}.rep{repnum}.ref{refgenome}_L{lane}_R{read}.fastq.gz",
+        a="{path}fastq/{sample}.rep{repnum}.ref{refgenome}_L{lane}_R{read}.fastq.gz",
         b="{path}operations/dir/all.built"
     output:
         c="{path}preprocessing/2fastq/{sample}.rep{repnum}.ref{refgenome}_L{lane}_R{read}.fastq"
@@ -276,7 +389,7 @@ rule STEP3_mycoalign:
         "snakeResources/envs/bowtie2.yaml"
     resources:
         mem_mb=lambda params, attempt: attempt * 10000,
-        run_time=lambda params, attempt: attempt * 1
+        run_time=lambda params, attempt: attempt * 2
     shell:
         "bowtie2 -q -p 12 -X2000 -x genomes/myco/myco -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/myco/{wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_L{wildcards.lane}.myco.alignment.txt"
     
@@ -290,14 +403,14 @@ rule STEP4_refgenome_align:
     benchmark:
         '{path}benchmark/preprocessing/align/{sample}.rep{repnum}.ref{refgenome}.{lane}.align.benchmark.txt'
     threads:
-        6
+        12
     conda:
         "snakeResources/envs/bowtie2.yaml"
     resources:
-        mem_mb=lambda params, attempt: attempt * 40000,
-        run_time=lambda params, attempt: attempt * 3
+        mem_mb=lambda params, attempt: attempt * 50000,
+        run_time=lambda params, attempt: attempt * 24
     shell:
-        "bowtie2 -q -p 6 -X2000 -x genomes/{wildcards.refgenome}/{wildcards.refgenome} -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/align/{wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_L{wildcards.lane}.alignment.txt"
+        "bowtie2 -q -p 12 -X2000 -x genomes/{wildcards.refgenome}/{wildcards.refgenome} -1 {input.a} -2 {input.b} -S {output} 2>{wildcards.path}metrics/align/{wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_L{wildcards.lane}.alignment.txt"
 
 ## Coordinate sort the aligned reads. This is required for blacklist filtering
 rule STEP5_coordsort_sam:
@@ -510,8 +623,12 @@ rule STEP15_makebigwig_bamcov:
     shell:
         "bamCoverage -b {input.a} -o {output} -of bigwig -bs 1 -p 6 -v"
     
-## Call peaks using global normalization
-rule STEP16_MACS2_peaks_global_normilization:
+########################################################################################################################################
+#### PEAK CALLING ######################################################################################################################
+########################################################################################################################################
+
+## Call peaks using global normalization. pvalue 0.01
+rule STEP16_MACS2_peaks_global_normilization_p01:
     input:
         a="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
         b="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai"
@@ -526,8 +643,8 @@ rule STEP16_MACS2_peaks_global_normilization:
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_globalnorm --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
     
-## Call peaks using local normalization
-rule STEP17_MACS2_peaks_local_normalization:
+## Call peaks using local normalization. pvalue 0.01
+rule STEP17_MACS2_peaks_local_normalization_p01:
     input:
         a="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
         b="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai"
@@ -541,6 +658,54 @@ rule STEP17_MACS2_peaks_local_normalization:
         '{path}benchmark/preprocessing/peaks/{sample}.rep{repnum}.ref{refgenome}.callpeaks.localnorm.benchmark.txt'
     shell:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_localnorm --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.01"
+
+## Call peaks using global normalization. pvalue 0.001
+rule STEP16_MACS2_peaks_global_normilization_p001:
+    input:
+        a="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
+        b="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai"
+    output:
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_p001_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_globalnorm_p001 --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.001"
+
+## Call peaks using local normalization. pvalue 0.001
+rule STEP17_MACS2_peaks_local_normalization_p001:
+    input:
+        a="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
+        b="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai"
+    output:
+        "{path}peaks/localnorm/{sample}.rep{repnum}.ref{refgenome}_localnorm_p001_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_localnorm_p001 --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.001"
+
+## Call peaks using global normalization. pvalue 0.0001
+rule STEP16_MACS2_peaks_global_normilization_p0001:
+    input:
+        a="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
+        b="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai"
+    output:
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_p0001_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_globalnorm_p0001 --outdir {wildcards.path}peaks/globalnorm --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.0001"
+
+## Call peaks using local normalization. pvalue 0.001
+rule STEP17_MACS2_peaks_local_normalization_p0001:
+    input:
+        a="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
+        b="{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai"
+    output:
+        "{path}peaks/localnorm/{sample}.rep{repnum}.ref{refgenome}_localnorm_p0001_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/macs2.yaml"
+    shell:
+        "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}_localnorm_p0001 --outdir {wildcards.path}peaks/localnorm --shift -75 --extsize 150 --nomodel --call-summits --keep-dup all -p 0.0001"
 
 ########################################################################################################################################
 #### QC METRICS  #######################################################################################################################
@@ -586,7 +751,7 @@ rule METRICS_fragment_size_distribution:
     output:
         "{path}operations/metrics/{sample}.rep{repnum}.ref{refgenome}.fragsizes.done"
     conda:
-        "snakeResources/envs/Rfragsizedistribution.yaml"
+        "snakeResources/envs/fragSizeDistribution.yaml"
     threads:
         1
     benchmark:
@@ -601,7 +766,7 @@ rule METRICS_annotate_peaks_global:
     output:
         "{path}operations/metrics/peakannotation/{sample}.rep{repnum}.ref{refgenome}.globalpeak.annotations.done"
     conda:
-        "snakeResources/envs/Rannotatepeaks.yaml"
+        "snakeResources/envs/annotatePeaks.yaml"
     threads:
         1
     benchmark:
@@ -616,7 +781,7 @@ rule METRICS_annotate_peaks_local:
     output:
         "{path}operations/metrics/peakannotation/{sample}.rep{repnum}.ref{refgenome}.localpeak.annotations.done"
     conda:
-        "snakeResources/envs/Rannotatepeaks.yaml"
+        "snakeResources/envs/annotatePeaks.yaml"
     threads:
         1
     benchmark:
@@ -632,7 +797,7 @@ rule METRICS_sample_total_reads:
     output:
         "{path}metrics/totalreads/{sample}.rep{repnum}.ref{refgenome}.totalreads.Rdata"
     conda:
-        "snakeResources/envs/Rcountsamplereads.yaml"
+        "snakeResources/envs/countSampleReads.yaml"
     threads:
         1
     benchmark:
@@ -643,6 +808,18 @@ rule METRICS_sample_total_reads:
 ########################################################################################################################################
 #### SATURATION ANALYSIS ###############################################################################################################
 ########################################################################################################################################
+
+## This rule determines what is run for the library saturation analysis
+rule AGGREGATOR_saturation_analysis:
+    input:
+        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.downsampling.done",
+        "{path}metrics/saturation/{sample}.rep{repnum}.ref{refgenome}.downsampled_duplication_metrics.txt",
+        "{path}metrics/saturation/{sample}.rep{repnum}.ref{refgenome}.downsampled_numpeaks.txt",
+        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.saturation_footprint_analysis.complete"
+    output:
+        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.saturation_analysis.complete"
+    shell:
+    	"touch {output}"
 
 ## Downsample the processed but NOT duplicate purged .bam files
 rule SATURATION_downsample_bam:
@@ -791,7 +968,6 @@ rule SATURATION_peaks:
         "macs2 callpeak -t {input.a} -n {wildcards.sample}.rep{wildcards.repnum}.ref{wildcards.refgenome}.{wildcards.prob}_globalnorm --outdir {wildcards.path}preprocessing/12saturation/peaks --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all -p 0.01"
 
 ## Count the number of peaks with global normalization from downsampled libraries
-## THIS MAY NEED MORE WORK - TEST THE ACTUAL CODE ##
 rule SATURATION_peak_calling_aggregator:
     input:
         "{path}preprocessing/12saturation/peaks/{sample}.rep{repnum}.ref{refgenome}.9_globalnorm_peaks.xls",
@@ -813,55 +989,706 @@ rule SATURATION_footprint_raw_analysis:
     input:
         "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}.rep{repnum}.ref{refgenome}.{prob}.deduplicated.bam",
         "{path}preprocessing/12saturation/downsampled/deduplicated/{sample}.rep{repnum}.ref{refgenome}.{prob}.deduplicated.bam.bai",
-        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_peaks.narrowPeak",
+        "snakeResources/scripts/atacFunctions.R"
     output:
-        "{path}operations/footprints/raw/{sample}.rep{repnum}.ref{refgenome}.{gene}.{prob}.downsampled.rawFPanalysis.done"
+        "{path}operations/saturation/footprints/{sample}.rep{repnum}.ref{refgenome}.{gene}.{prob}.downsampled.rawFPanalysis.done"
     conda:
-        "snakeResources/envs/RFootprint.yaml"
+        "snakeResources/envs/footprintAnalysis.yaml"
     threads:
         1
     resources:
-        mem_mb=lambda params, attempt: attempt * 20000,
-        run_time=lambda params, attempt: attempt * 2
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 5
     script:
-        "snakeResources/scripts/analyzeFP.R"
+        "snakeResources/scripts/analyzeFPsaturation.R"
 
 ## An aggregator for the footprinting saturation analysis probabilities
-rule SATURATION_raw_footprint_aggregator:
+rule AGGREGATOR_footprinting_saturation:
     input:
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.9.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.8.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.7.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.6.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.5.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.4.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.3.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.2.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
-        expand("{{path}}operations/footprints/raw/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.1.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"])
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.9.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.8.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.7.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.6.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.5.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.4.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.3.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.2.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"]),
+        expand("{{path}}operations/saturation/footprints/{{sample}}.rep{{repnum}}.ref{{refgenome}}.{genename}.1.downsampled.rawFPanalysis.done", genename=config["saturationGeneNames"])
     output:
-        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.rawfootprints.downsampled.complete"
+        "{path}operations/saturation/{sample}.rep{repnum}.ref{refgenome}.saturation_footprint_analysis.complete"
     shell:
         "touch {output}"
 
-########################################################################################################################
-#### FOOTPRINTING ######################################################################################################
-########################################################################################################################
+########################################################################################################################################
+#### FOOTPRINTING ######################################################################################################################
+########################################################################################################################################
+
 ##
 rule FOOTPRINTING_raw_analysis:
     input:
         "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
         "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai",
-        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_peaks.narrowPeak"
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_peaks.narrowPeak",
+        "snakeResources/scripts/atacFunctions.R"
     output:
         "{path}operations/footprints/raw/{sample}.rep{repnum}.ref{refgenome}.{gene}.rawFPanalysis.done"
     conda:
-        "snakeResources/envs/RFootprint.yaml"
+        "snakeResources/envs/footprintAnalysis.yaml"
     threads:
         1
     resources:
-        mem_mb=lambda params, attempt: attempt * 40000,
-        run_time=lambda params, attempt: attempt * 10
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 5
     benchmark:
         '{path}benchmark/footprints/raw/{sample}.rep{repnum}.ref{refgenome}.{gene}.rawFPanalysis.benchmark.txt'
     script:
         "snakeResources/scripts/analyzeFP.R"
+
+##
+rule FOOTPRINTING_raw_analysis_sample_merged_peaks:
+    input:
+        "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
+        "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai",
+        "{path}peaks/samplemerged/{sample}.rep{repnum}.ref{refgenome}_sample_merged_peaks.narrowPeak",
+        "snakeResources/scripts/atacFunctions.R"
+    output:
+        "{path}operations/footprints/samplemergedpeaks/raw/{sample}.rep{repnum}.ref{refgenome}.{gene}.rawFPanalysis.samplemergedpeaks.done"
+    conda:
+        "snakeResources/envs/footprintAnalysis.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 5
+    benchmark:
+        '{path}benchmark/footprints/raw/{sample}.rep{repnum}.ref{refgenome}.{gene}.rawFPanalysis.samplemergedpeaks.benchmark.txt'
+    script:
+        "snakeResources/scripts/analyzeFPsampleMergedPeaks.R"
+
+##
+rule FOOTPRINTING_generate_insertion_matrix_sample_merged_peaks:
+    input:
+        "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam",
+        "{path}bam/{sample}.rep{repnum}.ref{refgenome}.bam.bai",
+        "{path}peaks/samplemerged/{sample}.rep{repnum}.ref{refgenome}_sample_merged_peaks.narrowPeak",
+        "snakeResources/scripts/atacFunctions.R"
+    output:
+        "{path}footprints/samplemergedpeaks/insertionmatrix/{sample}.rep{repnum}.ref{refgenome}.{gene}.samplemergedpeaks.insertionmatrix.RData"
+    conda:
+        "snakeResources/envs/footprintAnalysis.yaml"
+    threads:
+        1
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 5
+    benchmark:
+        '{path}benchmark/footprints/raw/{sample}.rep{repnum}.ref{refgenome}.{gene}.generateinsertionmatrix.benchmark.txt'
+    script:
+        "snakeResources/scripts/generateInsertionMatrix.R"
+
+########################################################################################################################################
+#### GENERATE FIGURES ##################################################################################################################
+########################################################################################################################################
+
+##
+rule FIGURES_generate_peak_idiogram:
+    input:
+        "{path}peaks/globalnorm/{sample}.rep{repnum}.ref{refgenome}_globalnorm_p0001_peaks.narrowPeak",
+        "snakeResources/scripts/atacFunctions.R"
+    output:
+        "{path}figures/peakideogram/{sample}.rep{repnum}.ref{refgenome}.peakIdeogram.svg"
+    conda:
+        "snakeResources/envs/generatePeakIdeogram.yaml"
+    script:
+        "snakeResources/scripts/generatePeakIdeogram.R"
+
+##
+rule FIGURES_generate_motif_insertion_probability_graph_sample_merged_peaks:
+    input:
+        "{path}footprints/samplemergedpeaks/insertionmatrix/{sample}.rep{repnum}.ref{refgenome}.{gene}.samplemergedpeaks.insertionmatrix.RData",
+        "snakeResources/scripts/atacFunctions.R"
+    output:
+        "{path}figures/insertionprobability/{sample}.rep{repnum}.ref{refgenome}.{gene}.insertionprobability.svg"
+    conda:
+        "snakeResources/envs/generateMotifInsertionProbabilityGraph.yaml"
+    script:
+        "snakeResources/scripts/generateMotifInsertionProbabilityGraph.R"
+
+##
+rule FIGURES_generate_motif_aligned_heatmap_sample_merged_peaks:
+    input:
+        "{path}footprints/samplemergedpeaks/insertionmatrix/{sample}.rep{repnum}.ref{refgenome}.{gene}.samplemergedpeaks.insertionmatrix.RData",
+        "snakeResources/scripts/atacFunctions.R"
+    output:
+        "{path}figures/motifalignedheatmap/{sample}.rep{repnum}.ref{refgenome}.{gene}.motifalignedheatmap.svg"
+    conda:
+        "snakeResources/envs/generateMotifAlignedHeatmap.yaml"
+    script:
+        "snakeResources/scripts/generateMotifAlignedHeatmap.R"
+
+
+########################################################################################################################################
+#### MERGE SAMPLE PEAKS ################################################################################################################
+########################################################################################################################################
+
+## LNCAP
+rule MERGE_sample_peaks_lncap:
+    input:
+        "data/pros/lncap/cr01/peaks/globalnorm/LNCaP-CR-01.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/cr02/peaks/globalnorm/LNCaP-CR-02.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/cr04/peaks/globalnorm/LNCaP-CR-04.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/cr05/peaks/globalnorm/LNCaP-CR-05.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/cr07/peaks/globalnorm/LNCaP-CR-07.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/cr08/peaks/globalnorm/LNCaP-CR-08.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/wt01/peaks/globalnorm/LNCaP-WT-01.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "data/pros/lncap/wt02/peaks/globalnorm/LNCaP-WT-02.rep1.refhg38_globalnorm_peaks.narrowPeak",
+        "snakeResources/scripts/atacFunctions.R"
+    output:
+        "data/pros/lncap/cr01/peaks/samplemerged/LNCaP-CR-01.rep1.refhg38_sample_merged_peaks.narrowPeak"
+    conda:
+        "snakeResources/envs/mergeSamplePeaks.yaml"
+    script:
+        "snakeResources/scripts/mergeSamplePeaks.R"
+
+## LNCAP
+rule COPY_sample_merged_peaks_lncap:
+    input:
+        "data/pros/lncap/cr01/peaks/samplemerged/LNCaP-CR-01.rep1.refhg38_sample_merged_peaks.narrowPeak"
+    output:
+        "data/pros/lncap/cr02/peaks/samplemerged/LNCaP-CR-02.rep1.refhg38_sample_merged_peaks.narrowPeak",
+        "data/pros/lncap/cr04/peaks/samplemerged/LNCaP-CR-04.rep1.refhg38_sample_merged_peaks.narrowPeak",
+        "data/pros/lncap/cr05/peaks/samplemerged/LNCaP-CR-05.rep1.refhg38_sample_merged_peaks.narrowPeak",
+        "data/pros/lncap/cr07/peaks/samplemerged/LNCaP-CR-07.rep1.refhg38_sample_merged_peaks.narrowPeak",
+        "data/pros/lncap/cr08/peaks/samplemerged/LNCaP-CR-08.rep1.refhg38_sample_merged_peaks.narrowPeak",
+        "data/pros/lncap/wt01/peaks/samplemerged/LNCaP-WT-01.rep1.refhg38_sample_merged_peaks.narrowPeak",
+        "data/pros/lncap/wt02/peaks/samplemerged/LNCaP-WT-02.rep1.refhg38_sample_merged_peaks.narrowPeak"
+    shell:
+        """
+        cp {input} "data/pros/lncap/cr02/peaks/samplemerged/LNCaP-CR-02.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        cp {input} "data/pros/lncap/cr04/peaks/samplemerged/LNCaP-CR-04.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        cp {input} "data/pros/lncap/cr05/peaks/samplemerged/LNCaP-CR-05.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        cp {input} "data/pros/lncap/cr07/peaks/samplemerged/LNCaP-CR-07.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        cp {input} "data/pros/lncap/cr08/peaks/samplemerged/LNCaP-CR-08.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        cp {input} "data/pros/lncap/wt01/peaks/samplemerged/LNCaP-WT-01.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        cp {input} "data/pros/lncap/wt02/peaks/samplemerged/LNCaP-WT-02.rep1.refhg38_sample_merged_peaks.narrowPeak"
+        """
+
+########################################################################################################################################
+#### MERGE SAMPLE RUNS #################################################################################################################
+########################################################################################################################################
+
+#### ####
+rule panc_merge_all_sample_runs:
+    input:
+        "data/panc/capan1/wt01/bam/CAPANI-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/capan1/wt02/bam/CAPANI-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/capan1/wt03/bam/CAPANI-WT-03-MERGED.rep1.refhg38.bam",
+        "data/panc/hpafii/wt01/bam/HPAFII-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/hpafii/wt02/bam/HPAFII-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/hpafii/wt03/bam/HPAFII-WT-03-MERGED.rep1.refhg38.bam",
+        "data/panc/kp4/wt01/bam/KP4-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/kp4/wt02/bam/KP4-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/kp4/wt03/bam/KP4-WT-03-MERGED.rep1.refhg38.bam",
+        "data/panc/panc1/wt01/bam/PANC1-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/panc1/wt02/bam/PANC1-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/panc1/wt03/bam/PANC1-WT-03-MERGED.rep1.refhg38.bam",
+        "data/panc/panc0403/wt01/bam/PANC0403-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/panc0403/wt02/bam/PANC0403-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/panc0403/wt03/bam/PANC0403-WT-03-MERGED.rep1.refhg38.bam",
+        "data/panc/patu8ss89/wt01/bam/PATU8SS89-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/patu8ss89/wt02/bam/PATU8SS89-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/patu8ss89/wt03/bam/PATU8SS89-WT-03-MERGED.rep1.refhg38.bam",
+        "data/panc/pk45h/wt01/bam/PK45H-WT-01-MERGED.rep1.refhg38.bam",
+        "data/panc/pk45h/wt02/bam/PK45H-WT-02-MERGED.rep1.refhg38.bam",
+        "data/panc/pk45h/wt03/bam/PK45H-WT-03-MERGED.rep1.refhg38.bam"
+
+#### CAPANI ####
+rule MERGE_sample_runs_capan1_wt01:
+    input:
+        a="data/panc/capan1/split/wt01r1/bam/CAPANI-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/capan1/split/wt01r2/bam/CAPANI-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/capan1/wt01/operations/dir/all.built"
+    output:
+        "data/panc/capan1/wt01/bam/CAPANI-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_capan1_wt02:
+    input:
+        a="data/panc/capan1/split/wt02r1/bam/CAPANI-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/capan1/split/wt02r2/bam/CAPANI-WT-02-RUN2.rep1.refhg38.bam",
+        c="data/panc/capan1/wt02/operations/dir/all.built"
+    output:
+        "data/panc/capan1/wt02/bam/CAPANI-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_capan1_wt03:
+    input:
+        a="data/panc/capan1/split/wt03r1/bam/CAPANI-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/capan1/split/wt03r2/bam/CAPANI-WT-03-RUN2.rep1.refhg38.bam",
+        c="data/panc/capan1/wt03/operations/dir/all.built"
+    output:
+        "data/panc/capan1/wt03/bam/CAPANI-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+#### HPAFII ####
+rule MERGE_sample_runs_hpafii_wt01:
+    input:
+        a="data/panc/hpafii/split/wt01r1/bam/HPAFII-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/hpafii/split/wt01r2/bam/HPAFII-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/hpafii/wt01/operations/dir/all.built"
+    output:
+        "data/panc/hpafii/wt01/bam/HPAFII-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_hpafii_wt02:
+    input:
+        a="data/panc/hpafii/split/wt02r1/bam/HPAFII-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/hpafii/split/wt02r2/bam/HPAFII-WT-02-RUN2.rep1.refhg38.bam",
+         c="data/panc/hpafii/wt02/operations/dir/all.built"
+    output:
+        "data/panc/hpafii/wt02/bam/HPAFII-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_hpafii_wt03:
+    input:
+        a="data/panc/hpafii/split/wt03r1/bam/HPAFII-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/hpafii/split/wt03r2/bam/HPAFII-WT-03-RUN2.rep1.refhg38.bam",
+         c="data/panc/hpafii/wt03/operations/dir/all.built"
+    output:
+        "data/panc/hpafii/wt03/bam/HPAFII-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+#### KP4 ####
+rule MERGE_sample_runs_kp4_wt01:
+    input:
+        a="data/panc/kp4/split/wt01r1/bam/KP4-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/kp4/split/wt01r2/bam/KP4-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/kp4/wt01/operations/dir/all.built"
+    output:
+        "data/panc/kp4/wt01/bam/KP4-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_kp4_wt02:
+    input:
+        a="data/panc/kp4/split/wt02r1/bam/KP4-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/kp4/split/wt02r2/bam/KP4-WT-02-RUN2.rep1.refhg38.bam",
+        c="data/panc/kp4/wt02/operations/dir/all.built"
+    output:
+        "data/panc/kp4/wt02/bam/KP4-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_kp4_wt03:
+    input:
+        a="data/panc/kp4/split/wt03r1/bam/KP4-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/kp4/split/wt03r2/bam/KP4-WT-03-RUN2.rep1.refhg38.bam",
+        c="data/panc/kp4/wt03/operations/dir/all.built"
+    output:
+        "data/panc/kp4/wt03/bam/KP4-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+#### PANC1 ####
+rule MERGE_sample_runs_panc1_wt01:
+    input:
+        a="data/panc/panc1/split/wt01r1/bam/PANC1-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/panc1/split/wt01r2/bam/PANC1-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/panc1/wt01/operations/dir/all.built"
+    output:
+        "data/panc/panc1/wt01/bam/PANC1-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_panc1_wt02:
+    input:
+        a="data/panc/panc1/split/wt02r1/bam/PANC1-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/panc1/split/wt02r2/bam/PANC1-WT-02-RUN2.rep1.refhg38.bam",
+        c="data/panc/panc1/wt02/operations/dir/all.built"
+    output:
+        "data/panc/panc1/wt02/bam/PANC1-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_panc1_wt03:
+    input:
+        a="data/panc/panc1/split/wt03r1/bam/PANC1-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/panc1/split/wt03r2/bam/PANC1-WT-03-RUN2.rep1.refhg38.bam",
+        c="data/panc/panc1/wt03/operations/dir/all.built"
+    output:
+        "data/panc/panc1/wt03/bam/PANC1-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+#### PANC0403 ####
+rule MERGE_sample_runs_panc0403_wt01:
+    input:
+        a="data/panc/panc0403/split/wt01r1/bam/PANC0403-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/panc0403/split/wt01r2/bam/PANC0403-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/panc0403/wt01/operations/dir/all.built"
+    output:
+        "data/panc/panc0403/wt01/bam/PANC0403-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_panc0403_wt02:
+    input:
+        a="data/panc/panc0403/split/wt02r1/bam/PANC0403-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/panc0403/split/wt02r2/bam/PANC0403-WT-02-RUN2.rep1.refhg38.bam",
+        c="data/panc/panc0403/wt02/operations/dir/all.built"
+    output:
+        "data/panc/panc0403/wt02/bam/PANC0403-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_panc0403_wt03:
+    input:
+        a="data/panc/panc0403/split/wt03r1/bam/PANC0403-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/panc0403/split/wt03r2/bam/PANC0403-WT-03-RUN2.rep1.refhg38.bam",
+        c="data/panc/panc0403/wt03/operations/dir/all.built"
+    output:
+        "data/panc/panc0403/wt03/bam/PANC0403-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+#### PATU8SS89 ####
+rule MERGE_sample_runs_patu8ss89_wt01:
+    input:
+        a="data/panc/patu8ss89/split/wt01r1/bam/PATU8SS89-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/patu8ss89/split/wt01r2/bam/PATU8SS89-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/patu8ss89/wt01/operations/dir/all.built"
+    output:
+        "data/panc/patu8ss89/wt01/bam/PATU8SS89-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_patu8ss89_wt02:
+    input:
+        a="data/panc/patu8ss89/split/wt02r1/bam/PATU8SS89-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/patu8ss89/split/wt02r2/bam/PATU8SS89-WT-02-RUN2.rep1.refhg38.bam",
+        c="data/panc/patu8ss89/wt02/operations/dir/all.built"
+    output:
+        "data/panc/patu8ss89/wt02/bam/PATU8SS89-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_patu8ss89_wt03:
+    input:
+        a="data/panc/patu8ss89/split/wt03r1/bam/PATU8SS89-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/patu8ss89/split/wt03r2/bam/PATU8SS89-WT-03-RUN2.rep1.refhg38.bam",
+        c="data/panc/patu8ss89/wt03/operations/dir/all.built"
+    output:
+        "data/panc/patu8ss89/wt03/bam/PATU8SS89-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+#### PK45H ####
+rule MERGE_sample_runs_pk45h_wt01:
+    input:
+        a="data/panc/pk45h/split/wt01r1/bam/PK45H-WT-01-RUN1.rep1.refhg38.bam",
+        b="data/panc/pk45h/split/wt01r2/bam/PK45H-WT-01-RUN2.rep1.refhg38.bam",
+        c="data/panc/pk45h/wt01/operations/dir/all.built"
+    output:
+        "data/panc/pk45h/wt01/bam/PK45H-WT-01-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_pk45h_wt02:
+    input:
+        a="data/panc/pk45h/split/wt02r1/bam/PK45H-WT-02-RUN1.rep1.refhg38.bam",
+        b="data/panc/pk45h/split/wt02r2/bam/PK45H-WT-02-RUN2.rep1.refhg38.bam",
+        c="data/panc/pk45h/wt02/operations/dir/all.built"
+    output:
+        "data/panc/pk45h/wt02/bam/PK45H-WT-02-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"
+
+rule MERGE_sample_runs_pk45h_wt03:
+    input:
+        a="data/panc/pk45h/split/wt03r1/bam/PK45H-WT-03-RUN1.rep1.refhg38.bam",
+        b="data/panc/pk45h/split/wt03r2/bam/PK45H-WT-03-RUN2.rep1.refhg38.bam",
+        c="data/panc/pk45h/wt03/operations/dir/all.built"
+    output:
+        "data/panc/pk45h/wt03/bam/PK45H-WT-03-MERGED.rep1.refhg38.bam"
+    conda:
+        "snakeResources/envs/picard.yaml"
+    threads:
+        2
+    resources:
+        mem_mb=lambda params, attempt: attempt * 30000,
+        run_time=lambda params, attempt: attempt * 4
+    shell:
+        "picard MergeSamFiles \
+        I={input.a} \
+        I={input.b} \
+        O={output} \
+        ASSUME_SORTED=TRUE \
+        MERGE_SEQUENCE_DICTIONARIES=TRUE \
+        USE_THREADING=TRUE"

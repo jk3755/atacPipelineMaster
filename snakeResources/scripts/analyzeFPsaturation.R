@@ -11,6 +11,7 @@ tryCatch({
   sampleRep <- snakemake@wildcards[["repnum"]]
   geneName <- snakemake@wildcards[["gene"]]
   refGenome <- snakemake@wildcards[["refgenome"]]
+  downsampleProb <- snakemake@wildcards[["prob"]]
   dirPath <- snakemake@wildcards[["path"]]
   functionSourcePath <- snakemake@input[[4]]
   
@@ -28,7 +29,7 @@ tryCatch({
   cat("Snakemake touchfile path:", snakemakeTouchPath, "\n")
   
   #### Perform a filecheck ####
-  footprintDataFilepath <- paste0(dirPath, "footprints/raw/", sampleName, ".rep", sampleRep, ".ref", refGenome, ".", geneName, ".FPdata.Rdata")
+  footprintDataFilepath <- paste0(dirPath, "preprocessing/12saturation/footprints", sampleName, ".rep", sampleRep, ".ref", refGenome, ".", geneName, ".", downsampleProb, ".FPdata.Rdata")
   cat("Output filepath for footprint data:", footprintDataFilepath, "\n")
   
   if (file.exists(footprintDataFilepath) == TRUE){

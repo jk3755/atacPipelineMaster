@@ -1,10 +1,12 @@
 channels:
+  - conda-forge
   - r
   - bioconda
 dependencies:
+  - r=3.5.1
   - r-ggplot2
   - bioconductor-txdb.hsapiens.ucsc.hg38.knowngene
   - bioconductor-chipseeker
   - bioconductor-genomicranges
   - bioconductor-clusterprofiler
-  - bioconductor-org.hs.eg.db  
+  - bioconductor-org.hs.eg.db

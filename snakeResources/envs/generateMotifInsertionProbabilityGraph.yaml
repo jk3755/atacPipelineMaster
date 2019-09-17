@@ -1,0 +1,6 @@
+channels:
+  - r
+  - conda-forge
+dependencies:
+  - r-base=3.6.1
+  - r-gridsvg
