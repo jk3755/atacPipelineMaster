@@ -5,39 +5,31 @@ tryCatch({
   cat("Setting snakemake variables", "\n")
   bamPath <- snakemake@input[[1]]
   baiPath <- snakemake@input[[2]]
-  peakPath <- snakemake@input[[3]]
-  insertionMatrixFilepath <- snakemake@output[[1]]
+  functionSourcePath <- snakemake@input[[3]]
+  bindingSitesPath <- snakemake@input[[4]]
+  snakeTouchPath <- snakemake@output[[1]]
   sampleName <- snakemake@wildcards[["sample"]]
   sampleRep <- snakemake@wildcards[["repnum"]]
   geneName <- snakemake@wildcards[["gene"]]
   refGenome <- snakemake@wildcards[["refgenome"]]
-  functionSourcePath <- snakemake@input[[4]]
-  dirPath <- snakemake@wildcards[["path"]]
   
   #### Report ####
   cat("Generating insertion matrix with the following parameters:", "\n")
   cat("Bam file:", bamPath, "\n")
   cat("Bai file:", baiPath, "\n")
-  cat("Peaks file:", peakPath, "\n")
   cat("Sample name:", sampleName, "\n")
   cat("Sample rep:", sampleRep, "\n")
   cat("Gene name:", geneName, "\n")
   cat("Reference genome used:", refGenome, "\n")
-  cat("Directory path:", dirPath, "\n")
   cat("Filepath for loading functions:", functionSourcePath, "\n")
-  cat("Insertion matrix output path:", insertionMatrixFilepath, "\n")
+  cat("Filepath for loading binding sites:", bindingSitesPath, "\n")
   
-  #### Perform a filecheck ####
-  
-  cat("Output filepath for insertion matrix:", insertionMatrixFilepath, "\n")
-  
-  if (file.exists(insertionMatrixFilepath) == TRUE){
-    
-    cat("Insertion matrix data file already exists, skipping operation", "\n")
-    
+  #### Filecheck ####
+  cat("Checking if output file already exists at path:", snakeTouchPath, "\n")
+  if (file.exists(snakeTouchPath)){
+    cat("Output file already exists. Skipping", "\n")
   } else {
-    
-    cat("Insertion matrix data file not found, generating now", "\n")
+    cat("Output file not found. Processing", "\n")
     
     #### Load libraries ####
     cat("Loading libraries", "\n")
@@ -50,62 +42,79 @@ tryCatch({
     suppressMessages(library(ChIPseeker))
     suppressMessages(library(TxDb.Hsapiens.UCSC.hg38.knownGene))
     suppressMessages(library(genomation))
+    suppressMessages(library(stringr))
     genome <- Hsapiens
     txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene
+    
+    #### Generate the output directory path ####
+    outputDirectory <- str_replace(snakeTouchPath, "(?<=insertion_matrix/).*", paste0(geneName, "/"))
+    cat("Generating output directory at path:", outputDirectory, "\n")
+    dir.create(path = outputDirectory, showWarnings = FALSE)
     
     #### Source functions ####
     cat("Loading functions from path:", functionSourcePath, "\n")
     source(functionSourcePath)
     
     #### Retrieve the binding sites for the current gene ####
-    cat("Retrieving binding sites", "\n")
-    tempAllSites <- getAllBindingSites(gene = geneName)
+    cat("Loading binding sites", "\n")
+    load(bindingSitesPath)
     
-    #### Subset the binding sites with the peaks
-    cat("Subsetting sites to peak regions", "\n")
-    peaksGR <- importBED(peakPath)
-    allSites <- subsetByOverlaps(tempAllSites, peaksGR)
-    numSites <- length(allSites@ranges)
+    numSites <- length(bindingSites@ranges)
     cat("Identified", numSites, "total binding sites", "\n")
     
     if (numSites == 0){
-      
+      cat("No binding sites identified, exiting", "\n")
     } else {
       
-      #### Set scope of analysis ####
-      maxWidth <- max(allSites@ranges@width)
+      #### Determine scope for current binding sites ####
+      maxWidth <- max(bindingSites@ranges@width)
       scope <- paste0("chr", c(1:22, "X", "Y"))
       cat("scope of analysis:", scope, "\n")
-      
-      #### Determine scope for current binding sites ####
-      currentScope <- scope[which(scope %in% allSites@seqnames@values)]
+      currentScope <- scope[which(scope %in% bindingSites@seqnames@values)]
       cat("scope of current binding sites:", currentScope, "\n")
       
       #### Generate insertion matrix for all sites ####
       for (item in currentScope)
       {
-        com <- paste0("tempSites <- allSites[seqnames(allSites) == '", item, "']")
+        ##
+        cat("Processing insertion matrix for", item, "\n")
+        
+        ## Subset the binding sites
+        cat("Subsetting binding sites", "\n")
+        com <- paste0("currentSites <- bindingSites[seqnames(bindingSites) == '", item, "']")
         eval(parse(text = com))
-        com <- paste0(item, "insMatrix <- generateInsertionMatrixByChr(bamPath, tempSites, maxWidth,'", item, "')")
+        
+        ## Generate the matrix
+        cat("Generating insertion matrix", "\n")
+        com <- paste0("insMatrix <- generateInsertionMatrixByChr(bamPath, currentSites, maxWidth,'", item, "')")
         eval(parse(text = com))
+        
+        ## Make the list
+        cat("Storing data", "\n")
+        insertionMatrixData <- list()
+        insertionMatrixData$bindingSites <- currentSites
+        insertionMatrixData$insertionMatrix <- insMatrix
+        
+        ## Save the file
+        matrixOutPath <- paste0(outputDirectory, item, ".", geneName, ".insertionMatrix.RData")
+        cat("Saving insertion matrix at path:", matrixOutPath, "\n")
+        save(insertionMatrixData, file = matrixOutPath)
       }
       
-      #### Merge the individual insertion matrices and save ####
-      currentMatrixNames <- as.character(paste0(currentScope, "insMatrix"))
-      currentMatrixNamesString <- paste(currentMatrixNames, collapse = ",")
-      com <- paste0("insertionMatrix <- rbind(", currentMatrixNamesString, ")")
-      eval(parse(text = com))
-      insertionMatrixData <- list()
-      insertionMatrixData$bindingSites <- allSites
-      insertionMatrixData$insertionMatrix <- insertionMatrix
-
-      #### Save the insertion matrix and input sites ####
-      cat("Saving insertion matrix file", "\n")
-      save(insertionMatrixData, file = insertionMatrixFilepath)
+      #### Touch the snakemake file ####
+      cat("Finished, touching snakemake file", "\n")
+      file.create(snakeTouchPath, showWarnings = FALSE)
       
     }
-  } # end filecheck
-
+  }
+  #### Touch the snakemake file ####
+  cat("Finished, touching snakemake file", "\n")
+  file.create(snakeTouchPath, showWarnings = FALSE)
+  
 }, finally = {
+  
+  #### Touch the snakemake file ####
+  cat("Finished, touching snakemake file", "\n")
+  file.create(snakeTouchPath, showWarnings = FALSE)
   
 })

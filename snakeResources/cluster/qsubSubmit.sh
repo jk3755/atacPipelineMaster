@@ -1,5 +1,5 @@
 #!/bin/bash -x
-#$ -N snakemakeATACseq
+#$ -N ATACseq
 #$ -j y
 #$ -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac
 #$ -pe smp 1
@@ -13,12 +13,12 @@ source activate atac
 echo "Conda env activated"
 # Set up the desired variables for running the job
 echo "Setting up variables"
-TARGETRULE="all_lncap"
+TARGETRULE="full_lncap_refhg38"
 SNAKEFILE="/ifs/scratch/c2b2/ac_lab/jk3755/atac/snakefileATACseqWorkflow.snakefile"
 WORKDIR="/ifs/scratch/c2b2/ac_lab/jk3755/atac"
 CONDADIR="conda"
 CLUSTCONFIG="/ifs/scratch/c2b2/ac_lab/jk3755/atac/snakeResources/cluster/qsubConfig.json"
-CORES="999"
+CORES="950"
 JOBRESTARTS="10"
 LATENCYWAIT="60"
 # Echo variable settings
@@ -38,7 +38,7 @@ snakemake \
 --cores $CORES \
 $TARGETRULE \
 --cluster-config $CLUSTCONFIG \
---cluster "qsub -terse -j y -o pipeline_log.txt -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -V" \
+--cluster "qsub -terse -j y -o pipelinelog.txt -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -V" \
 --use-conda \
 --conda-prefix $CONDADIR \
 --restart-times $JOBRESTARTS \
@@ -53,7 +53,7 @@ snakemake \
 --cores $CORES \
 $TARGETRULE \
 --cluster-config $CLUSTCONFIG \
---cluster "qsub -terse -j y -o pipeline_log.txt -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -V" \
+--cluster "qsub -terse -j y -o pipelinelog.txt -pe smp {cluster.nCPUs} -l mem={cluster.memory}M,time={cluster.runtime}:0:0 -wd /ifs/scratch/c2b2/ac_lab/jk3755/atac -V" \
 --use-conda \
 --conda-prefix $CONDADIR \
 --restart-times $JOBRESTARTS \

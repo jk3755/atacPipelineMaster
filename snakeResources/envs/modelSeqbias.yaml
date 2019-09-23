@@ -1,0 +1,10 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=3.6.1
+  - bioconductor-rsamtools
+  - bioconductor-seqbias
+  - bioconductor-genomicranges
+  - bioconductor-genomation
+  - r-ggplot2

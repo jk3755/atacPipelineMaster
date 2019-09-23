@@ -24,7 +24,7 @@
 
     "STEP4_refgenome_align" :
     {
-        "nCPUs"     : "12",
+        "nCPUs"     : "6",
         "memory"    : "{resources.mem_mb}",
         "runtime"   : "{resources.run_time}"
     },

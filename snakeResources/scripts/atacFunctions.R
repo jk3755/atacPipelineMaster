@@ -49,7 +49,7 @@ getAllBindingSites <- function(gene, pwmScanScore = "99%"){
   if (length(indexChrM > 0)){
     allSites <- allSites[-indexChrM]
   }
-
+  
   cat("returning allSites", "\n")
   return(allSites)
 }
@@ -95,7 +95,7 @@ generateInsertionMatrixByChr <- function(bamFile, bindingSites, maxWidth, chrNam
   insRLE@listData <- tempRLE
   extSitesList <- GRangesList(extSites)
   insViews <- Views(insRLE, extSitesList)
-
+  
   ## Convert RLE views object to insertion matrix
   insMatrix <- as.matrix(insViews)
   
@@ -107,14 +107,14 @@ generateInsertionMatrixByChr <- function(bamFile, bindingSites, maxWidth, chrNam
 calculateBasicFootprintStatistics <- function(insMatrix, bindingSites, chrName){
   
   numSites <- length(insMatrix[,1])
-  rawSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 18)
+  rawSiteBasicStats <- matrix(data = NA, nrow = numSites, ncol = 19)
   
   colnames(rawSiteBasicStats) <- c("Chromosome", "Motif Start", "Motif Width",
                                    "Motif Score", "Motif Score 2",
                                    "Total signal", "Total signal per bp", "Motif signal per bp",
                                    "Flank signal per bp", "Background signal per bp", "Wide flank signal per bp",
                                    "Flank / Background", "Motif / Flank", "Motif / Wide Flank",
-                                   "Binding", "p-value", "Annotation", "Closest gene")
+                                   "Binding", "p-value", "z-score", "Annotation", "Closest gene")
   
   rawSiteBasicStats[,1] <- chrName
   rawSiteBasicStats[,2] <- as.numeric(bindingSites@ranges@start)
@@ -140,8 +140,8 @@ calculateBasicFootprintStatistics <- function(insMatrix, bindingSites, chrName){
     overlap = "TSS",
     verbose = TRUE)
   
-  rawSiteBasicStats[,17] <- annotations@anno@elementMetadata@listData[["annotation"]]
-  rawSiteBasicStats[,18] <- annotations@anno@elementMetadata@listData[["SYMBOL"]]
+  rawSiteBasicStats[,18] <- annotations@anno@elementMetadata@listData[["annotation"]]
+  rawSiteBasicStats[,19] <- annotations@anno@elementMetadata@listData[["SYMBOL"]]
   
   for (b in 1:numSites){
     tempWidth <- as.numeric(rawSiteBasicStats[b,3])
@@ -173,13 +173,40 @@ calculateBasicFootprintStatistics <- function(insMatrix, bindingSites, chrName){
         ttest <- t.test(motifSignals, mu = averageNullMotifSignal, alternative = "less", conf.level = 0.95)
         pvalue <- ttest$p.value
         rawSiteBasicStats[b,16] <- pvalue
+        rawSiteBasicStats[b,17] <- qnorm(pvalue)
         if (pvalue < 0.05){rawSiteBasicStats[b,15] <- 1} else {rawSiteBasicStats[b,15] <- 0}
       }, warning = function(w) {
       }, error = function(e) {
       }, finally = {
       })}
   }
-  return(rawSiteBasicStats)
+  
+  #### Convert to a dataframe before return ####
+  ## This allows you to store different data types
+  cat("Transferring data to dataframe", "\n")
+  rawFootprintStats <- data.frame(
+    chr = as.character(rawSiteBasicStats[,1]),
+    start = as.numeric(rawSiteBasicStats[,2]),
+    width = as.numeric(rawSiteBasicStats[,3]),
+    score = as.numeric(rawSiteBasicStats[,4]),
+    score2 = as.numeric(rawSiteBasicStats[,5]),
+    totalSignal = as.numeric(rawSiteBasicStats[,6]),
+    totalSignalPerBP = as.numeric(rawSiteBasicStats[,7]),
+    motifSignalPerBP = as.numeric(rawSiteBasicStats[,8]),
+    flankSignalPerBP = as.numeric(rawSiteBasicStats[,9]),
+    backgroundSignalPerBP = as.numeric(rawSiteBasicStats[,10]),
+    wideFlankSignalPerBP = as.numeric(rawSiteBasicStats[,11]),
+    flankAccessibility = as.numeric(rawSiteBasicStats[,12]),
+    footprintDepth = as.numeric(rawSiteBasicStats[,13]),
+    wideAccessibility = as.numeric(rawSiteBasicStats[,14]),
+    binding = as.numeric(rawSiteBasicStats[,15]),
+    pvalue = as.numeric(rawSiteBasicStats[,16]),
+    zscore = as.numeric(rawSiteBasicStats[,17]),
+    annotation = as.character(rawSiteBasicStats[,18]),
+    symbol = as.character(rawSiteBasicStats[,19])
+  )
+  cat("Returning dataframe", "\n")
+  return(rawFootprintStats)
 }
 
 #### Generate a null model of a TF binding footprint for hypothesis testing ####
@@ -225,6 +252,35 @@ writeGRangesToBED <- function(inputGR, filePath){
     chrom = seqnames(inputGR),
     chromStart = start(inputGR)-1,
     chromEnd = end(inputGR)
+  )
+  ## Write the output file
+  cat("Writing BED output file at path:", filePath, "\n")
+  write.table(
+    dataframeGR,
+    file = filePath,
+    quote = F,
+    sep = "\t",
+    row.names = F,
+    col.names = F
+  )
+}
+
+#### Write a GRanges object to a 3-column BED file ####
+writeGRangesToBEDwithStrand <- function(inputGR, filePath){
+  
+  ##
+  numRecords <- length(inputGR)
+  
+  ## BED files are 0-coordinate based, so subtract start by 1
+  ## Must keep name and score columns for readBed to work with strand
+  cat("Converting GRanges object to BED format", "\n")
+  dataframeGR <- data.frame(
+    chrom = seqnames(inputGR),
+    chromStart = start(inputGR)-1,
+    chromEnd = end(inputGR),
+    name = c(1:numRecords),
+    score = rep(1, time = numRecords),
+    strand = as.character(strand(inputGR))
   )
   ## Write the output file
   cat("Writing BED output file at path:", filePath, "\n")
@@ -380,4 +436,201 @@ plotMotifAlignedHeatmap <- function(insertionMatrix, bindingSites, plotTitle, sv
     newpage = TRUE)
   grid.export(svgOutPath)
   dev.off()
+}
+
+#### Generate a seqbias correction model ####
+generateTn5BiasCorrectionModel <- function(refFastaPath, bamPath, refBEDpath, biasedPlotPath, correctedPlotPath, biasModelPath){
+  
+  # refFastaPath - path to the reference fasta file
+  # bamPath - path to the input bam file
+  # refGR - a GRanges object containing the intervals to examine for the model
+  # biasedPlotPath - output path for the biased insertion freqs
+  # correctedPlotPath - output path for the corrected insertion freqs
+  # biasModelPath - output path to save the correction model
+  
+  #### Load the BED interval ####
+  cat("Loading interval from BED file", "\n")
+  refGR <- importBED(refBEDpath)
+  # need to drop * strand level
+  refGR@strand@values <- droplevels(refGR@strand@values)
+  
+  #### Load the reference fasta file ####
+  cat("Loading reference fasta", "\n")
+  refFasta <- FaFile(refFastaPath)
+  open.FaFile(refFasta)
+  refSeqIn <- scanFa(refFasta, refGR)
+
+  #### Get the reverse stand indices and reverse complement ####
+  cat("Getting negative strand indices", "\n")
+  negIdx <- as.logical(refGR@strand == '-')
+  refSeqIn[negIdx] <- reverseComplement(refSeqIn[negIdx])
+  
+  #### Count the reads in the given interval ####
+  cat("Counting reads in given intervals", "\n")
+  readCounts <- count.reads(bamPath, refGR, binary = T)
+  readFreqs <- kmer.freq(refSeqIn, readCounts)
+  
+  #### Plot the biased sequence plot ####
+  cat("Generating biased plot", "\n")
+  svg(biasedPlotPath)
+  P <- qplot(
+            x = pos,
+            y = freq,
+            ylim = c(0, 0.5),
+            color = seq,
+            data = readFreqs,
+            geom = "line"
+            )
+  P <- P + facet_grid( seq ~ . )
+  print(P)
+  dev.off()
+  
+  #### Train the compensation model ####
+  cat("Training compensation model", "\n")
+  seqBiasModel <- seqbias.fit(
+                              refFastaPath,
+                              bamPath,
+                              L = 20,
+                              R = 20
+                              )
+  
+  #### Predict sequence bias ####
+  cat("Predicting insertion bias", "\n")
+  ## The seqbias prediction must be given the underlying sequences you want to correct
+  ## The model can be trained on chr1, etc.
+  seqBiasPrediction <- seqbias.predict(
+                                      seqBiasModel,
+                                      refGR
+                                      )
+  
+  #### Adjust sequence bias ####
+  cat("Adjusting insertion counts", "\n")
+  adjustedCounts <- mapply(
+                          FUN = `/`,
+                          readCounts,
+                          seqBiasPrediction,
+                          SIMPLIFY = F
+                          )
+  
+  #### Check and plot adjustment ####
+  cat("Adjusting insertion frequencies", "\n")
+  adjustedReadFreqs <- kmer.freq(
+                                refSeqIn,
+                                adjustedCounts
+                                )
+  
+  #### Generate and save the corrected freq plot ####
+  cat("Generating corrected plot", "\n")
+  svg(correctedPlotPath)
+  P <- qplot( 
+            x = pos,
+            y = freq,
+            ylim = c(0.0, 0.5),
+            color = seq,
+            data = adjustedReadFreqs,
+            geom = "line"
+            )
+  P <- P + facet_grid( seq ~ . )
+  print(P)
+  dev.off()
+  
+  #### Return and save the model ####
+  cat("Saving seqbias model", "\n")
+  seqbias.save(seqBiasModel, biasModelPath)
+  #return(seqBiasModel)
+}
+
+#### Generate bias uncorrected null footprint model ####
+generateFootprintNullModelUncorrected <- function(inputSiteGR, iterations = 10000, inputSignal){
+  
+  #### Get the width of the current motif ####
+  motifWidth <- inputSiteGR@ranges@width
+  analysisWidth <- motifWidth + 500
+  
+  #### Generate the random insertion matrix with no correction ####
+  nullMatrixUncorrected <- matrix(data = NA, nrow = iterations, ncol = analysisWidth)
+  
+  for (a in 1:iterations){
+    nullMatrixUncorrected[a,] <- rmultinom(
+                                          n = 1,
+                                          size = inputSignal,
+                                          prob = rep(1, analysisWidth))}
+  
+  #### Collect the average signals ####
+  flank1AvgSignalUncorrected <- c()
+  flank2AvgSignalUncorrected <- c()
+  motifAvgSignalUncorrected <- c()
+  
+  for (b in 1:iterations){
+    
+    flank1AvgSignalUncorrected[b] <- mean(nullMatrixUncorrected[b , 230:249 ])
+    flank2AvgSignalUncorrected[b] <- mean(nullMatrixUncorrected[b , (251 + motifWidth):(270 + motifWidth) ])
+    motifAvgSignalUncorrected[b]  <- mean(nullMatrixUncorrected[b , 250:(250 + motifWidth) ])
+    
+  }
+  
+  #### Transfer data to df for return ####
+  nullDataUncorrected <- data.frame(
+                                    flank1AvgSignal = flank1AvgSignalUncorrected,
+                                    flank2AvgSignal = flank2AvgSignalUncorrected,
+                                    motifAvgSignal = motifAvgSignalUncorrected,
+                                    flankAvgSignal = ((flank1AvgSignalUncorrected + flank2AvgSignalUncorrected) / 2),
+                                    signalDiff = ((flank1AvgSignalUncorrected + flank2AvgSignalUncorrected) / 2) - motifAvgSignalUncorrected
+                                    )
+  
+  return(nullDataUncorrected)
+}
+
+#### Generate Tn5 bias-corrected null footprint model ####
+generateFootprintNullModelBiasCorrected <- function(seqbiasModel, inputSiteGR, iterations = 10000, inputSignal){
+  
+  #### Get the width of the current motif ####
+  motifWidth <- inputSiteGR@ranges@width
+  analysisWidth <- motifWidth + 500
+  
+  #### Expand the input binding site GRanges to the analysis window ####
+  extSites <- promoters(inputSiteGR, upstream = 250, downstream = (250 + motifWidth), use.names = TRUE)
+  extSites <- keepStandardChromosomes(extSites, pruning.mode = "coarse")
+  extSites <- trim(extSites)
+  
+  #### Pull the underlying sequence and add to the GRanges ####
+  extSites@elementMetadata@listData[["string"]] <- getSeq(genome, extSites)
+  
+  #### Generate the prediction model ####
+  seqBiasPrediction <- seqbias.predict(seqbiasModel, extSites)
+  ## Invert the prediction to be able to use as a probability vector
+  inverseSeqBiasPrediction <- 1 / seqBiasPrediction[[1]]
+
+  #### Generate the random insertion matrix with correction ####
+  nullMatrixCorrected <- matrix(data = NA, nrow = iterations, ncol = analysisWidth)
+  
+  for (a in 1:iterations){
+    nullMatrixCorrected[a,] <- rmultinom(
+      n = 1,
+      size = inputSignal,
+      prob = inverseSeqBiasPrediction)
+  }
+  
+  #### Collect the average signals ####
+  flank1AvgSignalCorrected <- c()
+  flank2AvgSignalCorrected <- c()
+  motifAvgSignalCorrected <- c()
+  
+  for (b in 1:iterations){
+    
+    flank1AvgSignalCorrected[b] <- mean(nullMatrixCorrected[b , 230:249 ])
+    flank2AvgSignalCorrected[b] <- mean(nullMatrixCorrected[b , (251 + motifWidth):(270 + motifWidth) ])
+    motifAvgSignalCorrected[b]  <- mean(nullMatrixCorrected[b , 250:(250 + motifWidth) ])
+    
+  }
+  
+  #### Transfer data to df for return ####
+  nullDataCorrected <- data.frame(
+    flank1AvgSignal = flank1AvgSignalCorrected,
+    flank2AvgSignal = flank2AvgSignalCorrected,
+    motifAvgSignal = motifAvgSignalCorrected,
+    flankAvgSignal = ((flank1AvgSignalCorrected + flank2AvgSignalCorrected) / 2),
+    signalDiff = ((flank1AvgSignalCorrected + flank2AvgSignalCorrected) / 2) - motifAvgSignalCorrected
+  )
+  return(nullDataCorrected)
 }
